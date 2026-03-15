@@ -44,17 +44,17 @@ async function getAnalytics() {
 		db
 			.select({ count: sql<number>`count(*)` })
 			.from(stamps)
-			.where(sql`created_at >= ${todayStart}`),
+			.where(sql`${stamps.createdAt} >= ${new Date(todayStart)}`),
 
 		db
 			.select({ count: sql<number>`count(*)` })
 			.from(stamps)
-			.where(sql`created_at >= ${weekStart}`),
+			.where(sql`${stamps.createdAt} >= ${new Date(weekStart)}`),
 
 		db
 			.select({ count: sql<number>`count(*)` })
 			.from(stamps)
-			.where(sql`created_at >= ${monthStart}`),
+			.where(sql`${stamps.createdAt} >= ${new Date(monthStart)}`),
 
 		db
 			.select({
@@ -67,13 +67,13 @@ async function getAnalytics() {
 
 		db
 			.select({
-				day: sql<number>`(created_at / 86400000) * 86400000`,
+				day: sql<number>`(${stamps.createdAt} / 86400000) * 86400000`,
 				count: sql<number>`count(*)`,
 			})
 			.from(stamps)
-			.where(sql`created_at >= ${thirtyDaysAgo}`)
-			.groupBy(sql`(created_at / 86400000) * 86400000`)
-			.orderBy(sql`(created_at / 86400000) * 86400000`),
+			.where(sql`${stamps.createdAt} >= ${new Date(thirtyDaysAgo)}`)
+			.groupBy(sql`(${stamps.createdAt} / 86400000) * 86400000`)
+			.orderBy(sql`(${stamps.createdAt} / 86400000) * 86400000`),
 
 		db
 			.select({ count: sql<number>`count(*)` })
@@ -116,67 +116,54 @@ function formatDate(ts: number): string {
 }
 
 export default async function DashboardPage() {
-	let data: Awaited<ReturnType<typeof getAnalytics>>;
-	try {
-		data = await getAnalytics();
-	} catch (err) {
-		console.error("Dashboard error:", err);
-		return (
-			<div className="max-w-4xl mx-auto px-4 py-12 font-sans text-center">
-				<h1 className="text-3xl font-bold text-neutral-900 mb-4">Dashboard</h1>
-				<p className="text-neutral-500">
-					No data available yet. Generate some stamps first.
-				</p>
-			</div>
-		);
-	}
+	const data = await getAnalytics();
 
 	const maxStyleCount = Math.max(...data.popularStyles.map((s) => s.count), 1);
 	const maxDayCount = Math.max(...data.dailyTrend.map((d) => d.count), 1);
 
 	return (
-		<div className="max-w-4xl mx-auto px-4 py-12 font-sans">
+		<div className="max-w-4xl mx-auto px-4 py-12">
 			<div className="mb-10">
-				<h1 className="text-3xl font-bold text-stamp-navy">Dashboard</h1>
-				<p className="text-stone-500 mt-1 text-sm">
+				<h1 className="text-2xl font-semibold text-neutral-900">Dashboard</h1>
+				<p className="text-neutral-500 mt-1 text-sm">
 					stamp.builder — internal analytics
 				</p>
 			</div>
 
 			{/* Key metrics */}
-			<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+			<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
 				<StatCard label="Total stamps" value={data.totalStamps} />
 				<StatCard label="Today" value={data.stampsToday} />
 				<StatCard label="This week" value={data.stampsThisWeek} />
 				<StatCard label="This month" value={data.stampsThisMonth} />
 			</div>
 
-			<div className="grid grid-cols-2 md:grid-cols-2 gap-4 mb-10">
+			<div className="grid grid-cols-2 gap-4 mb-10">
 				<StatCard label="Page views" value={data.totalPageViews} />
 				<StatCard label="Unique visitors" value={data.uniqueVisitors} />
 			</div>
 
 			{/* Popular styles */}
 			{data.popularStyles.length > 0 && (
-				<section className="mb-10">
-					<h2 className="text-lg font-semibold text-stamp-navy mb-4">
+				<section className="mb-8">
+					<h2 className="text-xs font-medium text-neutral-500 mb-4 uppercase tracking-wide">
 						Popular styles
 					</h2>
-					<div className="bg-white/60 rounded-xl p-6 space-y-3">
+					<div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-3">
 						{data.popularStyles.map((s) => (
 							<div key={s.style} className="flex items-center gap-3">
-								<span className="w-20 text-sm text-stone-600 capitalize shrink-0">
+								<span className="w-20 text-sm text-neutral-600 capitalize shrink-0">
 									{s.style}
 								</span>
-								<div className="flex-1 bg-stone-100 rounded-full h-5 overflow-hidden">
+								<div className="flex-1 bg-neutral-100 rounded-full h-4 overflow-hidden">
 									<div
-										className="h-full bg-stamp-blue rounded-full transition-all"
+										className="h-full bg-neutral-900 rounded-full transition-all"
 										style={{
 											width: `${Math.round((s.count / maxStyleCount) * 100)}%`,
 										}}
 									/>
 								</div>
-								<span className="w-10 text-sm text-stone-500 text-right shrink-0">
+								<span className="w-10 text-sm text-neutral-400 text-right shrink-0">
 									{s.count}
 								</span>
 							</div>
@@ -188,10 +175,10 @@ export default async function DashboardPage() {
 			{/* Daily trend */}
 			{data.dailyTrend.length > 0 && (
 				<section className="mb-10">
-					<h2 className="text-lg font-semibold text-stamp-navy mb-4">
+					<h2 className="text-xs font-medium text-neutral-500 mb-4 uppercase tracking-wide">
 						Generations per day (last 30 days)
 					</h2>
-					<div className="bg-white/60 rounded-xl p-6">
+					<div className="bg-white rounded-xl border border-neutral-200 p-6">
 						<div className="flex items-end gap-1 h-32">
 							{data.dailyTrend.map((d) => (
 								<div
@@ -200,7 +187,7 @@ export default async function DashboardPage() {
 									title={`${formatDate(d.day)}: ${d.count}`}
 								>
 									<div
-										className="w-full bg-stamp-blue rounded-t opacity-70 group-hover:opacity-100 transition-opacity"
+										className="w-full bg-neutral-900 rounded-t opacity-40 group-hover:opacity-80 transition-opacity"
 										style={{
 											height: `${Math.max(
 												4,
@@ -211,7 +198,7 @@ export default async function DashboardPage() {
 								</div>
 							))}
 						</div>
-						<div className="flex justify-between mt-2 text-xs text-stone-400">
+						<div className="flex justify-between mt-2 text-xs text-neutral-400">
 							{data.dailyTrend.length > 0 && (
 								<>
 									<span>{formatDate(data.dailyTrend[0].day)}</span>
@@ -228,7 +215,7 @@ export default async function DashboardPage() {
 			)}
 
 			{data.popularStyles.length === 0 && data.dailyTrend.length === 0 && (
-				<div className="text-center text-stone-400 py-16">
+				<div className="text-center text-neutral-400 py-16 text-sm">
 					No data yet. Generate some stamps first.
 				</div>
 			)}
@@ -238,11 +225,11 @@ export default async function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
 	return (
-		<div className="bg-white/60 rounded-xl p-5 border border-stone-200/60">
-			<p className="text-xs text-stone-500 uppercase tracking-wide mb-1">
+		<div className="bg-white rounded-xl p-5 border border-neutral-200">
+			<p className="text-xs text-neutral-400 uppercase tracking-wide mb-2">
 				{label}
 			</p>
-			<p className="text-3xl font-bold text-stamp-navy">{value}</p>
+			<p className="text-3xl font-bold text-neutral-900">{value}</p>
 		</div>
 	);
 }

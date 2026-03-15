@@ -36,9 +36,7 @@ export default async function CollectionsPage() {
 	return (
 		<div className="max-w-5xl mx-auto px-4 py-12">
 			<div className="mb-10">
-				<h1 className="text-2xl font-semibold text-neutral-900">
-					Collections
-				</h1>
+				<h1 className="text-2xl font-semibold text-neutral-900">Collections</h1>
 				<p className="mt-1 text-sm text-neutral-500">
 					{allStamps.length} stamps created by the community
 				</p>
