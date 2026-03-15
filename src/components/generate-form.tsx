@@ -73,23 +73,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						htmlFor="prompt"
 						className="block text-lg font-medium text-stone-800 mb-2"
 					>
-						Describe your stamp{" "}
-						<span className="text-sm font-normal text-stone-400">
-							(try:{" "}
-							{EXAMPLE_PROMPTS.slice(0, 3).map((ex, i) => (
-								<span key={ex}>
-									{i > 0 && ", "}
-									<button
-										type="button"
-										className="text-stamp-blue hover:underline"
-										onClick={() => setPrompt(ex)}
-									>
-										{ex.toLowerCase()}
-									</button>
-								</span>
-							))}
-							)
-						</span>
+						Describe your stamp
 					</label>
 					<textarea
 						id="prompt"
@@ -103,6 +87,20 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					<p className="text-sm text-stone-500 mt-1">
 						{prompt.length}/500 characters
 					</p>
+
+					{/* Example prompt pills */}
+					<div className="flex flex-wrap gap-2 mt-3">
+						{EXAMPLE_PROMPTS.map((example) => (
+							<button
+								key={example}
+								type="button"
+								onClick={() => setPrompt(example)}
+								className="bg-white/60 text-stone-600 rounded-full border border-stone-200 hover:bg-white px-3 py-1.5 text-sm font-sans cursor-pointer transition"
+							>
+								{example}
+							</button>
+						))}
+					</div>
 				</div>
 
 				{/* Style selector */}
@@ -234,27 +232,6 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					<p className="mt-3 text-sm text-stone-500 font-sans">
 						{result.remaining} free generations remaining today
 					</p>
-				</div>
-			)}
-
-			{/* Example prompts */}
-			{!result && (
-				<div className="mt-8">
-					<p className="text-sm text-stone-500 mb-3 font-sans">
-						Try an example:
-					</p>
-					<div className="flex flex-wrap gap-2">
-						{EXAMPLE_PROMPTS.slice(0, 4).map((example) => (
-							<button
-								key={example}
-								type="button"
-								onClick={() => setPrompt(example)}
-								className="px-3 py-1.5 text-sm bg-white/60 text-stone-600 rounded-full border border-stone-200 hover:bg-white transition font-sans"
-							>
-								{example}
-							</button>
-						))}
-					</div>
 				</div>
 			)}
 		</div>

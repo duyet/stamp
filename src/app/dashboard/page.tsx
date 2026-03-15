@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
 	title: "Dashboard — stamp.builder",
 };

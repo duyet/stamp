@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Header() {
 	return (
-		<header className="border-b border-stone-200/50 bg-cream/80 backdrop-blur-sm sticky top-0 z-50">
+		<header className="border-b border-stone-200/50 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
 			<nav className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
 				<Link href="/" className="flex items-center gap-2">
 					<span className="text-2xl">📮</span>
@@ -16,6 +16,12 @@ export function Header() {
 						className="text-stone-600 hover:text-stone-900 transition"
 					>
 						Create
+					</Link>
+					<Link
+						href="/pricing"
+						className="text-stamp-green font-medium hover:text-stamp-green/80 transition"
+					>
+						Free
 					</Link>
 					<Link
 						href="/collections"

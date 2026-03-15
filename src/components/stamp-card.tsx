@@ -19,10 +19,18 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 			<p className="mt-3 text-sm text-stone-600 text-center italic truncate">
 				{stamp.prompt}
 			</p>
-			<div className="mt-2 flex justify-center">
+			<div className="mt-2 flex items-center justify-center gap-2">
 				<span className="text-xs bg-stone-100 text-stone-500 rounded-full px-2 py-0.5 font-sans capitalize">
 					{stamp.style}
 				</span>
+				<a
+					href={stamp.imageUrl}
+					download={`stamp-${stamp.id}.png`}
+					onClick={(e) => e.stopPropagation()}
+					className="text-xs bg-stamp-navy/10 text-stamp-navy rounded-full px-2 py-0.5 font-sans hover:bg-stamp-navy/20 transition"
+				>
+					Download
+				</a>
 			</div>
 		</>
 	);

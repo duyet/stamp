@@ -6,7 +6,6 @@ import { GenerateForm } from "@/components/generate-form";
 import { StampFan } from "@/components/stamp-fan";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
-import { EXAMPLE_PROMPTS } from "@/lib/stamp-prompts";
 
 interface HomeContentProps {
 	initialStamps: Stamp[];
@@ -93,60 +92,6 @@ export function HomeContent({ initialStamps }: HomeContentProps) {
 					</div>
 				</section>
 			)}
-
-			{/* How it works */}
-			<section className="py-16 border-t border-stone-200/50">
-				<h2 className="text-3xl font-bold text-stone-800 text-center mb-12">
-					How it works
-				</h2>
-				<div className="grid md:grid-cols-3 gap-8 font-sans">
-					<div className="text-center">
-						<div className="text-4xl mb-4">✍️</div>
-						<h3 className="text-lg font-semibold text-stone-800 mb-2">
-							1. Describe
-						</h3>
-						<p className="text-stone-500">
-							Write a prompt describing what you want on your stamp.
-						</p>
-					</div>
-					<div className="text-center">
-						<div className="text-4xl mb-4">🎨</div>
-						<h3 className="text-lg font-semibold text-stone-800 mb-2">
-							2. Generate
-						</h3>
-						<p className="text-stone-500">
-							AI creates a unique stamp illustration in your chosen style.
-						</p>
-					</div>
-					<div className="text-center">
-						<div className="text-4xl mb-4">📬</div>
-						<h3 className="text-lg font-semibold text-stone-800 mb-2">
-							3. Share
-						</h3>
-						<p className="text-stone-500">
-							Download your stamp or share it in the public collection.
-						</p>
-					</div>
-				</div>
-			</section>
-
-			{/* Example prompts */}
-			<section className="py-16 border-t border-stone-200/50">
-				<h2 className="text-3xl font-bold text-stone-800 text-center mb-8">
-					Get inspired
-				</h2>
-				<div className="flex flex-wrap justify-center gap-3 font-sans">
-					{EXAMPLE_PROMPTS.map((prompt) => (
-						<Link
-							key={prompt}
-							href={`/generate?prompt=${encodeURIComponent(prompt)}`}
-							className="px-4 py-2 bg-white/60 text-stone-600 rounded-full border border-stone-200 hover:bg-white hover:border-stone-300 transition text-sm"
-						>
-							{prompt}
-						</Link>
-					))}
-				</div>
-			</section>
 
 			{/* Free tier */}
 			<section className="py-16 border-t border-stone-200/50 text-center font-sans">
