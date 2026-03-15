@@ -32,15 +32,58 @@ bun run setup:remote       # Same for production
 
 ## Autonomous Maintenance
 
-When running via `/loop` or cron, spawn parallel agents. Each iteration: assess → act → verify → ship.
+When running via `/loop` or cron, each iteration: benchmark → assess → act → verify → ship.
+
+### Phase 0: Benchmark
+
+Run ALL of these and record scores to memory/benchmark.md:
+
+```
+# Quality scores (record every iteration)
+LINT_WARNINGS=$(bunx @biomejs/biome check . 2>&1 | grep -c "warning" || echo 0)
+LINT_ERRORS=$(bunx @biomejs/biome check . 2>&1 | grep -c "error" || echo 0)
+TS_ERRORS=$(bunx tsc --noEmit 2>&1 | grep -c "error TS" || echo 0)
+BUILD_OK=$(bun run build 2>&1 && echo "pass" || echo "fail")
+BUNDLE_SIZE=$(du -sh .open-next/worker.js 2>/dev/null | cut -f1 || echo "n/a")
+
+# Test scores
+TEST_PASS=$(bunx vitest run 2>&1 | grep -oP '\d+ passed' || echo "0 passed")
+TEST_FAIL=$(bunx vitest run 2>&1 | grep -oP '\d+ failed' || echo "0 failed")
+
+# Codebase metrics
+FILE_COUNT=$(find src -name '*.ts' -o -name '*.tsx' | wc -l)
+LINE_COUNT=$(find src -name '*.ts' -o -name '*.tsx' -exec cat {} + | wc -l)
+TODO_COUNT=$(grep -r "TODO\|FIXME\|HACK\|XXX" src/ | wc -l || echo 0)
+
+# Deploy health
+SITE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://stamp.duyet.workers.dev)
+SITE_LATENCY=$(curl -s -o /dev/null -w "%{time_total}" https://stamp.duyet.workers.dev)
+
+# Git status
+UNPUSHED=$(git log origin/main..HEAD --oneline | wc -l)
+UNCOMMITTED=$(git status --porcelain | wc -l)
+```
+
+Write to memory/benchmark.md as a table row with timestamp. Compare against previous row.
+"Better software" = all of these trending in the right direction:
+- Lint warnings/errors → 0
+- TS errors → 0
+- Build → always pass
+- Tests passing → increasing, failing → 0
+- TODOs → decreasing
+- Site status → 200, latency → decreasing
+- Bundle size → stable or decreasing
+- Uncommitted/unpushed → 0
 
 ### Phase 1: Assess (spawn 3 agents in parallel)
 
 - **Agent 1 (quality)**: `biome check .` + `tsc --noEmit` + `bun run build`
-- **Agent 2 (deploy)**: `curl -s https://stamp.duyet.workers.dev`, `git status`, check for unpushed commits
+- **Agent 2 (deploy)**: verify live site, `git status`, check for unpushed commits
 - **Agent 3 (review)**: pick one source file, scan for bugs/security/quality issues
 
-### Phase 2: Act (pick highest-priority scenario)
+Compare benchmark scores against previous iteration. Identify what regressed or what's the biggest gap.
+
+### Phase 2: Act (pick highest-priority scenario based on benchmark)
 
 **P0 — Build/Type Errors**
 Fix any build failures, TS errors, or runtime crashes found in Phase 1.
@@ -120,11 +163,21 @@ Review what's been done in memory/maintenance-log.md.
 Update memory/roadmap.md with prioritized next features.
 Identify tech debt and create plan to address it.
 
-### Phase 3: Verify + Ship (parallel agents)
+### Phase 3: Verify + Ship
 
-- **Agent A**: `biome check .` + `tsc --noEmit` + `bun run build` — must all pass
-- **Agent B**: commit (semantic format + co-authors) + push + deploy if needed
-- Append summary to memory/maintenance-log.md
+1. Run `biome check .` + `tsc --noEmit` + `bun run build` — ALL must pass
+2. If all pass AND there are changes:
+   - `git add` changed files (never `-A`, be specific)
+   - Commit with semantic format + both co-authors
+   - `git push`
+   - `bun run deploy`
+   - Verify: `curl -s -o /dev/null -w "%{http_code}" https://stamp.duyet.workers.dev` → 200
+3. If verify fails: revert, log the failure, do NOT push broken code
+4. Re-run benchmark, write new row to memory/benchmark.md
+5. Append iteration summary to memory/maintenance-log.md:
+   - What was done, which priority, what changed
+   - Before/after benchmark scores
+   - Whether deployed
 
 ### Agent dispatch
 
