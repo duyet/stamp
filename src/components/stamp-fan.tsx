@@ -1,78 +1,271 @@
 "use client";
 
 interface StampFanProps {
-	/** Up to 3 image URLs from latest generated stamps */
 	images?: string[];
+	onClickStamp?: (index: number) => void;
 }
 
-/**
- * StampFan — 3 stamps stacked, fan out on hover.
- * Uses real generated stamp images when available, SVG placeholders otherwise.
- */
-export function StampFan({ images = [] }: StampFanProps) {
+export function StampFan({ images = [], onClickStamp }: StampFanProps) {
+	const positions = ["stamp-fan-left", "stamp-fan-center", "stamp-fan-right"];
+	const fallbacks = [
+		<GlassesGirl key="f1" />,
+		<FlowerGirl key="f2" />,
+		<PortraitMan key="f3" />,
+	];
+
 	return (
 		<div className="stamp-fan group cursor-pointer select-none" aria-hidden>
-			<div className="stamp-fan-card stamp-fan-left">
-				<div className="stamp-border">
-					{images[0] ? (
-						<img
-							src={images[0]}
-							alt=""
-							className="w-full h-full object-cover"
-						/>
+			{positions.map((pos, idx) => (
+				<div key={pos} className={`stamp-fan-card ${pos}`}>
+					{images[idx] && onClickStamp ? (
+						<button
+							type="button"
+							className="stamp-border w-full h-full"
+							onClick={() => onClickStamp(idx)}
+						>
+							<img
+								src={images[idx]}
+								alt=""
+								className="w-full h-full object-cover"
+							/>
+						</button>
 					) : (
-						<FallbackStamp color="#c8d6e5" />
+						<div className="stamp-border">
+							{images[idx] ? (
+								<img
+									src={images[idx]}
+									alt=""
+									className="w-full h-full object-cover"
+								/>
+							) : (
+								fallbacks[idx]
+							)}
+						</div>
 					)}
 				</div>
-			</div>
-
-			<div className="stamp-fan-card stamp-fan-center">
-				<div className="stamp-border">
-					{images[1] ? (
-						<img
-							src={images[1]}
-							alt=""
-							className="w-full h-full object-cover"
-						/>
-					) : (
-						<FallbackStamp color="#d4a843" />
-					)}
-				</div>
-			</div>
-
-			<div className="stamp-fan-card stamp-fan-right">
-				<div className="stamp-border">
-					{images[2] ? (
-						<img
-							src={images[2]}
-							alt=""
-							className="w-full h-full object-cover"
-						/>
-					) : (
-						<FallbackStamp color="#e8e0d4" />
-					)}
-				</div>
-			</div>
+			))}
 		</div>
 	);
 }
 
-function FallbackStamp({ color }: { color: string }) {
+function StipplePattern({ id, color }: { id: string; color: string }) {
+	return (
+		<defs>
+			<pattern id={id} width="8" height="8" patternUnits="userSpaceOnUse">
+				<circle cx="2" cy="2" r="0.6" fill={color} opacity="0.4" />
+				<circle cx="6" cy="6" r="0.5" fill={color} opacity="0.3" />
+			</pattern>
+		</defs>
+	);
+}
+
+function GlassesGirl() {
 	return (
 		<svg viewBox="0 0 120 120" className="w-full h-full">
-			<rect width="120" height="120" fill={color} />
-			<ellipse cx="60" cy="55" rx="26" ry="30" fill="#f5e6d3" />
-			<path
-				d="M34 45c0-20 12-30 26-30s26 10 26 30c0 2-1 4-2 6-2-14-10-22-24-22s-22 8-24 22c-1-2-2-4-2-6z"
-				fill="#1a1a2e"
-			/>
-			<circle cx="50" cy="52" r="2.5" fill="#1a1a2e" />
-			<circle cx="70" cy="52" r="2.5" fill="#1a1a2e" />
-			<path
-				d="M54 66 Q60 71 66 66"
-				fill="none"
+			<StipplePattern id="sp1" color="#8da4c0" />
+			<rect width="120" height="120" fill="#d0dcea" />
+			<rect width="120" height="120" fill="url(#sp1)" />
+			<rect x="30" y="88" width="60" height="32" rx="3" fill="#1a1a2e" />
+			<line x1="35" y1="90" x2="55" y2="110" stroke="#333" strokeWidth="0.5" />
+			<line x1="45" y1="90" x2="65" y2="110" stroke="#333" strokeWidth="0.5" />
+			<line x1="55" y1="90" x2="75" y2="110" stroke="#333" strokeWidth="0.5" />
+			<line x1="65" y1="90" x2="85" y2="110" stroke="#333" strokeWidth="0.5" />
+			<rect x="52" y="82" width="16" height="10" fill="#f0dcc8" />
+			<ellipse
+				cx="60"
+				cy="56"
+				rx="27"
+				ry="30"
+				fill="#f0dcc8"
 				stroke="#1a1a2e"
 				strokeWidth="1.5"
+			/>
+			<path
+				d="M33 50c0-22 12-34 27-34s27 12 27 34c0 2-1 4-2 5-3-16-12-24-25-24s-22 8-25 24c-1-1-2-3-2-5z"
+				fill="#1a1a2e"
+			/>
+			<rect x="32" y="48" width="7" height="35" rx="3" fill="#1a1a2e" />
+			<rect x="81" y="48" width="7" height="35" rx="3" fill="#1a1a2e" />
+			<circle
+				cx="48"
+				cy="54"
+				r="9"
+				fill="none"
+				stroke="#1a1a2e"
+				strokeWidth="2"
+			/>
+			<circle
+				cx="72"
+				cy="54"
+				r="9"
+				fill="none"
+				stroke="#1a1a2e"
+				strokeWidth="2"
+			/>
+			<line x1="57" y1="54" x2="63" y2="54" stroke="#1a1a2e" strokeWidth="2" />
+			<circle cx="48" cy="55" r="2.5" fill="#1a1a2e" />
+			<circle cx="72" cy="55" r="2.5" fill="#1a1a2e" />
+			<circle cx="38" cy="64" r="5" fill="#e07c6a" opacity="0.5" />
+			<circle cx="82" cy="64" r="5" fill="#e07c6a" opacity="0.5" />
+			<path
+				d="M55 70 Q60 74 65 70"
+				fill="none"
+				stroke="#1a1a2e"
+				strokeWidth="1.2"
+			/>
+			<circle cx="18" cy="100" r="6" fill="#4a6fa5" opacity="0.6" />
+			<circle cx="18" cy="100" r="2.5" fill="#d4a843" />
+			<circle cx="102" cy="100" r="6" fill="#4a6fa5" opacity="0.6" />
+			<circle cx="102" cy="100" r="2.5" fill="#d4a843" />
+			<ellipse
+				cx="12"
+				cy="108"
+				rx="4"
+				ry="2"
+				fill="#6b8f71"
+				opacity="0.5"
+				transform="rotate(-30 12 108)"
+			/>
+			<ellipse
+				cx="108"
+				cy="108"
+				rx="4"
+				ry="2"
+				fill="#6b8f71"
+				opacity="0.5"
+				transform="rotate(30 108 108)"
+			/>
+		</svg>
+	);
+}
+
+function FlowerGirl() {
+	return (
+		<svg viewBox="0 0 120 120" className="w-full h-full">
+			<StipplePattern id="sp2" color="#b88c2e" />
+			<rect width="120" height="120" fill="#d4a843" />
+			<rect width="120" height="120" fill="url(#sp2)" />
+			<rect x="32" y="90" width="56" height="30" rx="4" fill="#1a1a2e" />
+			<rect x="52" y="84" width="16" height="10" fill="#f0dcc8" />
+			<ellipse
+				cx="60"
+				cy="55"
+				rx="25"
+				ry="30"
+				fill="#f0dcc8"
+				stroke="#1a1a2e"
+				strokeWidth="1.5"
+			/>
+			<path
+				d="M35 48c0-20 11-32 25-32s25 12 25 32c0 3-1 5-2 7l-4-1c0-16-8-26-19-26s-19 10-19 26l-4 1c-1-2-2-4-2-7z"
+				fill="#1a1a2e"
+			/>
+			<rect x="34" y="46" width="9" height="42" rx="4" fill="#1a1a2e" />
+			<rect x="77" y="46" width="9" height="42" rx="4" fill="#1a1a2e" />
+			<circle cx="50" cy="54" r="2.5" fill="#1a1a2e" />
+			<circle cx="70" cy="54" r="2.5" fill="#1a1a2e" />
+			<line
+				x1="45"
+				y1="47"
+				x2="55"
+				y2="48"
+				stroke="#1a1a2e"
+				strokeWidth="1.2"
+			/>
+			<line
+				x1="65"
+				y1="48"
+				x2="75"
+				y2="47"
+				stroke="#1a1a2e"
+				strokeWidth="1.2"
+			/>
+			<path
+				d="M54 68 Q60 72 66 68"
+				fill="none"
+				stroke="#1a1a2e"
+				strokeWidth="1.2"
+			/>
+			<g transform="translate(16,12)">
+				<circle cx="0" cy="0" r="5" fill="#f0dcc8" opacity="0.8" />
+				<circle cx="0" cy="-5" r="3" fill="#f0dcc8" opacity="0.6" />
+				<circle cx="4" cy="-2" r="3" fill="#f0dcc8" opacity="0.6" />
+				<circle cx="0" cy="0" r="2" fill="#d4a843" />
+			</g>
+			<g transform="translate(100,16)">
+				<circle cx="0" cy="0" r="4" fill="#f0dcc8" opacity="0.7" />
+				<circle cx="3" cy="-3" r="3" fill="#f0dcc8" opacity="0.5" />
+				<circle cx="0" cy="0" r="1.5" fill="#d4a843" />
+			</g>
+		</svg>
+	);
+}
+
+function PortraitMan() {
+	return (
+		<svg viewBox="0 0 120 120" className="w-full h-full">
+			<StipplePattern id="sp3" color="#b8ad9c" />
+			<rect width="120" height="120" fill="#e8e0d4" />
+			<rect width="120" height="120" fill="url(#sp3)" />
+			<rect
+				x="0"
+				y="85"
+				width="120"
+				height="35"
+				fill="#4a6fa5"
+				opacity="0.25"
+			/>
+			<path
+				d="M30 95 Q40 85 60 82 Q80 85 90 95 L90 120 L30 120 Z"
+				fill="#1a1a2e"
+			/>
+			<path
+				d="M48 88 L60 82 L72 88"
+				fill="none"
+				stroke="#e8e0d4"
+				strokeWidth="1"
+			/>
+			<ellipse
+				cx="60"
+				cy="52"
+				rx="24"
+				ry="28"
+				fill="#f0dcc8"
+				stroke="#1a1a2e"
+				strokeWidth="1.5"
+			/>
+			<path
+				d="M36 42c0-16 10-26 24-26s24 10 24 26c0 2-1 3-1 5-2-11-10-18-23-18s-21 7-23 18c0-2-1-3-1-5z"
+				fill="#1a1a2e"
+			/>
+			<ellipse cx="50" cy="50" rx="3" ry="2.5" fill="#1a1a2e" />
+			<ellipse cx="70" cy="50" rx="3" ry="2.5" fill="#1a1a2e" />
+			<path
+				d="M60 54 L57 62 L63 62"
+				fill="none"
+				stroke="#1a1a2e"
+				strokeWidth="1"
+			/>
+			<line
+				x1="54"
+				y1="68"
+				x2="66"
+				y2="68"
+				stroke="#1a1a2e"
+				strokeWidth="1.2"
+			/>
+			<rect x="80" y="85" width="14" height="14" rx="2" fill="#d4a843" />
+			<path
+				d="M84 89 Q87 92 90 89"
+				fill="none"
+				stroke="#1a1a2e"
+				strokeWidth="0.8"
+			/>
+			<path
+				d="M84 93 Q87 96 90 93"
+				fill="none"
+				stroke="#1a1a2e"
+				strokeWidth="0.8"
 			/>
 		</svg>
 	);

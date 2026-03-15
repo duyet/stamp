@@ -1,19 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { StampFan } from "@/components/stamp-fan";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
 
-interface HomeContentProps {
-	initialStamps: Stamp[];
-}
-
-export function HomeContent({ initialStamps }: HomeContentProps) {
-	const [recentStamps, setRecentStamps] = useState<Stamp[]>(initialStamps);
+export function HomeContent() {
+	const [recentStamps, setRecentStamps] = useState<Stamp[]>([]);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
+
+	useEffect(() => {
+		async function load() {
+			try {
+				const r = await fetch("/api/stamps?limit=8");
+				const data = (await r.json()) as { stamps?: Stamp[] };
+				setRecentStamps(data.stamps ?? []);
+			} catch {}
+		}
+		load();
+	}, []);
 
 	function handleGenerated(stamp: {
 		id: string;
@@ -39,7 +46,13 @@ export function HomeContent({ initialStamps }: HomeContentProps) {
 			{/* Hero */}
 			<section className="py-16 text-center">
 				<div className="flex justify-center mb-8">
-					<StampFan images={recentStamps.slice(0, 3).map((s) => s.imageUrl)} />
+					<StampFan
+						images={recentStamps.slice(0, 3).map((s) => s.imageUrl)}
+						onClickStamp={(idx) => {
+							const stamp = recentStamps[idx];
+							if (stamp) setSelectedStamp(stamp);
+						}}
+					/>
 				</div>
 
 				<h1
@@ -54,11 +67,9 @@ export function HomeContent({ initialStamps }: HomeContentProps) {
 				</p>
 			</section>
 
-			{/* Generate form — right on the homepage */}
-			<section className="py-10 border-t border-neutral-200">
-				<div className="bg-neutral-50 rounded-xl border border-neutral-200 p-6 max-w-2xl mx-auto">
-					<GenerateForm onGenerated={handleGenerated} />
-				</div>
+			{/* Generate form */}
+			<section className="py-12 border-t border-neutral-200">
+				<GenerateForm onGenerated={handleGenerated} />
 			</section>
 
 			{/* Latest stamps — updates in real-time when new stamps are generated */}
