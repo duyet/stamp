@@ -8,6 +8,7 @@ AI-powered postage stamp generator. Create unique vintage-style stamp illustrati
 
 - Generate stamps from text prompts
 - Multiple styles: Vintage, Modern, Botanical, Pop Art, Japanese Woodblock
+- Auto prompt enhancement via LLM
 - Public collection gallery
 - Download and share stamps
 - 5 free generations per day (no login required)
@@ -17,7 +18,7 @@ AI-powered postage stamp generator. Create unique vintage-style stamp illustrati
 - Next.js 16 + Cloudflare Workers
 - D1 (SQLite) + Drizzle ORM
 - R2 for image storage
-- Gemini 2.0 Flash for image generation
+- CF Workers AI (Flux Schnell + Llama 3.1 8B)
 - Tailwind CSS v4 + Biome
 
 ## Getting Started
@@ -26,16 +27,8 @@ AI-powered postage stamp generator. Create unique vintage-style stamp illustrati
 # Install
 bun install
 
-# Set up environment
-cp .env.example .env.local
-# Add your GEMINI_API_KEY
-
-# Create D1 database
-wrangler d1 create stamp-db
-# Update wrangler.jsonc with database_id
-
-# Run migrations
-bun run db:migrate:local
+# Setup D1 + R2 + migrations
+bun run setup
 
 # Start dev server
 bun dev
@@ -44,6 +37,10 @@ bun dev
 ## Deploy
 
 ```bash
+# Setup remote resources (first time)
+bun run setup:remote
+
+# Build + deploy
 bun run deploy
 ```
 

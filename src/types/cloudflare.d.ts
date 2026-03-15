@@ -5,7 +5,6 @@ declare global {
 		DB: D1Database;
 		STAMPS_BUCKET: R2Bucket;
 		AI: Ai;
-		GEMINI_API_KEY?: string;
 	}
 }
 

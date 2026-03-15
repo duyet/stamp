@@ -12,7 +12,7 @@ AI-powered postage stamp generator. Users describe or upload images, AI generate
 - **Runtime**: Cloudflare Workers via @opennextjs/cloudflare
 - **Database**: Cloudflare D1 (SQLite at edge) with Drizzle ORM
 - **Storage**: Cloudflare R2 (stamp images)
-- **AI**: CF Workers AI Flux Schnell (free) / Imagen 4 Fast (premium)
+- **AI**: CF Workers AI (Flux Schnell for images, Llama 3.1 for prompt enhancement)
 - **Package Manager**: Bun
 - **Linting/Formatting**: Biome
 - **Styling**: Tailwind CSS v4
@@ -61,31 +61,46 @@ Co-Authored-By: duyetbot <bot@duyet.net>
 - Stamps stored in R2, served via `/api/stamps/[id]/image`
 - All stamps optionally public (shown in `/collections`)
 
-## Environment Variables
+## Bindings
 
-- `GEMINI_API_KEY` — (optional) Imagen 4 Fast for premium generation
-- D1, R2, and AI bindings configured in `wrangler.jsonc`
+All configured in `wrangler.jsonc` — no external API keys needed:
+- `DB` — D1 database
+- `STAMPS_BUCKET` — R2 bucket for stamp images
+- `AI` — Workers AI (Flux Schnell + Llama 3.1 8B)
 
 ## Autonomous Maintenance
 
-When running autonomously (via `/loop` or cron), pick ONE action per iteration:
+When running autonomously (via `/loop` or cron), spawn agents in parallel for max throughput.
 
-1. **Lint** — `bunx @biomejs/biome check .` and auto-fix
-2. **Typecheck** — `bunx tsc --noEmit`
-3. **Build** — `bun run build` — fix any failures
-4. **Deploy** — `bun run deploy` — if there are unpushed changes
-5. **Deploy verify** — `curl -s https://stamp.duyet.workers.dev` — confirm live
-6. **Code review** — read a source file, check for bugs/security/quality issues
-7. **Test** — add tests for untested code paths (API routes, lib functions)
-8. **UI polish** — improve landing page, responsive layout, loading states, animations, accessibility
-9. **Refactor** — extract duplicated patterns, simplify complex functions
-10. **Dependency update** — check for outdated/vulnerable deps
-11. **Docs sync** — ensure CLAUDE.md, README match actual code
-12. **Plan next** — create tasks for upcoming features in memory/roadmap.md
+### Phase 1: Assess (parallel agents)
+
+Spawn these agents simultaneously:
+- **Agent 1 (quality)**: `biome check .` + `tsc --noEmit` + `bun run build` — report issues
+- **Agent 2 (deploy check)**: verify https://stamp.duyet.workers.dev is live, check git status for unpushed changes
+- **Agent 3 (code review)**: pick one source file, review for bugs/security/quality
+
+### Phase 2: Act (pick highest-priority issue from Phase 1)
+
+P0 — Fix broken: build errors, type errors, runtime crashes
+P1 — Deploy: if unpushed changes exist, build + deploy
+P2 — Quality: fix lint warnings, improve error handling, types
+P3 — Testing: add tests for untested paths (spawn junior-engineer agent)
+P4 — UX/UI: improve design, responsiveness, accessibility (spawn senior-engineer agent)
+P5 — Features: implement from memory/roadmap.md (spawn senior-engineer in worktree)
+P6 — Refactor: simplify, extract utils (spawn code-simplifier agent)
+P7 — Docs: sync CLAUDE.md + README with reality
+P8 — Plan: update memory/roadmap.md with next features
+
+### Phase 3: Verify + Ship (parallel)
+
+- **Agent A**: `biome check .` + `tsc --noEmit` + `bun run build`
+- **Agent B**: commit + push + deploy (if needed)
+- Log what was done to memory/maintenance-log.md
 
 Rules:
-- Always commit + push after making changes
-- Run lint + typecheck before committing
-- Never skip build verification
-- One focused action per iteration, not everything at once
-- Log what was done to memory/maintenance-log.md
+- Use `team-agents:leader` for complex multi-file tasks
+- Use `team-agents:junior-engineer` for simple lint/format fixes
+- Use `team-agents:senior-engineer` for features/refactors
+- Use `feature-dev:code-reviewer` for code review
+- Always spawn agents with `run_in_background: true` when independent
+- One iteration = assess → act → verify → ship

@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { getEnv } from "@/lib/env";
-import { generateStampFree, generateStampPremium } from "@/lib/generate-stamp";
+import { generateStamp } from "@/lib/generate-stamp";
 import { checkRateLimit } from "@/lib/rate-limit";
 import type { StampStyle } from "@/lib/stamp-prompts";
 
@@ -47,35 +47,19 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Generate stamp: free (CF AI) or premium (Imagen 4)
-		const geminiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 		const ai = env.AI;
-
-		let imageData: Uint8Array;
-		let mimeType: string;
-		let enhancedPrompt: string;
-
-		if (geminiKey) {
-			// Premium: Imagen 4 Fast with LLM prompt enhancement
-			({ imageData, mimeType, enhancedPrompt } = await generateStampPremium(
-				geminiKey,
-				prompt,
-				style,
-				ai,
-			));
-		} else if (ai) {
-			// Free: CF Workers AI (Flux Schnell + LLM enhancement)
-			({ imageData, mimeType, enhancedPrompt } = await generateStampFree(
-				ai,
-				prompt,
-				style,
-			));
-		} else {
+		if (!ai) {
 			return NextResponse.json(
-				{ error: "No image generation provider configured." },
+				{ error: "AI binding not configured." },
 				{ status: 503 },
 			);
 		}
+
+		const { imageData, mimeType, enhancedPrompt } = await generateStamp(
+			ai,
+			prompt,
+			style,
+		);
 
 		// Upload to R2
 		const stampId = nanoid(12);
