@@ -1,8 +1,8 @@
-# stamp.builder
+# stamp.builders
 
 AI-powered postage stamp generator. Create unique vintage-style stamp illustrations from text prompts or photos.
 
-**Live**: [stamp.builder](https://stamp.builder)
+**Live**: [stamp.builders](https://stamp.builders)
 
 ## Features
 

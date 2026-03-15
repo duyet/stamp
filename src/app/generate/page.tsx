@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GenerateForm } from "@/components/generate-form";
 
 export const metadata: Metadata = {
-	title: "Create a Stamp — stamp.builder",
+	title: "Create a Stamp — stamp.builders",
 	description: "Generate a unique AI-powered postage stamp illustration.",
 };
 

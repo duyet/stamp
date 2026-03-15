@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-	--color-cream: #f5f0e8;
-	--color-stamp-blue: #4a6fa5;
-	--color-stamp-navy: #2c3e6b;
-	--color-stamp-yellow: #d4a843;
-	--color-stamp-red: #c45d4e;
-	--color-stamp-green: #6b8f71;
-	--font-serif: "Georgia", "Times New Roman", serif;
+	/* Stamp identity — ink black + deep indigo anchor */
+	--color-cream: #f8f8f6;
+	--color-stamp-blue: #2563eb;
+	--color-stamp-navy: #0f172a;
+	--color-stamp-yellow: #eab308;
+	--color-stamp-red: #dc2626;
+	--color-stamp-green: #16a34a;
+	--font-serif: "Palatino Linotype", "Palatino", "Book Antiqua", "Georgia",
+		serif;
 
-	/* Design system palette */
+	/* System */
 	--color-background: #ffffff;
-	--color-text-primary: #0a0a0a;
-	--color-text-secondary: #737373;
-	--color-text-muted: #a3a3a3;
-	--color-border: #e5e5e5;
+	--color-text-primary: #09090b;
+	--color-text-secondary: #52525b;
+	--color-text-muted: #a1a1aa;
+	--color-border: #e4e4e7;
 	--color-surface: #fafafa;
 }
 

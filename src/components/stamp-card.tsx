@@ -1,3 +1,5 @@
+"use client";
+
 import type { Stamp } from "@/db/schema";
 
 interface StampCardProps {

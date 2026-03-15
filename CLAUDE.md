@@ -1,6 +1,6 @@
-# stamp.builder
+# stamp.builders
 
-- **Domain**: https://stamp.builder
+- **Domain**: https://stamp.builders
 - **Workers**: https://stamp.duyet.workers.dev
 - **Repo**: git@github.com:duyet/stamp.git
 

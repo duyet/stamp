@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# stamp.builder — Setup Cloudflare resources (D1 + R2) and apply migrations
+# stamp.builders — Setup Cloudflare resources (D1 + R2) and apply migrations
 # Usage: ./scripts/setup.sh [--remote]
 
 WRANGLER="bunx wrangler"
@@ -14,7 +14,7 @@ if [[ "${1:-}" == "--remote" ]]; then
   REMOTE=true
 fi
 
-echo "==> Setting up stamp.builder Cloudflare resources..."
+echo "==> Setting up stamp.builders Cloudflare resources..."
 echo ""
 
 # --- D1 Database ---

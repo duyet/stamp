@@ -15,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "stamp.builder — AI Stamp Generator",
+	title: "stamp.builders — AI Stamp Generator",
 	description:
 		"Create unique postage stamps with AI. Upload photos or describe your vision, and get beautiful vintage-style stamp illustrations.",
 	openGraph: {
-		title: "stamp.builder",
+		title: "stamp.builders",
 		description: "Create unique postage stamps with AI",
-		url: "https://stamp.builder",
+		url: "https://stamp.builders",
 	},
 };
 

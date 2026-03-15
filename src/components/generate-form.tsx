@@ -27,7 +27,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		remaining: number;
 	} | null>(null);
 
-	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		if (!prompt.trim()) return;
 
@@ -81,8 +81,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						onChange={(e) => setPrompt(e.target.value)}
 						placeholder="A girl with glasses and black hair, holding flowers..."
 						maxLength={500}
-						rows={3}
-						className="w-full px-4 py-3 rounded-lg border border-neutral-200 bg-white text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 outline-none transition resize-none"
+						rows={4}
+						className="w-full px-5 py-4 rounded-xl border border-neutral-200 bg-white text-neutral-800 text-base placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 outline-none transition resize-none leading-relaxed"
 					/>
 					<p className="text-xs text-neutral-400 mt-1">
 						{prompt.length}/500 characters

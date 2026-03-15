@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-	title: "Pricing — stamp.builder",
+	title: "Pricing — stamp.builders",
 	description:
 		"Generate AI stamps for free. 5 stamps per day, all styles included.",
 	openGraph: {
-		title: "Pricing — stamp.builder",
+		title: "Pricing — stamp.builders",
 		description: "Generate AI stamps for free. 5 stamps per day.",
-		url: "https://stamp.builder/pricing",
+		url: "https://stamp.builders/pricing",
 	},
 };
 
@@ -124,7 +124,7 @@ export default function PricingPage() {
 			<p className="text-center text-neutral-400 text-sm mt-10">
 				Questions?{" "}
 				<a
-					href="mailto:hello@stamp.builder"
+					href="mailto:hello@stamp.builders"
 					className="text-neutral-600 hover:text-neutral-900 transition underline underline-offset-2"
 				>
 					Get in touch

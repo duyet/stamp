@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# stamp.builder — Build, migrate, and deploy
+# stamp.builders — Build, migrate, and deploy
 # Usage: ./scripts/deploy.sh
 
-echo "==> Deploying stamp.builder..."
+echo "==> Deploying stamp.builders..."
 echo ""
 
 # 1. Remote migrations
