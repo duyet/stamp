@@ -1,13 +1,35 @@
+import { desc, eq } from "drizzle-orm";
 import Link from "next/link";
+import { StampCard } from "@/components/stamp-card";
 import { StampFan } from "@/components/stamp-fan";
+import type { Stamp } from "@/db/schema";
+import { stamps } from "@/db/schema";
 import { EXAMPLE_PROMPTS } from "@/lib/stamp-prompts";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+async function getLatestStamps(): Promise<Stamp[]> {
+	try {
+		const { getDb } = await import("@/db");
+		const db = getDb();
+		return await db
+			.select()
+			.from(stamps)
+			.where(eq(stamps.isPublic, true))
+			.orderBy(desc(stamps.createdAt))
+			.limit(8);
+	} catch {
+		return [];
+	}
+}
+
+export default async function HomePage() {
+	const latestStamps = await getLatestStamps();
+
 	return (
 		<div className="max-w-5xl mx-auto px-4">
 			{/* Hero */}
 			<section className="py-20 text-center">
-				{/* Stamp fan — stacked, expands on hover */}
 				<div className="flex justify-center mb-10">
 					<StampFan />
 				</div>
@@ -34,6 +56,26 @@ export default function HomePage() {
 					</Link>
 				</div>
 			</section>
+
+			{/* Latest stamps */}
+			{latestStamps.length > 0 && (
+				<section className="py-16 border-t border-stone-200/50">
+					<div className="flex items-center justify-between mb-8">
+						<h2 className="text-3xl font-bold text-stone-800">Latest stamps</h2>
+						<Link
+							href="/collections"
+							className="text-sm text-stamp-blue hover:underline font-sans"
+						>
+							View all
+						</Link>
+					</div>
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+						{latestStamps.map((stamp) => (
+							<StampCard key={stamp.id} stamp={stamp} />
+						))}
+					</div>
+				</section>
+			)}
 
 			{/* How it works */}
 			<section className="py-16 border-t border-stone-200/50">
