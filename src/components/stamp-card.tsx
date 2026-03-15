@@ -2,11 +2,12 @@ import type { Stamp } from "@/db/schema";
 
 interface StampCardProps {
 	stamp: Stamp;
+	onClick?: () => void;
 }
 
-export function StampCard({ stamp }: StampCardProps) {
-	return (
-		<div className="group relative">
+export function StampCard({ stamp, onClick }: StampCardProps) {
+	const content = (
+		<>
 			<div className="stamp-border transition-transform duration-300 group-hover:scale-105">
 				<img
 					src={stamp.imageUrl}
@@ -18,6 +19,20 @@ export function StampCard({ stamp }: StampCardProps) {
 			<p className="mt-3 text-sm text-stone-600 text-center italic truncate">
 				{stamp.prompt}
 			</p>
-		</div>
+		</>
 	);
+
+	if (onClick) {
+		return (
+			<button
+				type="button"
+				className="group relative text-left cursor-pointer"
+				onClick={onClick}
+			>
+				{content}
+			</button>
+		);
+	}
+
+	return <div className="group relative">{content}</div>;
 }
