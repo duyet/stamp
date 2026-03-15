@@ -2,13 +2,17 @@
 
 AI-powered postage stamp generator. Users describe or upload images, AI generates vintage-style stamp illustrations.
 
+- **Domain**: https://stamp.builder
+- **Workers URL**: https://stamp.duyet.workers.dev
+- **Repo**: git@github.com:duyet/stamp.git
+
 ## Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Runtime**: Cloudflare Workers via @opennextjs/cloudflare
 - **Database**: Cloudflare D1 (SQLite at edge) with Drizzle ORM
 - **Storage**: Cloudflare R2 (stamp images)
-- **AI**: Google Gemini 2.0 Flash (image generation)
+- **AI**: CF Workers AI Flux Schnell (free) / Imagen 4 Fast (premium)
 - **Package Manager**: Bun
 - **Linting/Formatting**: Biome
 - **Styling**: Tailwind CSS v4
@@ -59,5 +63,29 @@ Co-Authored-By: duyetbot <bot@duyet.net>
 
 ## Environment Variables
 
-- `GEMINI_API_KEY` — Google Gemini API key for image generation
-- D1 and R2 bindings configured in `wrangler.jsonc`
+- `GEMINI_API_KEY` — (optional) Imagen 4 Fast for premium generation
+- D1, R2, and AI bindings configured in `wrangler.jsonc`
+
+## Autonomous Maintenance
+
+When running autonomously (via `/loop` or cron), pick ONE action per iteration:
+
+1. **Lint** — `bunx @biomejs/biome check .` and auto-fix
+2. **Typecheck** — `bunx tsc --noEmit`
+3. **Build** — `bun run build` — fix any failures
+4. **Deploy** — `bun run deploy` — if there are unpushed changes
+5. **Deploy verify** — `curl -s https://stamp.duyet.workers.dev` — confirm live
+6. **Code review** — read a source file, check for bugs/security/quality issues
+7. **Test** — add tests for untested code paths (API routes, lib functions)
+8. **UI polish** — improve landing page, responsive layout, loading states, animations, accessibility
+9. **Refactor** — extract duplicated patterns, simplify complex functions
+10. **Dependency update** — check for outdated/vulnerable deps
+11. **Docs sync** — ensure CLAUDE.md, README match actual code
+12. **Plan next** — create tasks for upcoming features in memory/roadmap.md
+
+Rules:
+- Always commit + push after making changes
+- Run lint + typecheck before committing
+- Never skip build verification
+- One focused action per iteration, not everything at once
+- Log what was done to memory/maintenance-log.md
