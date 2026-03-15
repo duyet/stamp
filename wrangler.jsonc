@@ -21,6 +21,11 @@
 		}
 	],
 
+	// Workers AI (free image generation + prompt enhancement)
+	"ai": {
+		"binding": "AI"
+	},
+
 	// Observability
 	"observability": {
 		"enabled": true

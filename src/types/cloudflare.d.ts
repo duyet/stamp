@@ -4,7 +4,8 @@ declare global {
 	interface CloudflareEnv {
 		DB: D1Database;
 		STAMPS_BUCKET: R2Bucket;
-		GEMINI_API_KEY: string;
+		AI: Ai;
+		GEMINI_API_KEY?: string;
 	}
 }
 

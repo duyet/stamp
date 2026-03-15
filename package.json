@@ -14,7 +14,9 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate:local": "wrangler d1 migrations apply stamp-db --local",
 		"db:migrate:remote": "wrangler d1 migrations apply stamp-db --remote",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"setup": "./scripts/setup.sh",
+		"setup:remote": "./scripts/setup.sh --remote"
 	},
 	"dependencies": {
 		"@opennextjs/cloudflare": "^1.17.1",
