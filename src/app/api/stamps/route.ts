@@ -1,15 +1,11 @@
 import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { createDb } from "@/db";
+import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
-import { getEnv } from "@/lib/env";
-
-export const runtime = "edge";
 
 export async function GET(request: Request) {
 	try {
-		const env = await getEnv();
-		const db = createDb(env.DB as unknown as D1Database);
+		const db = getDb();
 
 		const url = new URL(request.url);
 		const limit = Math.min(Number(url.searchParams.get("limit") || 50), 100);

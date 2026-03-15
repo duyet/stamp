@@ -17,7 +17,6 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"dependencies": {
-		"@google/genai": "^1.45.0",
 		"@opennextjs/cloudflare": "^1.17.1",
 		"drizzle-orm": "^0.45.1",
 		"nanoid": "^5.1.6",

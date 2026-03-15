@@ -1,6 +1,8 @@
+import { desc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import { StampCard } from "@/components/stamp-card";
 import type { Stamp } from "@/db/schema";
+import { stamps } from "@/db/schema";
 
 export const metadata: Metadata = {
 	title: "Collections — stamp.builder",
@@ -9,15 +11,8 @@ export const metadata: Metadata = {
 
 async function getStamps(): Promise<Stamp[]> {
 	try {
-		// In production, this fetches from D1 via the API
-		// During build/dev without D1, return empty
-		const { getEnv } = await import("@/lib/env");
-		const env = await getEnv();
-		const { createDb } = await import("@/db");
-		const { stamps } = await import("@/db/schema");
-		const { desc, eq } = await import("drizzle-orm");
-
-		const db = createDb(env.DB as unknown as D1Database);
+		const { getDb } = await import("@/db");
+		const db = getDb();
 		return await db
 			.select()
 			.from(stamps)

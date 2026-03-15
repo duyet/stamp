@@ -1,26 +1,21 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getEnv } from "@/lib/env";
 
-export const runtime = "edge";
-
 export async function GET(
 	_request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
 		const { id } = await params;
-		const env = await getEnv();
+		const env = getEnv();
 		const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
 
 		// Try both png and jpg
-		const pngKey = `stamps/${id}.png`;
-		const jpgKey = `stamps/${id}.jpg`;
-
-		let object = await bucket.get(pngKey);
+		let object = await bucket.get(`stamps/${id}.png`);
 		let contentType = "image/png";
 
 		if (!object) {
-			object = await bucket.get(jpgKey);
+			object = await bucket.get(`stamps/${id}.jpg`);
 			contentType = "image/jpeg";
 		}
 

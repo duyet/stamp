@@ -1,26 +1,22 @@
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
-import { createDb } from "@/db";
+import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
 import { checkRateLimit } from "@/lib/rate-limit";
 import type { StampStyle } from "@/lib/stamp-prompts";
 
-export const runtime = "edge";
-
 export async function POST(request: NextRequest) {
 	try {
-		const env = await getEnv();
-		const db = createDb(env.DB as unknown as D1Database);
+		const env = getEnv();
+		const db = getDb();
 
-		// Get user IP for rate limiting
 		const userIp =
 			request.headers.get("cf-connecting-ip") ||
 			request.headers.get("x-forwarded-for") ||
 			"unknown";
 
-		// Check rate limit
 		const { allowed, remaining } = await checkRateLimit(db, userIp);
 		if (!allowed) {
 			return NextResponse.json(
@@ -51,7 +47,6 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Generate the stamp image
 		const geminiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 		if (!geminiKey) {
 			return NextResponse.json(
@@ -75,10 +70,8 @@ export async function POST(request: NextRequest) {
 			httpMetadata: { contentType: mimeType },
 		});
 
-		// The image URL will be served via a custom domain or R2 public URL
 		const imageUrl = `/api/stamps/${stampId}/image`;
 
-		// Save to database
 		await db.insert(stamps).values({
 			id: stampId,
 			prompt,

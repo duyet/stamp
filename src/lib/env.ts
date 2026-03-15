@@ -1,9 +1,10 @@
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+
 /**
  * Get Cloudflare bindings in server components/route handlers.
- * Uses @opennextjs/cloudflare to access D1, R2, etc.
+ * Synchronous for dynamic routes (the common case).
  */
-export async function getEnv(): Promise<CloudflareEnv> {
-	const { getCloudflareContext } = await import("@opennextjs/cloudflare");
-	const { env } = await getCloudflareContext();
+export function getEnv(): CloudflareEnv {
+	const { env } = getCloudflareContext();
 	return env as unknown as CloudflareEnv;
 }
