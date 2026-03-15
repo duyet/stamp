@@ -27,7 +27,6 @@ export function HomeContent() {
 		imageUrl: string;
 		prompt: string;
 	}) {
-		// Prepend newly generated stamp to the list in real-time
 		const newStamp: Stamp = {
 			id: stamp.id,
 			prompt: stamp.prompt,
@@ -42,10 +41,10 @@ export function HomeContent() {
 	}
 
 	return (
-		<div className="max-w-5xl mx-auto px-4">
+		<div className="max-w-5xl mx-auto px-6">
 			{/* Hero */}
-			<section className="py-16 text-center">
-				<div className="flex justify-center mb-8">
+			<section className="pt-16 pb-20 text-center">
+				<div className="flex justify-center mb-10">
 					<StampFan
 						images={recentStamps.slice(0, 3).map((s) => s.imageUrl)}
 						onClickStamp={(idx) => {
@@ -56,65 +55,73 @@ export function HomeContent() {
 				</div>
 
 				<h1
-					className="text-4xl md:text-6xl font-bold text-neutral-900 tracking-tight"
-					style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+					className="text-5xl md:text-7xl font-bold text-stamp-navy tracking-tight"
+					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders
 				</h1>
-				<p className="mt-4 text-base text-neutral-500 max-w-lg mx-auto leading-relaxed">
-					Create unique postage stamps with AI. Describe your vision and watch
-					it transform into a beautiful vintage stamp.
+				<p
+					className="mt-6 text-lg text-neutral-400 max-w-md mx-auto leading-relaxed"
+					style={{ fontFamily: "var(--font-stamp)" }}
+				>
+					Create vintage postage stamps with AI.
+					<br />
+					Describe your vision. We do the rest.
 				</p>
 			</section>
 
 			{/* Generate form */}
-			<section className="py-12 border-t border-neutral-200">
+			<section className="pb-20">
 				<GenerateForm onGenerated={handleGenerated} />
 			</section>
 
-			{/* Latest stamps — updates in real-time when new stamps are generated */}
+			{/* Latest stamps */}
 			{recentStamps.length > 0 && (
-				<section className="py-12 border-t border-neutral-200">
-					<div className="flex items-center justify-between mb-8">
-						<h2 className="text-xl font-semibold text-neutral-900">
+				<section className="py-20">
+					<div className="flex items-baseline justify-between mb-10">
+						<h2
+							className="text-2xl font-semibold text-stamp-navy"
+							style={{ fontFamily: "var(--font-stamp)" }}
+						>
 							Latest stamps
 						</h2>
 						<Link
 							href="/collections"
-							className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+							className="text-sm text-neutral-400 hover:text-stamp-navy transition-colors"
 						>
-							View all
+							View all &rarr;
 						</Link>
 					</div>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-8">
 						{recentStamps.map((stamp) => (
 							<button
 								key={stamp.id}
 								type="button"
-								className="group relative text-left cursor-pointer rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-300 transition-colors"
+								className="group text-left cursor-pointer hover:opacity-80 transition"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<img
 									src={stamp.imageUrl}
 									alt={stamp.prompt}
-									className="w-full aspect-square object-cover"
+									className="w-full aspect-square object-cover rounded-xl"
 									loading="lazy"
 								/>
-								<div className="p-3">
-									<p className="text-sm text-neutral-600 truncate">
-										{stamp.prompt}
-									</p>
-								</div>
+								<p className="mt-3 text-xs text-neutral-400 truncate">
+									{stamp.prompt}
+								</p>
 							</button>
 						))}
 					</div>
 				</section>
 			)}
 
-			{/* Free tier */}
-			<section className="py-12 border-t border-neutral-200 text-center">
-				<p className="text-sm text-neutral-400">
-					Generate up to 5 stamps per day for free. No account needed.
+			{/* Free tier note */}
+			<section className="py-16 text-center">
+				<p
+					className="text-sm text-neutral-400"
+					style={{ fontFamily: "var(--font-stamp)" }}
+				>
+					5 free stamps per day. No account needed.
 				</p>
 			</section>
 

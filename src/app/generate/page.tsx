@@ -8,10 +8,15 @@ export const metadata: Metadata = {
 
 export default function GeneratePage() {
 	return (
-		<div className="max-w-5xl mx-auto px-4 py-12">
-			<div className="text-center mb-10">
-				<h1 className="text-4xl font-bold text-stone-800">Create your stamp</h1>
-				<p className="mt-2 text-stone-500 font-sans">
+		<div className="max-w-5xl mx-auto px-6 py-20">
+			<div className="text-center mb-12">
+				<h1
+					className="text-4xl font-bold text-stamp-navy tracking-tight"
+					style={{ fontFamily: "var(--font-stamp)" }}
+				>
+					Create your stamp
+				</h1>
+				<p className="mt-3 text-neutral-400">
 					Describe what you want, pick a style, and let AI do the rest.
 				</p>
 			</div>

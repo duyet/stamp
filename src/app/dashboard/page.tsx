@@ -7,10 +7,15 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
 	return (
-		<div className="max-w-4xl mx-auto px-4 py-12">
-			<div className="mb-10">
-				<h1 className="text-2xl font-semibold text-neutral-900">Dashboard</h1>
-				<p className="text-neutral-500 mt-1 text-sm">
+		<div className="max-w-4xl mx-auto px-6 py-20">
+			<div className="mb-12">
+				<h1
+					className="text-2xl font-semibold text-stamp-navy"
+					style={{ fontFamily: "var(--font-stamp)" }}
+				>
+					Dashboard
+				</h1>
+				<p className="text-neutral-400 mt-2 text-sm">
 					stamp.builders — internal analytics
 				</p>
 			</div>
