@@ -39,14 +39,14 @@ export function HomeContent({ initialStamps }: HomeContentProps) {
 			{/* Hero */}
 			<section className="py-16 text-center">
 				<div className="flex justify-center mb-8">
-					<StampFan />
+					<StampFan images={recentStamps.slice(0, 3).map((s) => s.imageUrl)} />
 				</div>
 
 				<h1
 					className="text-4xl md:text-6xl font-bold text-neutral-900 tracking-tight"
 					style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
 				>
-					Stamps, builder
+					Stamps, builders
 				</h1>
 				<p className="mt-4 text-base text-neutral-500 max-w-lg mx-auto leading-relaxed">
 					Create unique postage stamps with AI. Describe your vision and watch
