@@ -31,8 +31,8 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 			aria-modal="true"
 			aria-label={`Stamp: ${stamp.prompt}`}
 		>
-			{/* Blurred backdrop */}
-			<div className="absolute inset-0 bg-white/70 backdrop-blur-xl" />
+			{/* Backdrop */}
+			<div className="absolute inset-0 bg-white/95 backdrop-blur-2xl" />
 
 			{/* Stamp content */}
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: modal content area needs click stop */}
@@ -45,7 +45,7 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 				<button
 					type="button"
 					onClick={onClose}
-					className="absolute -top-3 -right-3 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-stone-500 hover:text-stone-800 transition font-sans text-xl"
+					className="absolute -top-3 -right-3 z-10 w-9 h-9 bg-white rounded-full border border-neutral-200 flex items-center justify-center text-neutral-400 hover:text-neutral-900 hover:border-neutral-300 transition text-lg leading-none"
 					aria-label="Close"
 				>
 					&times;
@@ -61,10 +61,10 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 				</div>
 
 				{/* Stamp info */}
-				<div className="mt-6 text-center font-sans">
-					<p className="text-stone-700 italic text-lg">{stamp.prompt}</p>
+				<div className="mt-6 text-center">
+					<p className="text-neutral-700 text-base">{stamp.prompt}</p>
 					{stamp.style && (
-						<p className="text-stone-400 text-sm mt-1 capitalize">
+						<p className="text-neutral-400 text-xs mt-1 capitalize">
 							{stamp.style}
 						</p>
 					)}
@@ -74,7 +74,7 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 						<a
 							href={stamp.imageUrl}
 							download={`stamp-${stamp.id}.png`}
-							className="px-5 py-2 bg-stamp-navy text-white rounded-lg hover:bg-stamp-blue transition text-sm"
+							className="px-5 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition text-sm"
 						>
 							Download
 						</a>
@@ -85,7 +85,7 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 									`${window.location.origin}${stamp.imageUrl}`,
 								);
 							}}
-							className="px-5 py-2 bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300 transition text-sm"
+							className="px-5 py-2 bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 transition text-sm"
 						>
 							Copy Link
 						</button>

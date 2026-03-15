@@ -8,29 +8,27 @@ interface StampCardProps {
 export function StampCard({ stamp, onClick }: StampCardProps) {
 	const content = (
 		<>
-			<div className="stamp-border transition-transform duration-300 group-hover:scale-105">
-				<img
-					src={stamp.imageUrl}
-					alt={stamp.prompt}
-					className="w-full aspect-square object-cover"
-					loading="lazy"
-				/>
-			</div>
-			<p className="mt-3 text-sm text-stone-600 text-center italic truncate">
-				{stamp.prompt}
-			</p>
-			<div className="mt-2 flex items-center justify-center gap-2">
-				<span className="text-xs bg-stone-100 text-stone-500 rounded-full px-2 py-0.5 font-sans capitalize">
-					{stamp.style}
-				</span>
-				<a
-					href={stamp.imageUrl}
-					download={`stamp-${stamp.id}.png`}
-					onClick={(e) => e.stopPropagation()}
-					className="text-xs bg-stamp-navy/10 text-stamp-navy rounded-full px-2 py-0.5 font-sans hover:bg-stamp-navy/20 transition"
-				>
-					Download
-				</a>
+			<img
+				src={stamp.imageUrl}
+				alt={stamp.prompt}
+				className="w-full aspect-square object-cover"
+				loading="lazy"
+			/>
+			<div className="p-3">
+				<p className="text-sm text-neutral-600 truncate">{stamp.prompt}</p>
+				<div className="mt-2 flex items-center justify-between">
+					<span className="text-xs bg-neutral-100 text-neutral-400 rounded-full px-2 py-0.5 capitalize">
+						{stamp.style}
+					</span>
+					<a
+						href={stamp.imageUrl}
+						download={`stamp-${stamp.id}.png`}
+						onClick={(e) => e.stopPropagation()}
+						className="text-xs text-neutral-500 hover:text-neutral-700 transition"
+					>
+						Download
+					</a>
+				</div>
 			</div>
 		</>
 	);
@@ -39,7 +37,7 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 		return (
 			<button
 				type="button"
-				className="group relative text-left cursor-pointer"
+				className="group relative text-left cursor-pointer rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-300 transition-colors w-full"
 				onClick={onClick}
 			>
 				{content}
@@ -47,5 +45,9 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 		);
 	}
 
-	return <div className="group relative">{content}</div>;
+	return (
+		<div className="group relative rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-300 transition-colors">
+			{content}
+		</div>
+	);
 }

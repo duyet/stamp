@@ -66,12 +66,12 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	return (
 		<div className="max-w-2xl mx-auto">
-			<form onSubmit={handleSubmit} className="space-y-6">
+			<form onSubmit={handleSubmit} className="space-y-5">
 				{/* Prompt input */}
 				<div>
 					<label
 						htmlFor="prompt"
-						className="block text-lg font-medium text-stone-800 mb-2"
+						className="block text-sm font-medium text-neutral-700 mb-2"
 					>
 						Describe your stamp
 					</label>
@@ -82,9 +82,9 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						placeholder="A girl with glasses and black hair, holding flowers..."
 						maxLength={500}
 						rows={3}
-						className="w-full px-4 py-3 rounded-lg border-2 border-stone-300 bg-white/80 text-stone-800 placeholder:text-stone-400 focus:border-stamp-blue focus:ring-2 focus:ring-stamp-blue/20 outline-none transition resize-none font-sans"
+						className="w-full px-4 py-3 rounded-lg border border-neutral-200 bg-white text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-neutral-100 outline-none transition resize-none"
 					/>
-					<p className="text-sm text-stone-500 mt-1">
+					<p className="text-xs text-neutral-400 mt-1">
 						{prompt.length}/500 characters
 					</p>
 
@@ -95,7 +95,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								key={example}
 								type="button"
 								onClick={() => setPrompt(example)}
-								className="bg-white/60 text-stone-600 rounded-full border border-stone-200 hover:bg-white px-3 py-1.5 text-sm font-sans cursor-pointer transition"
+								className="bg-neutral-100 text-neutral-500 rounded-full hover:bg-neutral-200 px-3 py-1.5 text-xs cursor-pointer transition"
 							>
 								{example}
 							</button>
@@ -105,7 +105,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 				{/* Style selector */}
 				<fieldset>
-					<legend className="block text-lg font-medium text-stone-800 mb-2">
+					<legend className="block text-sm font-medium text-neutral-700 mb-2">
 						Style
 					</legend>
 					<div className="flex flex-wrap gap-2">
@@ -114,10 +114,10 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								key={key}
 								type="button"
 								onClick={() => setStyle(key as StampStyle)}
-								className={`px-4 py-2 rounded-full text-sm transition font-sans ${
+								className={`px-4 py-2 rounded-full text-sm transition ${
 									style === key
-										? "bg-stamp-navy text-white"
-										: "bg-white/60 text-stone-700 hover:bg-white border border-stone-300"
+										? "bg-neutral-900 text-white border border-neutral-900"
+										: "bg-white text-neutral-700 hover:border-neutral-400 border border-neutral-200"
 								}`}
 							>
 								{preset.name}
@@ -127,26 +127,28 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				</fieldset>
 
 				{/* Public toggle */}
-				<label className="flex items-center gap-3 cursor-pointer font-sans">
+				<label className="flex items-center gap-3 cursor-pointer">
 					<input
 						type="checkbox"
 						checked={isPublic}
 						onChange={(e) => setIsPublic(e.target.checked)}
-						className="w-5 h-5 rounded border-stone-300 text-stamp-blue focus:ring-stamp-blue/20"
+						className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-200"
 					/>
-					<span className="text-stone-700">Show in public collection</span>
+					<span className="text-sm text-neutral-600">
+						Show in public collection
+					</span>
 				</label>
 
 				{/* Submit */}
 				<button
 					type="submit"
 					disabled={loading || !prompt.trim()}
-					className="w-full py-3 px-6 bg-stamp-navy text-white rounded-lg font-sans font-medium text-lg hover:bg-stamp-blue transition disabled:opacity-50 disabled:cursor-not-allowed"
+					className="w-full py-3 px-6 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
 				>
 					{loading ? (
 						<span className="flex items-center justify-center gap-2">
 							<svg
-								className="animate-spin h-5 w-5"
+								className="animate-spin h-4 w-4"
 								viewBox="0 0 24 24"
 								fill="none"
 							>
@@ -174,7 +176,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 			{/* Error */}
 			{error && (
-				<div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 font-sans">
+				<div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm">
 					{error}
 				</div>
 			)}
@@ -191,7 +193,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					</div>
 
 					{/* Public collection toggle (post-generation) */}
-					<label className="flex items-center justify-center gap-3 mt-4 cursor-pointer font-sans">
+					<label className="flex items-center justify-center gap-3 mt-4 cursor-pointer">
 						<input
 							type="checkbox"
 							checked={isPublic}
@@ -204,16 +206,18 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 									body: JSON.stringify({ isPublic: newValue }),
 								});
 							}}
-							className="w-5 h-5 rounded border-stone-300 text-stamp-blue focus:ring-stamp-blue/20"
+							className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-200"
 						/>
-						<span className="text-stone-700">Show in public collection</span>
+						<span className="text-sm text-neutral-600">
+							Show in public collection
+						</span>
 					</label>
 
-					<div className="mt-4 flex justify-center gap-3 font-sans">
+					<div className="mt-4 flex justify-center gap-3">
 						<a
 							href={result.imageUrl}
 							download={`stamp-${result.id}.png`}
-							className="px-4 py-2 bg-stamp-green text-white rounded-lg hover:opacity-90 transition text-sm"
+							className="px-4 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition text-sm"
 						>
 							Download
 						</a>
@@ -224,12 +228,12 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 									`${window.location.origin}/api/stamps/${result.id}/image`,
 								);
 							}}
-							className="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg hover:bg-stone-300 transition text-sm"
+							className="px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 transition text-sm"
 						>
 							Copy Link
 						</button>
 					</div>
-					<p className="mt-3 text-sm text-stone-500 font-sans">
+					<p className="mt-3 text-xs text-neutral-400">
 						{result.remaining} free generations remaining today
 					</p>
 				</div>

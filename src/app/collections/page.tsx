@@ -35,27 +35,31 @@ export default async function CollectionsPage() {
 
 	return (
 		<div className="max-w-5xl mx-auto px-4 py-12">
-			<div className="text-center mb-10">
-				<h1 className="text-4xl font-bold text-stone-800">Collections</h1>
-				<p className="mt-2 text-stone-500 font-sans">
+			<div className="mb-10">
+				<h1 className="text-2xl font-semibold text-neutral-900">
+					Collections
+				</h1>
+				<p className="mt-1 text-sm text-neutral-500">
 					{allStamps.length} stamps created by the community
 				</p>
 			</div>
 
 			{allStamps.length === 0 ? (
-				<div className="text-center py-20 font-sans">
-					<span className="text-6xl block mb-4">📭</span>
-					<p className="text-stone-500 text-lg">No stamps yet.</p>
-					<p className="text-stone-400 mt-1">
+				<div className="text-center py-20">
+					<p className="text-neutral-500 text-base">No stamps yet.</p>
+					<p className="text-neutral-400 text-sm mt-1">
 						Be the first to{" "}
-						<a href="/generate" className="text-stamp-blue hover:underline">
+						<a
+							href="/generate"
+							className="text-neutral-700 hover:text-neutral-900 underline underline-offset-2 transition"
+						>
 							create one
 						</a>
-						!
+						.
 					</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 					{allStamps.map((stamp) => (
 						<StampCard key={stamp.id} stamp={stamp} />
 					))}

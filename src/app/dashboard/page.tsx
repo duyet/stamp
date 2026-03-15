@@ -44,17 +44,17 @@ async function getAnalytics() {
 		db
 			.select({ count: sql<number>`count(*)` })
 			.from(stamps)
-			.where(sql`${stamps.createdAt} >= ${new Date(todayStart)}`),
+			.where(sql`created_at >= ${todayStart}`),
 
 		db
 			.select({ count: sql<number>`count(*)` })
 			.from(stamps)
-			.where(sql`${stamps.createdAt} >= ${new Date(weekStart)}`),
+			.where(sql`created_at >= ${weekStart}`),
 
 		db
 			.select({ count: sql<number>`count(*)` })
 			.from(stamps)
-			.where(sql`${stamps.createdAt} >= ${new Date(monthStart)}`),
+			.where(sql`created_at >= ${monthStart}`),
 
 		db
 			.select({
@@ -67,13 +67,13 @@ async function getAnalytics() {
 
 		db
 			.select({
-				day: sql<number>`(${stamps.createdAt} / 86400000) * 86400000`,
+				day: sql<number>`(created_at / 86400000) * 86400000`,
 				count: sql<number>`count(*)`,
 			})
 			.from(stamps)
-			.where(sql`${stamps.createdAt} >= ${new Date(thirtyDaysAgo)}`)
-			.groupBy(sql`(${stamps.createdAt} / 86400000) * 86400000`)
-			.orderBy(sql`(${stamps.createdAt} / 86400000) * 86400000`),
+			.where(sql`created_at >= ${thirtyDaysAgo}`)
+			.groupBy(sql`(created_at / 86400000) * 86400000`)
+			.orderBy(sql`(created_at / 86400000) * 86400000`),
 
 		db
 			.select({ count: sql<number>`count(*)` })
@@ -116,7 +116,20 @@ function formatDate(ts: number): string {
 }
 
 export default async function DashboardPage() {
-	const data = await getAnalytics();
+	let data: Awaited<ReturnType<typeof getAnalytics>>;
+	try {
+		data = await getAnalytics();
+	} catch (err) {
+		console.error("Dashboard error:", err);
+		return (
+			<div className="max-w-4xl mx-auto px-4 py-12 font-sans text-center">
+				<h1 className="text-3xl font-bold text-neutral-900 mb-4">Dashboard</h1>
+				<p className="text-neutral-500">
+					No data available yet. Generate some stamps first.
+				</p>
+			</div>
+		);
+	}
 
 	const maxStyleCount = Math.max(...data.popularStyles.map((s) => s.count), 1);
 	const maxDayCount = Math.max(...data.dailyTrend.map((d) => d.count), 1);

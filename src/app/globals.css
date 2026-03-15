@@ -8,17 +8,25 @@
 	--color-stamp-red: #c45d4e;
 	--color-stamp-green: #6b8f71;
 	--font-serif: "Georgia", "Times New Roman", serif;
+
+	/* Design system palette */
+	--color-background: #ffffff;
+	--color-text-primary: #0a0a0a;
+	--color-text-secondary: #737373;
+	--color-text-muted: #a3a3a3;
+	--color-border: #e5e5e5;
+	--color-surface: #fafafa;
 }
 
 body {
 	background-color: #ffffff;
-	color: #292524;
-	font-family: var(--font-serif);
+	color: #0a0a0a;
+	font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
 }
 
 /* Stamp perforated edge effect */
 .stamp-border {
-	filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.15));
+	filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.08));
 	background: white;
 	padding: 12px;
 	mask:
@@ -43,9 +51,9 @@ body {
 
 .stamp-fan-card {
 	position: absolute;
-	width: 140px;
-	height: 140px;
-	transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+	width: 130px;
+	height: 130px;
+	transition: all 0.4s ease-out;
 	transform-origin: bottom center;
 }
 
@@ -57,13 +65,13 @@ body {
 	z-index: 1;
 }
 .stamp-fan-center {
-	left: 30px;
+	left: 35px;
 	top: 10px;
 	transform: rotate(0deg);
 	z-index: 3;
 }
 .stamp-fan-right {
-	left: 40px;
+	left: 50px;
 	top: 15px;
 	transform: rotate(6deg);
 	z-index: 2;
@@ -82,19 +90,19 @@ body {
 
 /* Subtle lift shadow on hover */
 .stamp-fan:hover .stamp-fan-card .stamp-border {
-	filter: drop-shadow(3px 6px 12px rgba(0, 0, 0, 0.2));
+	filter: drop-shadow(1px 3px 8px rgba(0, 0, 0, 0.12));
 }
 
-/* Modal stamp — large drop shadow like the screenshot */
+/* Modal stamp — large drop shadow */
 .stamp-modal-shadow {
-	filter: drop-shadow(0 20px 60px rgba(0, 0, 0, 0.35));
+	filter: drop-shadow(0 16px 48px rgba(0, 0, 0, 0.18));
 }
 
 /* Modal appear animation */
 @keyframes stamp-appear {
 	from {
 		opacity: 0;
-		transform: scale(0.85) rotate(-2deg);
+		transform: scale(0.88) rotate(-1deg);
 	}
 	to {
 		opacity: 1;
@@ -102,5 +110,13 @@ body {
 	}
 }
 .animate-stamp-appear {
-	animation: stamp-appear 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+	animation: stamp-appear 0.3s ease-out forwards;
+}
+
+/* Card utility */
+.card {
+	background-color: var(--color-surface, #fafafa);
+	border-radius: 0.75rem;
+	border: 1px solid var(--color-border, #e5e5e5);
+	padding: 1.5rem;
 }
