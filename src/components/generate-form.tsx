@@ -175,6 +175,26 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							className="w-64 h-64 object-cover"
 						/>
 					</div>
+
+					{/* Public collection toggle (post-generation) */}
+					<label className="flex items-center justify-center gap-3 mt-4 cursor-pointer font-sans">
+						<input
+							type="checkbox"
+							checked={isPublic}
+							onChange={async (e) => {
+								const newValue = e.target.checked;
+								setIsPublic(newValue);
+								await fetch(`/api/stamps/${result.id}/visibility`, {
+									method: "PATCH",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({ isPublic: newValue }),
+								});
+							}}
+							className="w-5 h-5 rounded border-stone-300 text-stamp-blue focus:ring-stamp-blue/20"
+						/>
+						<span className="text-stone-700">Show in public collection</span>
+					</label>
+
 					<div className="mt-4 flex justify-center gap-3 font-sans">
 						<a
 							href={result.imageUrl}
