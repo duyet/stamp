@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StampFan } from "@/components/stamp-fan";
 import { EXAMPLE_PROMPTS } from "@/lib/stamp-prompts";
 
 export default function HomePage() {
@@ -6,19 +7,9 @@ export default function HomePage() {
 		<div className="max-w-5xl mx-auto px-4">
 			{/* Hero */}
 			<section className="py-20 text-center">
-				{/* Stacked stamps visual */}
+				{/* Stamp fan — stacked, expands on hover */}
 				<div className="flex justify-center mb-10">
-					<div className="relative w-48 h-48">
-						<div className="stamp-border stamp-stack-1 absolute inset-0 w-40 h-40 bg-stamp-yellow/20 flex items-center justify-center">
-							<div className="w-32 h-32 bg-stamp-yellow/30 rounded" />
-						</div>
-						<div className="stamp-border stamp-stack-2 absolute inset-0 left-4 top-2 w-40 h-40 bg-stamp-blue/20 flex items-center justify-center">
-							<div className="w-32 h-32 bg-stamp-blue/30 rounded" />
-						</div>
-						<div className="stamp-border stamp-stack-3 absolute inset-0 left-8 top-4 w-40 h-40 bg-cream flex items-center justify-center">
-							<span className="text-5xl">📮</span>
-						</div>
-					</div>
+					<StampFan />
 				</div>
 
 				<h1 className="text-5xl md:text-7xl font-bold text-stone-800 tracking-tight">

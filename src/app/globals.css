@@ -33,13 +33,54 @@ body {
 	mask-composite: intersect;
 }
 
-/* Slight rotation for stacked stamp effect */
-.stamp-stack-1 {
-	transform: rotate(-5deg);
+/* Stamp fan — 3 cards stacked, expand on hover */
+.stamp-fan {
+	position: relative;
+	width: 200px;
+	height: 200px;
+	margin: 0 auto;
 }
-.stamp-stack-2 {
-	transform: rotate(2deg);
+
+.stamp-fan-card {
+	position: absolute;
+	width: 140px;
+	height: 140px;
+	transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+	transform-origin: bottom center;
 }
-.stamp-stack-3 {
-	transform: rotate(-1deg);
+
+/* Stacked state (default) */
+.stamp-fan-left {
+	left: 20px;
+	top: 20px;
+	transform: rotate(-8deg);
+	z-index: 1;
+}
+.stamp-fan-center {
+	left: 30px;
+	top: 10px;
+	transform: rotate(0deg);
+	z-index: 3;
+}
+.stamp-fan-right {
+	left: 40px;
+	top: 15px;
+	transform: rotate(6deg);
+	z-index: 2;
+}
+
+/* Expanded state (hover) — fan out like a card spread */
+.stamp-fan:hover .stamp-fan-left {
+	transform: rotate(-18deg) translateX(-30px) translateY(-5px);
+}
+.stamp-fan:hover .stamp-fan-center {
+	transform: rotate(0deg) translateY(-12px);
+}
+.stamp-fan:hover .stamp-fan-right {
+	transform: rotate(18deg) translateX(30px) translateY(-5px);
+}
+
+/* Subtle lift shadow on hover */
+.stamp-fan:hover .stamp-fan-card .stamp-border {
+	filter: drop-shadow(3px 6px 12px rgba(0, 0, 0, 0.2));
 }
