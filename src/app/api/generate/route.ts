@@ -5,7 +5,7 @@ import { events, stamps } from "@/db/schema";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
 import { checkRateLimit } from "@/lib/rate-limit";
-import type { StampStyle } from "@/lib/stamp-prompts";
+import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -40,9 +40,22 @@ export async function POST(request: NextRequest) {
 			isPublic?: boolean;
 		};
 
-		if (!prompt || prompt.length > 500) {
+		if (
+			!prompt ||
+			typeof prompt !== "string" ||
+			prompt.trim().length === 0 ||
+			prompt.length > 500
+		) {
 			return NextResponse.json(
 				{ error: "Prompt is required and must be under 500 characters." },
+				{ status: 400 },
+			);
+		}
+
+		const validStyles = Object.keys(STAMP_STYLE_PRESETS);
+		if (!validStyles.includes(style)) {
+			return NextResponse.json(
+				{ error: `Invalid style. Must be one of: ${validStyles.join(", ")}` },
 				{ status: 400 },
 			);
 		}

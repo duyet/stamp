@@ -3,6 +3,16 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
 
+const ALLOWED_EVENTS = new Set([
+	"page_view",
+	"generation",
+	"download",
+	"share",
+	"copy_link",
+]);
+
+const MAX_METADATA_LENGTH = 1024;
+
 export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
@@ -11,8 +21,19 @@ export async function POST(request: NextRequest) {
 			metadata?: Record<string, unknown>;
 		};
 
-		if (!event || typeof event !== "string") {
-			return NextResponse.json({ error: "event is required" }, { status: 400 });
+		if (!event || typeof event !== "string" || !ALLOWED_EVENTS.has(event)) {
+			return NextResponse.json(
+				{ error: "Invalid event type" },
+				{ status: 400 },
+			);
+		}
+
+		const metadataStr = metadata ? JSON.stringify(metadata) : null;
+		if (metadataStr && metadataStr.length > MAX_METADATA_LENGTH) {
+			return NextResponse.json(
+				{ error: "Metadata too large" },
+				{ status: 400 },
+			);
 		}
 
 		const userIp =
@@ -24,7 +45,7 @@ export async function POST(request: NextRequest) {
 		await db.insert(events).values({
 			id: nanoid(12),
 			event,
-			metadata: metadata ? JSON.stringify(metadata) : null,
+			metadata: metadataStr,
 			userIp,
 			createdAt: Date.now(),
 		});

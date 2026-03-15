@@ -11,7 +11,38 @@ export async function PATCH(
 		const { id } = await params;
 		const db = getDb();
 
-		const body = (await request.json()) as { isPublic: boolean };
+		// Validate ID format (nanoid 12 chars)
+		if (!id || id.length !== 12) {
+			return NextResponse.json({ error: "Invalid stamp ID" }, { status: 400 });
+		}
+
+		const body = (await request.json()) as { isPublic: unknown };
+
+		if (typeof body.isPublic !== "boolean") {
+			return NextResponse.json(
+				{ error: "isPublic must be a boolean" },
+				{ status: 400 },
+			);
+		}
+
+		// Verify the stamp exists and the requester is the creator (by IP)
+		const userIp =
+			request.headers.get("cf-connecting-ip") ||
+			request.headers.get("x-forwarded-for") ||
+			null;
+
+		const stamp = await db.query.stamps.findFirst({
+			where: eq(stamps.id, id),
+		});
+
+		if (!stamp) {
+			return NextResponse.json({ error: "Stamp not found" }, { status: 404 });
+		}
+
+		// Only the creator (same IP) can toggle visibility
+		if (stamp.userIp && userIp && stamp.userIp !== userIp) {
+			return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+		}
 
 		await db
 			.update(stamps)
