@@ -24,3 +24,14 @@ export const rateLimits = sqliteTable("rate_limits", {
 
 export type Stamp = typeof stamps.$inferSelect;
 export type NewStamp = typeof stamps.$inferInsert;
+
+export const events = sqliteTable("events", {
+	id: text("id").primaryKey(),
+	event: text("event").notNull(),
+	metadata: text("metadata"),
+	userIp: text("user_ip"),
+	createdAt: integer("created_at").notNull(),
+});
+
+export type Event = typeof events.$inferSelect;
+export type NewEvent = typeof events.$inferInsert;

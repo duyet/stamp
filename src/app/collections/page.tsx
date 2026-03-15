@@ -6,7 +6,13 @@ import { stamps } from "@/db/schema";
 
 export const metadata: Metadata = {
 	title: "Collections — stamp.builder",
-	description: "Browse the public collection of AI-generated stamps.",
+	description:
+		"Browse AI-generated postage stamps created by the community. Vintage folk art style illustrations.",
+	openGraph: {
+		title: "Stamp Collections — stamp.builder",
+		description: "Browse AI-generated postage stamps created by the community",
+		url: "https://stamp.builder/collections",
+	},
 };
 
 async function getStamps(): Promise<Stamp[]> {
@@ -32,7 +38,7 @@ export default async function CollectionsPage() {
 			<div className="text-center mb-10">
 				<h1 className="text-4xl font-bold text-stone-800">Collections</h1>
 				<p className="mt-2 text-stone-500 font-sans">
-					Stamps created by the community. All public and free to share.
+					{allStamps.length} stamps created by the community
 				</p>
 			</div>
 

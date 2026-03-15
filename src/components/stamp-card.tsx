@@ -19,6 +19,11 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 			<p className="mt-3 text-sm text-stone-600 text-center italic truncate">
 				{stamp.prompt}
 			</p>
+			<div className="mt-2 flex justify-center">
+				<span className="text-xs bg-stone-100 text-stone-500 rounded-full px-2 py-0.5 font-sans capitalize">
+					{stamp.style}
+				</span>
+			</div>
 		</>
 	);
 

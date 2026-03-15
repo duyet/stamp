@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
-import { stamps } from "@/db/schema";
+import { events, stamps } from "@/db/schema";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -80,6 +80,23 @@ export async function POST(request: NextRequest) {
 			isPublic,
 			userIp,
 		});
+
+		// Fire-and-forget event tracking — do not await to avoid slowing response
+		db.insert(events)
+			.values({
+				id: nanoid(12),
+				event: "generation",
+				metadata: JSON.stringify({
+					style,
+					prompt_length: prompt.length,
+					stamp_id: stampId,
+				}),
+				userIp,
+				createdAt: Date.now(),
+			})
+			.catch((err: unknown) => {
+				console.error("Failed to track generation event:", err);
+			});
 
 		return NextResponse.json({
 			id: stampId,
