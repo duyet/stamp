@@ -1,0 +1,34 @@
+{
+	"name": "stamp",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2025-12-01",
+	"compatibility_flags": ["nodejs_compat"],
+
+	// D1 Database
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "stamp-db",
+			"database_id": ""
+		}
+	],
+
+	// R2 Storage for generated stamp images
+	"r2_buckets": [
+		{
+			"binding": "STAMPS_BUCKET",
+			"bucket_name": "stamp-images"
+		}
+	],
+
+	// Observability
+	"observability": {
+		"enabled": true
+	},
+
+	// Assets
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	}
+}

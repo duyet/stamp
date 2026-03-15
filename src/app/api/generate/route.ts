@@ -1,0 +1,105 @@
+import { nanoid } from "nanoid";
+import { type NextRequest, NextResponse } from "next/server";
+import { createDb } from "@/db";
+import { stamps } from "@/db/schema";
+import { getEnv } from "@/lib/env";
+import { generateStamp } from "@/lib/generate-stamp";
+import { checkRateLimit } from "@/lib/rate-limit";
+import type { StampStyle } from "@/lib/stamp-prompts";
+
+export const runtime = "edge";
+
+export async function POST(request: NextRequest) {
+	try {
+		const env = await getEnv();
+		const db = createDb(env.DB as unknown as D1Database);
+
+		// Get user IP for rate limiting
+		const userIp =
+			request.headers.get("cf-connecting-ip") ||
+			request.headers.get("x-forwarded-for") ||
+			"unknown";
+
+		// Check rate limit
+		const { allowed, remaining } = await checkRateLimit(db, userIp);
+		if (!allowed) {
+			return NextResponse.json(
+				{
+					error:
+						"Rate limit exceeded. You can generate 5 stamps per day for free.",
+					remaining: 0,
+				},
+				{ status: 429 },
+			);
+		}
+
+		const body = await request.json();
+		const {
+			prompt,
+			style = "vintage",
+			isPublic = true,
+		} = body as {
+			prompt: string;
+			style?: StampStyle;
+			isPublic?: boolean;
+		};
+
+		if (!prompt || prompt.length > 500) {
+			return NextResponse.json(
+				{ error: "Prompt is required and must be under 500 characters." },
+				{ status: 400 },
+			);
+		}
+
+		// Generate the stamp image
+		const geminiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+		if (!geminiKey) {
+			return NextResponse.json(
+				{ error: "Image generation is not configured." },
+				{ status: 503 },
+			);
+		}
+
+		const { imageData, mimeType } = await generateStamp(
+			geminiKey,
+			prompt,
+			style,
+		);
+
+		// Upload to R2
+		const stampId = nanoid(12);
+		const ext = mimeType.includes("png") ? "png" : "jpg";
+		const key = `stamps/${stampId}.${ext}`;
+
+		await (env.STAMPS_BUCKET as unknown as R2Bucket).put(key, imageData, {
+			httpMetadata: { contentType: mimeType },
+		});
+
+		// The image URL will be served via a custom domain or R2 public URL
+		const imageUrl = `/api/stamps/${stampId}/image`;
+
+		// Save to database
+		await db.insert(stamps).values({
+			id: stampId,
+			prompt,
+			imageUrl,
+			style,
+			isPublic,
+			userIp,
+		});
+
+		return NextResponse.json({
+			id: stampId,
+			imageUrl,
+			prompt,
+			style,
+			remaining,
+		});
+	} catch (error) {
+		console.error("Stamp generation failed:", error);
+		return NextResponse.json(
+			{ error: "Failed to generate stamp. Please try again." },
+			{ status: 500 },
+		);
+	}
+}

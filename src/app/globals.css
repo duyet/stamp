@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+	--color-cream: #f5f0e8;
+	--color-stamp-blue: #4a6fa5;
+	--color-stamp-navy: #2c3e6b;
+	--color-stamp-yellow: #d4a843;
+	--color-stamp-red: #c45d4e;
+	--color-stamp-green: #6b8f71;
+	--font-serif: "Georgia", "Times New Roman", serif;
+}
+
+body {
+	background-color: var(--color-cream);
+	color: #292524;
+	font-family: var(--font-serif);
+}
+
+/* Stamp perforated edge effect */
+.stamp-border {
+	filter: drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.15));
+	background: white;
+	padding: 12px;
+	mask:
+		radial-gradient(circle at 6px 0, transparent 4px, black 4.5px) -6px 0 / 12px
+		100%,
+		radial-gradient(circle at 6px 100%, transparent 4px, black 4.5px) -6px 100%
+		/ 12px 100%,
+		radial-gradient(circle at 0 6px, transparent 4px, black 4.5px) 0 -6px / 100%
+		12px,
+		radial-gradient(circle at 100% 6px, transparent 4px, black 4.5px) 100% -6px
+		/ 100% 12px;
+	mask-composite: intersect;
+}
+
+/* Slight rotation for stacked stamp effect */
+.stamp-stack-1 {
+	transform: rotate(-5deg);
+}
+.stamp-stack-2 {
+	transform: rotate(2deg);
+}
+.stamp-stack-3 {
+	transform: rotate(-1deg);
+}
