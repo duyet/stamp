@@ -21,13 +21,33 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-	title: "stamp.builders — AI Stamp Generator",
+	title: {
+		default: "stamp.builders — AI Stamp Generator",
+		template: "%s — stamp.builders",
+	},
 	description:
-		"Create unique postage stamps with AI. Upload photos or describe your vision, and get beautiful vintage-style stamp illustrations.",
+		"Create unique vintage postage stamps with AI. Describe your vision and get beautiful folk art stamp illustrations. Free, no account needed.",
+	metadataBase: new URL("https://stamp.builders"),
 	openGraph: {
-		title: "stamp.builders",
-		description: "Create unique postage stamps with AI",
+		title: "stamp.builders — AI Stamp Generator",
+		description:
+			"Create unique vintage postage stamps with AI. Free, no account needed.",
 		url: "https://stamp.builders",
+		siteName: "stamp.builders",
+		type: "website",
+		locale: "en_US",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "stamp.builders — AI Stamp Generator",
+		description: "Create unique vintage postage stamps with AI.",
+	},
+	robots: {
+		index: true,
+		follow: true,
+	},
+	alternates: {
+		canonical: "https://stamp.builders",
 	},
 };
 
