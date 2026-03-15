@@ -17,17 +17,20 @@ async function enhancePrompt(
 ): Promise<string> {
 	const preset = STAMP_STYLE_PRESETS[style];
 
-	const systemPrompt = `You are a prompt engineer for an AI image generator that creates postage stamp illustrations.
+	const systemPrompt = `You are a prompt engineer for an AI image generator that creates postage stamp illustrations in a naive folk art style.
 Your job: take the user's rough idea and output a single, detailed image generation prompt.
+
+The style is: naive folk art portrait on a postage stamp with bold black outlines, stippled/dotted shading, simple minimalist faces with dot eyes, cream paper background, perforated stamp edges, limited 2-3 color palette (blue-grey, mustard yellow, cream, black), cross-hatched clothing textures, small decorative floral elements.
 
 Rules:
 - Output ONLY the prompt text, no explanation
-- Keep it under 200 words
-- Always include: "postage stamp", "perforated edges", "illustration"
-- Include specific art style details: ${preset.prompt}
-- Add details about composition, colors, textures, lighting
-- Never include text/words/numbers on the stamp
-- Make it vivid and specific for best image generation results`;
+- Keep it under 150 words
+- Always include these style keywords: "naive folk art", "postage stamp", "stippled shading", "bold black outlines", "perforated edges", "dot eyes"
+- Use the specific style variation: ${preset.prompt}
+- Describe the subject's pose, expression, clothing in simple terms
+- Add small background details (flowers, landscapes, patterns)
+- NEVER include any text, words, letters, numbers, or calligraphy
+- Keep the composition centered, portrait-oriented`;
 
 	const response = (await ai.run(
 		// @ts-expect-error — model name valid at runtime, types may lag
@@ -50,7 +53,7 @@ Rules:
  */
 function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
-	return `Postage stamp illustration, ${preset.prompt}. Subject: ${userPrompt}. Perforated edges, no text, square format, hand-crafted artistic feel, limited color palette.`;
+	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers.`;
 }
 
 /**

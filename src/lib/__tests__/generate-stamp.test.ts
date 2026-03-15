@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { generateStamp } from "../generate-stamp";
+import { STAMP_STYLE_PRESETS } from "../stamp-prompts";
 
-// Mock the Ai binding
 function createMockAi(llmResponse: string, imageBase64: string | null): Ai {
 	return {
 		run: vi.fn().mockImplementation((model: string) => {
@@ -19,7 +19,7 @@ function createMockAi(llmResponse: string, imageBase64: string | null): Ai {
 describe("generateStamp", () => {
 	it("returns image data and enhanced prompt", async () => {
 		const mockAi = createMockAi(
-			"A detailed vintage postage stamp illustration of a cat",
+			"A naive folk art postage stamp of a cat with stippled shading",
 			btoa("fake-image-data"),
 		);
 
@@ -28,7 +28,7 @@ describe("generateStamp", () => {
 		expect(result.imageData).toBeInstanceOf(Uint8Array);
 		expect(result.imageData.length).toBeGreaterThan(0);
 		expect(result.mimeType).toBe("image/jpeg");
-		expect(result.enhancedPrompt).toContain("vintage postage stamp");
+		expect(result.enhancedPrompt).toContain("folk art");
 	});
 
 	it("uses fallback prompt when LLM fails", async () => {
@@ -45,7 +45,7 @@ describe("generateStamp", () => {
 
 		const result = await generateStamp(mockAi, "a dog", "modern");
 
-		expect(result.enhancedPrompt).toContain("Postage stamp illustration");
+		expect(result.enhancedPrompt).toContain("naive folk art");
 		expect(result.enhancedPrompt).toContain("a dog");
 	});
 
@@ -58,13 +58,9 @@ describe("generateStamp", () => {
 	});
 
 	it("works with all style presets", async () => {
-		const styles = [
-			"vintage",
-			"modern",
-			"botanical",
-			"pop",
-			"japanese",
-		] as const;
+		const styles = Object.keys(STAMP_STYLE_PRESETS) as Array<
+			keyof typeof STAMP_STYLE_PRESETS
+		>;
 
 		for (const style of styles) {
 			const mockAi = createMockAi(`A ${style} stamp`, btoa("img"));

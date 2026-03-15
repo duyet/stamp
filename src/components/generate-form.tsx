@@ -73,7 +73,23 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						htmlFor="prompt"
 						className="block text-lg font-medium text-stone-800 mb-2"
 					>
-						Describe your stamp
+						Describe your stamp{" "}
+						<span className="text-sm font-normal text-stone-400">
+							(try:{" "}
+							{EXAMPLE_PROMPTS.slice(0, 3).map((ex, i) => (
+								<span key={ex}>
+									{i > 0 && ", "}
+									<button
+										type="button"
+										className="text-stamp-blue hover:underline"
+										onClick={() => setPrompt(ex)}
+									>
+										{ex.toLowerCase()}
+									</button>
+								</span>
+							))}
+							)
+						</span>
 					</label>
 					<textarea
 						id="prompt"

@@ -1,46 +1,33 @@
 /**
  * Prompt templates for generating postage stamps with AI.
  *
- * Style reference: vintage postage stamps with illustrated portraits,
- * perforated edges, woodcut/linocut illustration style, limited color palette.
+ * Style reference: naive folk art portrait stamps with stippled shading,
+ * bold black outlines, simple dot eyes, limited 2-3 color palette,
+ * cross-hatched textures, perforated edges, cream paper texture.
  */
 
-export const STAMP_SYSTEM_PROMPT = `You are an expert stamp illustrator. Generate a single postage stamp image with these characteristics:
-- Classic postage stamp format with perforated/serrated edges
-- Illustration style: woodcut, linocut, or vintage engraving aesthetic
-- Limited color palette (2-4 colors max): cream/off-white background, with accent colors like navy blue, mustard yellow, terracotta red, or sage green
-- Portrait or subject centered in the stamp frame
-- Small decorative floral or geometric elements in corners
-- Slight paper texture and aged look
-- No text or numbers on the stamp (keep it clean)
-- Square or slightly rectangular format
-- The illustration should feel hand-crafted and artistic`;
+export const STAMP_BASE_STYLE = `naive folk art portrait illustration on a postage stamp, bold black outlines, stippled dotted shading technique, simple minimalist face with dot eyes and thin line nose, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, cross-hatched clothing patterns, small decorative elements, square format`;
 
 export const STAMP_STYLE_PRESETS = {
 	vintage: {
-		name: "Vintage Portrait",
-		prompt:
-			"vintage postage stamp style, woodcut illustration, limited colors, cream background, perforated edges, hand-crafted feel",
+		name: "Vintage",
+		prompt: `${STAMP_BASE_STYLE}, blue-grey and cream color palette, delicate floral accents, stippled blue background`,
+	},
+	folk: {
+		name: "Folk Art",
+		prompt: `${STAMP_BASE_STYLE}, warm mustard yellow and black palette, bold graphic shapes, geometric decorative borders`,
 	},
 	modern: {
-		name: "Modern Minimal",
-		prompt:
-			"modern minimalist postage stamp, clean lines, flat illustration, bold single accent color, geometric shapes, perforated edges",
+		name: "Modern",
+		prompt: `${STAMP_BASE_STYLE}, clean flat colors, bold single accent color, geometric composition, minimal decoration`,
 	},
 	botanical: {
 		name: "Botanical",
-		prompt:
-			"botanical illustration postage stamp, detailed plant/flower drawing, vintage scientific illustration style, muted natural colors, perforated edges",
+		prompt: `${STAMP_BASE_STYLE}, detailed plant or flower as subject, fine crosshatching, muted green and cream palette, scientific illustration feel`,
 	},
-	pop: {
-		name: "Pop Art",
-		prompt:
-			"pop art style postage stamp, bold colors, graphic illustration, Ben-Day dots, comic book aesthetic, perforated edges",
-	},
-	japanese: {
-		name: "Japanese Woodblock",
-		prompt:
-			"Japanese ukiyo-e woodblock print style postage stamp, traditional composition, muted earth tones, perforated edges",
+	portrait: {
+		name: "Portrait",
+		prompt: `${STAMP_BASE_STYLE}, close-up face portrait, stippled shading on skin, expressive simple eyes, blue-grey background with subtle texture`,
 	},
 } as const;
 
@@ -54,19 +41,19 @@ export function buildStampPrompt(
 	style: StampStyle = "vintage",
 ): string {
 	const preset = STAMP_STYLE_PRESETS[style];
-	return `Generate a single postage stamp image. ${preset.prompt}. Subject: ${userPrompt}. ${STAMP_SYSTEM_PROMPT}`;
+	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers on the stamp.`;
 }
 
 /**
  * Example prompts for the landing page / inspiration.
  */
 export const EXAMPLE_PROMPTS = [
-	"A girl with glasses and black hair, holding flowers",
-	"A cat sitting on a windowsill watching rain",
-	"A lighthouse on a rocky coast at sunset",
-	"A vintage bicycle with a basket of wildflowers",
-	"A wise owl perched on old books",
-	"A cozy coffee shop on a rainy day",
-	"An astronaut floating among stars",
+	"A girl with glasses and black hair",
+	"A cat sitting on a windowsill",
+	"A lighthouse on a rocky coast",
+	"A wise owl with big round eyes",
+	"A cozy coffee cup with steam",
+	"An astronaut in a spacesuit",
 	"A fox in an autumn forest",
+	"A sunflower in a garden",
 ];

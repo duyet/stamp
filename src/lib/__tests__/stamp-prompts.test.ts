@@ -2,22 +2,43 @@ import { describe, expect, it } from "vitest";
 import {
 	buildStampPrompt,
 	EXAMPLE_PROMPTS,
+	STAMP_BASE_STYLE,
 	STAMP_STYLE_PRESETS,
-	STAMP_SYSTEM_PROMPT,
 } from "../stamp-prompts";
 
 describe("STAMP_STYLE_PRESETS", () => {
 	it("has all 5 styles", () => {
 		const keys = Object.keys(STAMP_STYLE_PRESETS);
-		expect(keys).toEqual(["vintage", "modern", "botanical", "pop", "japanese"]);
+		expect(keys).toEqual([
+			"vintage",
+			"folk",
+			"modern",
+			"botanical",
+			"portrait",
+		]);
 	});
 
 	it("each style has name and prompt", () => {
-		for (const [key, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
+		for (const [, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
 			expect(preset.name).toBeTruthy();
 			expect(preset.prompt).toBeTruthy();
-			expect(preset.prompt).toContain("perforated edges");
+			expect(preset.prompt).toContain("perforated");
 		}
+	});
+
+	it("each style includes the base style", () => {
+		for (const [, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
+			expect(preset.prompt).toContain("naive folk art");
+		}
+	});
+});
+
+describe("STAMP_BASE_STYLE", () => {
+	it("includes key style elements", () => {
+		expect(STAMP_BASE_STYLE).toContain("stippled");
+		expect(STAMP_BASE_STYLE).toContain("bold black outlines");
+		expect(STAMP_BASE_STYLE).toContain("dot eyes");
+		expect(STAMP_BASE_STYLE).toContain("perforated");
 	});
 });
 
@@ -29,17 +50,17 @@ describe("buildStampPrompt", () => {
 
 	it("defaults to vintage style", () => {
 		const result = buildStampPrompt("test");
-		expect(result).toContain("woodcut illustration");
+		expect(result).toContain("blue-grey");
 	});
 
 	it("uses specified style", () => {
-		const result = buildStampPrompt("test", "japanese");
-		expect(result).toContain("ukiyo-e");
+		const result = buildStampPrompt("test", "folk");
+		expect(result).toContain("mustard yellow");
 	});
 
-	it("includes system prompt", () => {
+	it("includes no-text instruction", () => {
 		const result = buildStampPrompt("test");
-		expect(result).toContain(STAMP_SYSTEM_PROMPT);
+		expect(result).toContain("No text");
 	});
 
 	it("works for all styles", () => {
@@ -68,19 +89,5 @@ describe("EXAMPLE_PROMPTS", () => {
 	it("no duplicates", () => {
 		const unique = new Set(EXAMPLE_PROMPTS);
 		expect(unique.size).toBe(EXAMPLE_PROMPTS.length);
-	});
-});
-
-describe("STAMP_SYSTEM_PROMPT", () => {
-	it("mentions perforated edges", () => {
-		expect(STAMP_SYSTEM_PROMPT).toContain("perforated");
-	});
-
-	it("mentions no text", () => {
-		expect(STAMP_SYSTEM_PROMPT).toContain("No text");
-	});
-
-	it("mentions limited color palette", () => {
-		expect(STAMP_SYSTEM_PROMPT).toContain("Limited color palette");
 	});
 });
