@@ -9,7 +9,8 @@
 		{
 			"binding": "DB",
 			"database_name": "stamp-db",
-			"database_id": ""
+			"database_id": "a5209f16-c47f-4465-a132-712d0a23fc89",
+			"migrations_dir": "drizzle"
 		}
 	],
 

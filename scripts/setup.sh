@@ -41,11 +41,8 @@ if [[ -n "$DB_ID" ]]; then
   CURRENT_ID=$(grep -o '"database_id": *"[^"]*"' "$WRANGLER_CONFIG" | grep -o '"[^"]*"$' | tr -d '"')
   if [[ -z "$CURRENT_ID" ]]; then
     echo "  Updating $WRANGLER_CONFIG with database_id..."
-    if [[ "$(uname)" == "Darwin" ]]; then
-      sed -i '' "s/\"database_id\": *\"\"/\"database_id\": \"$DB_ID\"/" "$WRANGLER_CONFIG"
-    else
-      sed -i "s/\"database_id\": *\"\"/\"database_id\": \"$DB_ID\"/" "$WRANGLER_CONFIG"
-    fi
+    # Use perl for cross-platform in-place edit (avoids sed -i differences)
+    perl -i -pe "s/\"database_id\": *\"\"/\"database_id\": \"$DB_ID\"/" "$WRANGLER_CONFIG"
     echo "  Updated database_id: $DB_ID"
   else
     echo "  database_id already set: $CURRENT_ID"
