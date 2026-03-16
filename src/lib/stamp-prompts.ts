@@ -6,7 +6,7 @@
  * cross-hatched textures, perforated edges, cream paper texture.
  */
 
-const STAMP_BASE_STYLE = `naive folk art portrait illustration on a postage stamp, bold black outlines, stippled dotted shading technique, simple minimalist face with dot eyes and thin line nose, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, cross-hatched clothing patterns, small decorative elements, square format`;
+export const STAMP_BASE_STYLE = `naive folk art portrait illustration on a postage stamp, bold black outlines, stippled dotted shading technique, simple minimalist face with dot eyes and thin line nose, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, cross-hatched clothing patterns, small decorative elements, square format`;
 
 export const STAMP_STYLE_PRESETS = {
 	vintage: {
@@ -34,6 +34,11 @@ export const STAMP_STYLE_PRESETS = {
 		prompt: `${STAMP_BASE_STYLE}, close-up face portrait, stippled shading on skin, expressive simple eyes, blue-grey background with subtle texture`,
 		thumbnail: "/styles/portrait.jpg",
 	},
+	anime: {
+		name: "Anime",
+		prompt: `anime manga style postage stamp, bold black outlines, screen-tone shading technique, large expressive eyes with highlights, simple delicate nose, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn manga feel, limited 2-3 color palette with vibrant accent, dynamic pose, chibi proportions, kawaii aesthetic, square format`,
+		thumbnail: "/styles/anime.jpg",
+	},
 } as const;
 
 export type StampStyle = keyof typeof STAMP_STYLE_PRESETS;
@@ -51,3 +56,63 @@ export const EXAMPLE_PROMPTS = [
 	"A fox in an autumn forest",
 	"A sunflower in a garden",
 ];
+
+/**
+ * Build the full prompt for stamp generation.
+ */
+export function buildStampPrompt(
+	userPrompt: string,
+	style: StampStyle = "vintage",
+): string {
+	const preset = STAMP_STYLE_PRESETS[style];
+	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers on the stamp.`;
+}
+
+export interface PromptGroup {
+	label?: string;
+	style?: StampStyle;
+	className: string;
+	hoverClassName: string;
+	prompts: readonly string[];
+}
+
+/**
+ * Prompt groups for quick-pick inspiration on the generate form.
+ * Each group can optionally auto-select a style when clicked.
+ */
+export const PROMPT_GROUPS: readonly PromptGroup[] = [
+	{
+		className: "text-neutral-400",
+		hoverClassName: "hover:text-neutral-600 hover:bg-neutral-100",
+		prompts: [
+			"A girl with glasses and black hair",
+			"A cat sitting on a windowsill",
+			"A lighthouse on a rocky coast",
+			"A wise owl with big round eyes",
+			"A cozy coffee cup with steam",
+			"An astronaut in a spacesuit",
+			"A fox in an autumn forest",
+			"A sunflower in a garden",
+		],
+	},
+	{
+		label: "Funny anime characters",
+		style: "anime",
+		className: "text-purple-400",
+		hoverClassName: "hover:text-purple-600 hover:bg-purple-50",
+		prompts: [
+			"A bald superhero with a cape looking bored after one punch",
+			"A spiky-haired warrior screaming and powering up with golden aura",
+			"A rubber pirate boy with a straw hat grinning wide",
+			"A ninja kid with whisker marks eating a giant bowl of ramen",
+			"A pink-haired girl punching through a wall with fury",
+			"A sleepy tanuki raccoon spirit wearing a leaf on its head",
+			"A tiny blue cat robot pulling gadgets from a belly pocket",
+			"A tall skeleton musician with an afro sipping tea elegantly",
+			"A serious potato-shaped detective with a bowtie and glasses",
+			"A grumpy green-haired swordsman lost and holding three swords",
+			"A cheerful slime blob bouncing happily in a fantasy meadow",
+			"A dramatic villain laughing on a throne eating potato chips",
+		],
+	},
+] as const;
