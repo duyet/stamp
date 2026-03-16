@@ -27,10 +27,12 @@ export function HomeContent() {
 		id: string;
 		imageUrl: string;
 		prompt: string;
+		enhancedPrompt?: string;
 	}) {
 		const newStamp: Stamp = {
 			id: stamp.id,
 			prompt: stamp.prompt,
+			enhancedPrompt: stamp.enhancedPrompt ?? null,
 			imageUrl: stamp.imageUrl,
 			thumbnailUrl: null,
 			style: "vintage",

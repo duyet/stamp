@@ -69,6 +69,16 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 				{/* Stamp info */}
 				<div className="mt-6 text-center">
 					<p className="text-neutral-700 text-base">{stamp.prompt}</p>
+					{stamp.enhancedPrompt && (
+						<details className="mt-2 text-xs text-neutral-400">
+							<summary className="cursor-pointer hover:text-neutral-600 transition">
+								Enhanced prompt
+							</summary>
+							<p className="mt-1 text-left leading-relaxed">
+								{stamp.enhancedPrompt}
+							</p>
+						</details>
+					)}
 					{stamp.style && (
 						<p className="text-neutral-400 text-xs mt-1 capitalize">
 							{stamp.style}

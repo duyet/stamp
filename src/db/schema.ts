@@ -3,6 +3,7 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 export const stamps = sqliteTable("stamps", {
 	id: text("id").primaryKey(),
 	prompt: text("prompt").notNull(),
+	enhancedPrompt: text("enhanced_prompt"),
 	imageUrl: text("image_url").notNull(),
 	thumbnailUrl: text("thumbnail_url"),
 	style: text("style").default("vintage"),

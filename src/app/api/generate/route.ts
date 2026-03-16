@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
 		await db.insert(stamps).values({
 			id: stampId,
 			prompt,
+			enhancedPrompt,
 			imageUrl,
 			style,
 			isPublic,
