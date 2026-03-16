@@ -4,28 +4,29 @@ import Link from "next/link";
 export const metadata: Metadata = {
 	title: "Pricing — stamp.builders",
 	description:
-		"Generate AI stamps for free. 10 stamps per day, all styles included.",
+		"Generate AI stamps for free. 100 credits per day with an account, 3 without signing in.",
 	openGraph: {
 		title: "Pricing — stamp.builders",
-		description: "Generate AI stamps for free. 10 stamps per day.",
+		description:
+			"Generate AI stamps for free. 100 credits per day with an account.",
 		url: "https://stamp.builders/pricing",
 	},
 };
 
 const freeFeatures = [
-	"10 stamps per day",
+	"100 credits per day",
 	"All 5 styles available",
 	"Public collection sharing",
 	"Download stamps",
-	"No account required",
+	"Free account required",
 ];
 
 const proFeatures = [
-	"Unlimited stamps",
+	"Buy credits as needed",
+	"Credits never expire",
 	"Priority generation",
 	"Private stamps",
 	"High-resolution downloads",
-	"Custom style presets",
 ];
 
 export default function PricingPage() {
@@ -39,7 +40,8 @@ export default function PricingPage() {
 					Simple, honest pricing
 				</h1>
 				<p className="text-stone-500 text-base max-w-md mx-auto">
-					Start creating stamps for free. No account needed.
+					Start creating stamps for free. 3 stamps per day without an account,
+					100 with one.
 				</p>
 			</div>
 
@@ -75,6 +77,9 @@ export default function PricingPage() {
 								</li>
 							))}
 						</ul>
+						<p className="text-xs text-stone-400 mb-6">
+							No account? You still get 3 stamps per day.
+						</p>
 						<Link
 							href="/"
 							className="block text-center bg-stamp-navy text-white rounded-xl py-3 px-6 text-sm font-medium hover:bg-stone-800 transition"
@@ -97,7 +102,9 @@ export default function PricingPage() {
 							</div>
 							<div className="mb-8">
 								<span className="text-5xl font-bold text-stone-300">$5</span>
-								<span className="text-stone-300 text-sm ml-2">/ month</span>
+								<span className="text-stone-300 text-sm ml-2">
+									/ 500 credits
+								</span>
 							</div>
 							<ul className="space-y-4 mb-10 flex-1">
 								{proFeatures.map((feature) => (
