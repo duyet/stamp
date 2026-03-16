@@ -28,8 +28,11 @@ describe("STAMP_STYLE_PRESETS", () => {
 	});
 
 	it("each style includes the base style", () => {
-		for (const [, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
-			expect(preset.prompt).toContain("naive folk art");
+		for (const [key, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
+			// Anime has a custom base style to avoid conflicting directives
+			if (key !== "anime") {
+				expect(preset.prompt).toContain("naive folk art");
+			}
 		}
 	});
 });

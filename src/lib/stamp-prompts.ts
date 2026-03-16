@@ -31,7 +31,7 @@ export const STAMP_STYLE_PRESETS = {
 	},
 	anime: {
 		name: "Anime",
-		prompt: `${STAMP_BASE_STYLE}, anime manga inspired style, big expressive eyes, dynamic pose, bold linework, vibrant accent color, chibi proportions, kawaii aesthetic`,
+		prompt: `anime manga style postage stamp, bold black outlines, screen-tone shading technique, large expressive eyes with highlights, simple delicate nose, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn manga feel, limited 2-3 color palette with vibrant accent, dynamic pose, chibi proportions, kawaii aesthetic, square format`,
 	},
 } as const;
 
