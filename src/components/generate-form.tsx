@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
+import { useCopy } from "@/hooks/use-copy";
 import {
 	PROMPT_GROUPS,
 	STAMP_STYLE_PRESETS,
@@ -26,6 +28,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [style, setStyle] = useState<StampStyle>("vintage");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [isPublic, setIsPublic] = useState(true);
+	const { copied, copy } = useCopy();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [result, setResult] = useState<{
@@ -267,8 +270,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 			{/* Result */}
 			{result && (
-				<div className="mt-10 text-center">
-					<div className="stamp-border inline-block">
+				<div className="mt-10 text-center animate-stamp-appear">
+					<div className="stamp-border stamp-modal-shadow inline-block">
 						<Image
 							src={result.imageUrl}
 							alt={prompt}
@@ -278,47 +281,70 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						/>
 					</div>
 
-					{/* Public collection toggle (post-generation) */}
-					<label className="flex items-center justify-center gap-3 mt-5 cursor-pointer">
-						<input
-							type="checkbox"
-							checked={isPublic}
-							onChange={handleVisibilityChange}
-							className="w-4 h-4 rounded border-stone-300 text-neutral-900 focus:ring-neutral-200"
-						/>
-						<span className="text-sm text-stone-600">
-							Show in public collection
-						</span>
-					</label>
-
-					<div className="mt-4 flex justify-center gap-3">
-						<a
-							href={result.imageUrl}
-							download={`stamp-${result.id}.png`}
-							className="px-5 py-2.5 bg-stamp-navy text-white rounded-xl hover:bg-neutral-800 transition text-sm"
-						>
-							Download
-						</a>
-						<button
-							type="button"
-							onClick={() => {
-								navigator.clipboard.writeText(
-									`${window.location.origin}/api/stamps/${result.id}/image`,
-								);
-							}}
-							className="px-5 py-2.5 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition text-sm"
-						>
-							Copy Link
-						</button>
-					</div>
-					<p className="mt-4 text-xs text-stone-500">
-						{result.remaining} free generations remaining today
-						{result.generationTimeMs && (
-							<span className="ml-2 text-stone-500">
-								({(result.generationTimeMs / 1000).toFixed(1)}s)
+					<div className="mt-5 space-y-3">
+						{/* Public collection toggle */}
+						<label className="inline-flex items-center gap-3 cursor-pointer group">
+							<div className="relative">
+								<input
+									type="checkbox"
+									checked={isPublic}
+									onChange={handleVisibilityChange}
+									className="peer sr-only"
+								/>
+								<div className="w-9 h-5 bg-stone-200 rounded-full peer-checked:bg-stone-800 transition-colors duration-200" />
+								<div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-4" />
+							</div>
+							<span className="text-sm text-stone-500 group-hover:text-stone-700 transition-colors">
+								Show in public collection
 							</span>
-						)}
-					</p>
+						</label>
+
+						{/* Divider */}
+						<div className="border-t border-stone-100 mx-12" />
+
+						{/* Actions */}
+						<div className="flex justify-center gap-2">
+							<a
+								href={result.imageUrl}
+								download={`stamp-${result.id}.png`}
+								className="inline-flex items-center gap-2 px-5 py-2 bg-stamp-navy text-white rounded-full text-sm hover:bg-stone-800 transition-all duration-200 shadow-sm"
+							>
+								<DownloadIcon />
+								Download
+							</a>
+							<button
+								type="button"
+								onClick={() =>
+									copy(
+										`${window.location.origin}/api/stamps/${result.id}/image`,
+									)
+								}
+								className="inline-flex items-center gap-2 px-5 py-2 text-stone-600 bg-stone-50 border border-stone-200/80 rounded-full text-sm hover:bg-stone-100 hover:border-stone-300 transition-all duration-200"
+							>
+								{copied ? (
+									<>
+										<CheckIcon />
+										Copied!
+									</>
+								) : (
+									<>
+										<ClipboardIcon />
+										Copy Link
+									</>
+								)}
+							</button>
+						</div>
+
+						{/* Meta */}
+						<p className="text-[11px] text-stone-400 tracking-wide">
+							{result.remaining} remaining today
+							{result.generationTimeMs && (
+								<span className="ml-1.5">
+									· {(result.generationTimeMs / 1000).toFixed(1)}s
+								</span>
+							)}
+						</p>
+					</div>
 				</div>
 			)}
 		</div>
