@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 const freeFeatures = [
 	"100 credits per day",
-	"All 5 styles available",
+	"All 10 styles available",
 	"Public collection sharing",
 	"Download stamps",
 	"Free account required",
