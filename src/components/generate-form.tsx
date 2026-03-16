@@ -2,7 +2,7 @@
 
 import { Show, SignInButton, UserButton, useAuth } from "@clerk/nextjs";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
 import { useCopy } from "@/hooks/use-copy";
 import {
@@ -35,6 +35,13 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [error, setError] = useState<string | null>(null);
 	const [isRateLimited, setIsRateLimited] = useState(false);
 	const { isSignedIn } = useAuth();
+	const [hd, setHd] = useState(false);
+
+	// Reset HD when user signs out
+	useEffect(() => {
+		if (!isSignedIn) setHd(false);
+	}, [isSignedIn]);
+
 	const [result, setResult] = useState<{
 		id: string;
 		imageUrl: string;
@@ -77,7 +84,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			const res = await fetch("/api/generate", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ prompt: prompt.trim(), style, isPublic }),
+				body: JSON.stringify({ prompt: prompt.trim(), style, isPublic, hd }),
 			});
 
 			const data = (await res.json()) as {
@@ -240,6 +247,17 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							/>
 							<span className="text-[10px] text-stone-500">Public</span>
 						</label>
+						{isSignedIn && (
+							<label className="flex items-center gap-1.5 cursor-pointer">
+								<input
+									type="checkbox"
+									checked={hd}
+									onChange={(e) => setHd(e.target.checked)}
+									className="w-3 h-3 rounded border-stone-300 text-stamp-navy focus:ring-stamp-navy/20"
+								/>
+								<span className="text-[10px] text-stone-500">HD</span>
+							</label>
+						)}
 						<button
 							type="submit"
 							disabled={loading || !prompt.trim()}
@@ -272,6 +290,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 									</svg>
 									Creating...
 								</span>
+							) : hd ? (
+								"Generate HD (5 credits)"
 							) : (
 								"Generate"
 							)}
