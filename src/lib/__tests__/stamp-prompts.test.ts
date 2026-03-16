@@ -8,7 +8,7 @@ import {
 } from "../stamp-prompts";
 
 describe("STAMP_STYLE_PRESETS", () => {
-	it("has all 5 styles", () => {
+	it("has all 10 styles", () => {
 		const keys = Object.keys(STAMP_STYLE_PRESETS);
 		expect(keys).toEqual([
 			"vintage",
@@ -16,6 +16,11 @@ describe("STAMP_STYLE_PRESETS", () => {
 			"modern",
 			"botanical",
 			"portrait",
+			"watercolor",
+			"woodcut",
+			"engraved",
+			"pixel",
+			"risograph",
 		]);
 	});
 
@@ -28,11 +33,29 @@ describe("STAMP_STYLE_PRESETS", () => {
 		}
 	});
 
-	it("each style includes the base style keywords", () => {
-		for (const [, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
+	it("base styles include the base style keywords", () => {
+		const baseStyles = ["vintage", "folk", "modern", "botanical", "portrait"];
+		for (const key of baseStyles) {
+			const preset =
+				STAMP_STYLE_PRESETS[key as keyof typeof STAMP_STYLE_PRESETS];
 			expect(preset.prompt).toContain("naive folk art");
 			expect(preset.prompt).toContain("dot eyes");
 			expect(preset.prompt).toContain("bold black outlines");
+		}
+	});
+
+	it("custom styles include perforated in their prompt", () => {
+		const customStyles = [
+			"watercolor",
+			"woodcut",
+			"engraved",
+			"pixel",
+			"risograph",
+		];
+		for (const key of customStyles) {
+			const preset =
+				STAMP_STYLE_PRESETS[key as keyof typeof STAMP_STYLE_PRESETS];
+			expect(preset.prompt).toContain("perforated");
 		}
 	});
 });
