@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	PROMPT_GROUPS,
 	STAMP_STYLE_PRESETS,
 	type StampStyle,
 } from "@/lib/stamp-prompts";
+
+const SUGGESTIONS_PER_GROUP = 4;
+
+function shuffled<T>(arr: readonly T[]): T[] {
+	const copy = [...arr];
+	for (let i = copy.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[copy[i], copy[j]] = [copy[j], copy[i]];
+	}
+	return copy;
+}
 
 interface GenerateFormProps {
 	onGenerated?: (stamp: {
@@ -26,6 +37,14 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		imageUrl: string;
 		remaining: number;
 	} | null>(null);
+
+	const visiblePrompts = useMemo(
+		() =>
+			PROMPT_GROUPS.map((group) =>
+				shuffled(group.prompts).slice(0, SUGGESTIONS_PER_GROUP),
+			),
+		[],
+	);
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -84,7 +103,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					</div>
 
 					{/* Prompt quick-picks */}
-					{PROMPT_GROUPS.map((group) => (
+					{PROMPT_GROUPS.map((group, groupIdx) => (
 						<div
 							key={group.label ?? "default"}
 							className={group.label ? "mt-3" : "mt-4"}
@@ -98,12 +117,16 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								</p>
 							)}
 							<div className="flex flex-wrap gap-2">
-								{group.prompts.map((example) => (
+								{visiblePrompts[groupIdx].map((example) => (
 									<button
 										key={example}
 										type="button"
 										onClick={() => {
-											setPrompt(example);
+											setPrompt((prev) => {
+												const trimmed = prev.trim();
+												if (!trimmed) return example;
+												return `${trimmed}, ${example.toLowerCase()}`;
+											});
 											if (group.style) setStyle(group.style);
 										}}
 										className={`${group.className} ${group.hoverClassName} rounded-full px-3 py-1.5 text-xs cursor-pointer transition`}
