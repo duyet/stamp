@@ -76,33 +76,53 @@ export function createMockRateLimitDb(
 }
 
 /**
+ * Create a mock CF Workers AI binding for generate-stamp tests.
+ */
+export function createMockAi(
+	llmResponse: string,
+	imageBase64: string | null,
+): Ai {
+	return {
+		run: vi.fn().mockImplementation((model: string) => {
+			if (model.includes("llama")) {
+				return Promise.resolve({ response: llmResponse });
+			}
+			if (model.includes("flux")) {
+				return Promise.resolve({ image: imageBase64 });
+			}
+			return Promise.reject(new Error(`Unknown model: ${model}`));
+		}),
+	} as unknown as Ai;
+}
+
+/**
  * Create a mock drizzle select() chain that resolves to the given results.
  *
- * Models the chain: db.select().from().where().groupBy().orderBy()
- * Each method returns a promise that is also chainable — this mirrors how
- * drizzle queries work (they are thenables at every point in the chain).
+ * Models the chain: db.select().from().where().groupBy().orderBy().limit().offset()
+ * Each method returns a single shared chain link that is also a real Promise,
+ * so it can be awaited at any point in the chain (matching drizzle behavior).
  *
- * Uses `Object.assign(Promise, methods)` so the result is a real Promise
- * (natively awaitable) with chain methods attached, avoiding custom
- * thenable hacks or Proxy traps.
+ * Uses a single pre-built chain object (not recursive) to avoid unnecessary
+ * mock + Promise allocations.
  */
 export function createSelectChain(result: unknown[]) {
-	type ChainLink = Promise<unknown[]> & {
-		from: ReturnType<typeof vi.fn>;
-		where: ReturnType<typeof vi.fn>;
-		groupBy: ReturnType<typeof vi.fn>;
-		orderBy: ReturnType<typeof vi.fn>;
-	};
+	const resolved = Promise.resolve(result);
+	const chain = Object.assign(resolved, {
+		from: vi.fn(),
+		where: vi.fn(),
+		groupBy: vi.fn(),
+		orderBy: vi.fn(),
+		limit: vi.fn(),
+		offset: vi.fn(),
+	});
 
-	function makeLink(): ChainLink {
-		const methods = {
-			from: vi.fn().mockImplementation(() => makeLink()),
-			where: vi.fn().mockImplementation(() => makeLink()),
-			groupBy: vi.fn().mockImplementation(() => makeLink()),
-			orderBy: vi.fn().mockImplementation(() => Promise.resolve(result)),
-		};
-		return Object.assign(Promise.resolve(result), methods);
-	}
+	// Every method returns the same chain link
+	chain.from.mockReturnValue(chain);
+	chain.where.mockReturnValue(chain);
+	chain.groupBy.mockReturnValue(chain);
+	chain.orderBy.mockReturnValue(chain);
+	chain.limit.mockReturnValue(chain);
+	chain.offset.mockReturnValue(chain);
 
-	return makeLink();
+	return chain;
 }

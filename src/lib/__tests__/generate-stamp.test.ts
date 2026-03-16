@@ -1,20 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
+import { createMockAi } from "@/test-utils";
 import { generateStamp } from "../generate-stamp";
 import { STAMP_STYLE_PRESETS } from "../stamp-prompts";
-
-function createMockAi(llmResponse: string, imageBase64: string | null): Ai {
-	return {
-		run: vi.fn().mockImplementation((model: string) => {
-			if (model.includes("llama")) {
-				return Promise.resolve({ response: llmResponse });
-			}
-			if (model.includes("flux")) {
-				return Promise.resolve({ image: imageBase64 });
-			}
-			return Promise.reject(new Error(`Unknown model: ${model}`));
-		}),
-	} as unknown as Ai;
-}
 
 describe("generateStamp", () => {
 	it("returns image data and enhanced prompt", async () => {

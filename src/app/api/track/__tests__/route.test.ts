@@ -10,7 +10,7 @@ vi.mock("nanoid", () => ({
 }));
 
 import { getDb } from "@/db";
-import { POST } from "../route";
+import { ALLOWED_EVENTS, POST } from "../route";
 
 const URL = "http://localhost/api/track";
 const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>
@@ -57,25 +57,9 @@ describe("POST /api/track", () => {
 		expect(data.error).toContain("Invalid event type");
 	});
 
-	it("accepts all allowed event types", async () => {
-		const allowedEvents = [
-			"page_view",
-			"generation",
-			"download",
-			"share",
-			"copy_link",
-		];
-
-		for (const event of allowedEvents) {
-			vi.clearAllMocks();
-			vi.mocked(getDb).mockReturnValue(mockDb as never);
-			mockDb.insert.mockReturnValue({
-				values: vi.fn().mockResolvedValue(undefined),
-			});
-
-			const res = await POST(req({ event }));
-			expect(res.status).toBe(200);
-		}
+	it.each([...ALLOWED_EVENTS])("accepts event type '%s'", async (event) => {
+		const res = await POST(req({ event }));
+		expect(res.status).toBe(200);
 	});
 
 	it("returns 400 when metadata exceeds 1024 bytes", async () => {

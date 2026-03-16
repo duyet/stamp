@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 import { createJsonRequest } from "@/test-utils";
 
 // Mock dependencies before importing the route
@@ -127,38 +128,11 @@ describe("POST /api/generate", () => {
 		expect(data.error).toContain("Invalid style");
 	});
 
-	it("accepts all valid styles", async () => {
-		for (const style of [
-			"vintage",
-			"folk",
-			"modern",
-			"botanical",
-			"portrait",
-		]) {
-			vi.clearAllMocks();
-			vi.mocked(getDb).mockReturnValue(mockDb as never);
-			vi.mocked(getEnv).mockReturnValue({
-				AI: { run: vi.fn() },
-				STAMPS_BUCKET: mockBucket,
-			} as never);
-			vi.mocked(checkRateLimit).mockResolvedValue({
-				allowed: true,
-				remaining: 4,
-			});
-			vi.mocked(generateStamp).mockResolvedValue({
-				imageData: new Uint8Array([1, 2, 3]),
-				mimeType: "image/jpeg",
-				enhancedPrompt: "enhanced",
-			});
-			const valuesResult = Promise.resolve(undefined);
-			(valuesResult as unknown as Record<string, unknown>).catch = vi.fn();
-			mockDb.insert.mockReturnValue({
-				values: vi.fn().mockReturnValue(valuesResult),
-			});
-
-			const res = await POST(req({ prompt: "a cat", style }));
-			expect(res.status).toBe(200);
-		}
+	it.each(
+		Object.keys(STAMP_STYLE_PRESETS),
+	)("accepts style '%s'", async (style) => {
+		const res = await POST(req({ prompt: "a cat", style }));
+		expect(res.status).toBe(200);
 	});
 
 	it("returns 503 when AI binding is missing", async () => {

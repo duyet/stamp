@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createGetRequest } from "@/test-utils";
+import { createGetRequest, createSelectChain } from "@/test-utils";
 
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
@@ -28,33 +28,14 @@ describe("GET /api/stamps", () => {
 		},
 	];
 
-	let mockChain: {
-		select: ReturnType<typeof vi.fn>;
-		from: ReturnType<typeof vi.fn>;
-		where: ReturnType<typeof vi.fn>;
-		orderBy: ReturnType<typeof vi.fn>;
-		limit: ReturnType<typeof vi.fn>;
-		offset: ReturnType<typeof vi.fn>;
-	};
+	let mockChain: ReturnType<typeof createSelectChain>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-
-		mockChain = {
-			select: vi.fn(),
-			from: vi.fn(),
-			where: vi.fn(),
-			orderBy: vi.fn(),
-			limit: vi.fn(),
-			offset: vi.fn().mockResolvedValue(mockResults),
-		};
-		mockChain.select.mockReturnValue(mockChain);
-		mockChain.from.mockReturnValue(mockChain);
-		mockChain.where.mockReturnValue(mockChain);
-		mockChain.orderBy.mockReturnValue(mockChain);
-		mockChain.limit.mockReturnValue(mockChain);
-
-		vi.mocked(getDb).mockReturnValue(mockChain as never);
+		mockChain = createSelectChain(mockResults);
+		vi.mocked(getDb).mockReturnValue({
+			select: vi.fn().mockReturnValue(mockChain),
+		} as never);
 	});
 
 	it("returns stamps with default pagination", async () => {
@@ -88,7 +69,10 @@ describe("GET /api/stamps", () => {
 	});
 
 	it("returns empty array when no stamps", async () => {
-		mockChain.offset.mockResolvedValue([]);
+		const emptyChain = createSelectChain([]);
+		vi.mocked(getDb).mockReturnValue({
+			select: vi.fn().mockReturnValue(emptyChain),
+		} as never);
 
 		const res = await GET(createGetRequest(URL));
 		const data = (await res.json()) as Record<string, unknown>;
@@ -97,7 +81,11 @@ describe("GET /api/stamps", () => {
 	});
 
 	it("returns 500 on database error", async () => {
-		mockChain.offset.mockRejectedValue(new Error("DB error"));
+		vi.mocked(getDb).mockReturnValue({
+			select: vi.fn().mockReturnValue({
+				from: vi.fn().mockRejectedValue(new Error("DB error")),
+			}),
+		} as never);
 
 		const res = await GET(createGetRequest(URL));
 		const data = (await res.json()) as Record<string, unknown>;
