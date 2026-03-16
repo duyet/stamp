@@ -94,7 +94,7 @@ export function HomeContent() {
 							View all &rarr;
 						</Link>
 					</div>
-					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+					<div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
 						{recentStamps.map((stamp) => (
 							<button
 								key={stamp.id}
@@ -107,7 +107,7 @@ export function HomeContent() {
 										src={stamp.imageUrl}
 										alt={stamp.prompt}
 										fill
-										sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+										sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
 										className="object-cover"
 									/>
 								</div>
