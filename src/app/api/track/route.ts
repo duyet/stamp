@@ -3,13 +3,18 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
 
-export const ALLOWED_EVENTS = new Set([
+export const ALLOWED_EVENTS = [
 	"page_view",
 	"generation",
 	"download",
 	"share",
 	"copy_link",
-]);
+	"stamp_view",
+] as const;
+
+export type EventType = (typeof ALLOWED_EVENTS)[number];
+
+export const ALLOWED_EVENTS_SET = new Set(ALLOWED_EVENTS);
 
 const MAX_METADATA_LENGTH = 1024;
 
@@ -21,7 +26,11 @@ export async function POST(request: NextRequest) {
 			metadata?: Record<string, unknown>;
 		};
 
-		if (!event || typeof event !== "string" || !ALLOWED_EVENTS.has(event)) {
+		if (
+			!event ||
+			typeof event !== "string" ||
+			!ALLOWED_EVENTS_SET.has(event as EventType)
+		) {
 			return NextResponse.json(
 				{ error: "Invalid event type" },
 				{ status: 400 },
@@ -44,7 +53,7 @@ export async function POST(request: NextRequest) {
 		const db = getDb();
 		await db.insert(events).values({
 			id: nanoid(12),
-			event,
+			event: event as EventType,
 			metadata: metadataStr,
 			userIp,
 			createdAt: Date.now(),

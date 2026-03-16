@@ -1,10 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { StampCard } from "@/components/stamp-card";
+import { StampModal } from "@/components/stamp-modal";
+import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
+import { useTrack } from "@/hooks/use-track";
 
 export function StampGrid() {
 	const { stamps, loading } = useStamps(50);
+	const { track } = useTrack();
+	const [selected, setSelected] = useState<Stamp | null>(null);
 
 	if (loading) {
 		return (
@@ -40,10 +46,22 @@ export function StampGrid() {
 	}
 
 	return (
-		<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-			{stamps.map((stamp) => (
-				<StampCard key={stamp.id} stamp={stamp} />
-			))}
-		</div>
+		<>
+			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+				{stamps.map((stamp) => (
+					<StampCard
+						key={stamp.id}
+						stamp={stamp}
+						onClick={() => {
+							setSelected(stamp);
+							track("stamp_view", { stampId: stamp.id, style: stamp.style });
+						}}
+					/>
+				))}
+			</div>
+			{selected && (
+				<StampModal stamp={selected} onClose={() => setSelected(null)} />
+			)}
+		</>
 	);
 }

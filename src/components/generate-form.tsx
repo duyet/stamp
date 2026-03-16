@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRef, useState } from "react";
 import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
 import { useCopy } from "@/hooks/use-copy";
+import { useTrack } from "@/hooks/use-track";
 import {
 	PROMPT_GROUPS,
 	STAMP_STYLE_PRESETS,
@@ -31,6 +32,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [isPublic, setIsPublic] = useState(true);
 	const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 	const { copied, copy } = useCopy();
+	const { track } = useTrack();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isRateLimited, setIsRateLimited] = useState(false);
@@ -337,17 +339,19 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								href={result.imageUrl}
 								download={`stamp-${result.id}.png`}
 								className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-stamp-navy text-white rounded-full text-xs hover:bg-stone-800 transition"
+								onClick={() => track("download", { stampId: result.id, style })}
 							>
 								<DownloadIcon />
 								Download
 							</a>
 							<button
 								type="button"
-								onClick={() =>
+								onClick={() => {
 									copy(
 										`${window.location.origin}/api/stamps/${result.id}/image`,
-									)
-								}
+									);
+									track("copy_link", { stampId: result.id, style });
+								}}
 								className="inline-flex items-center gap-1.5 px-4 py-1.5 text-stone-600 bg-white border border-stone-200 rounded-full text-xs hover:bg-stone-50 transition"
 							>
 								{copied ? (

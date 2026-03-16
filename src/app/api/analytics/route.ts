@@ -23,6 +23,10 @@ export async function GET() {
 			dailyTrendResult,
 			totalPageViewsResult,
 			uniqueVisitorsResult,
+			totalDownloadsResult,
+			totalSharesResult,
+			eventBreakdownResult,
+			pageViewBreakdownResult,
 		] = await Promise.all([
 			// Total stamps generated
 			db.select({ count: sql<number>`count(*)` }).from(stamps),
@@ -77,6 +81,41 @@ export async function GET() {
 				.select({ count: sql<number>`count(distinct ${events.userIp})` })
 				.from(events)
 				.where(sql`${events.userIp} is not null`),
+
+			// Total downloads
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(events)
+				.where(sql`${events.event} = 'download'`),
+
+			// Total shares (copy_link or share)
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(events)
+				.where(sql`${events.event} = 'copy_link' or ${events.event} = 'share'`),
+
+			// Event breakdown by type
+			db
+				.select({
+					event: events.event,
+					count: sql<number>`count(*) as count`,
+				})
+				.from(events)
+				.groupBy(events.event)
+				.orderBy(sql`count(*) desc`),
+
+			// Page view breakdown by path (extracted from metadata JSON)
+			db
+				.select({
+					path: sql<string>`json_extract(${events.metadata}, '$.path')`,
+					count: sql<number>`count(*) as count`,
+				})
+				.from(events)
+				.where(
+					sql`${events.event} = 'page_view' and json_extract(${events.metadata}, '$.path') is not null`,
+				)
+				.groupBy(sql`json_extract(${events.metadata}, '$.path')`)
+				.orderBy(sql`count(*) desc`),
 		]);
 
 		return NextResponse.json({
@@ -94,6 +133,16 @@ export async function GET() {
 			})),
 			totalPageViews: totalPageViewsResult[0]?.count ?? 0,
 			uniqueVisitors: uniqueVisitorsResult[0]?.count ?? 0,
+			totalDownloads: totalDownloadsResult[0]?.count ?? 0,
+			totalShares: totalSharesResult[0]?.count ?? 0,
+			eventBreakdown: eventBreakdownResult.map((r) => ({
+				event: r.event,
+				count: r.count,
+			})),
+			pageViewBreakdown: pageViewBreakdownResult.map((r) => ({
+				path: r.path,
+				count: r.count,
+			})),
 		});
 	} catch (error) {
 		console.error("Analytics query failed:", error);
