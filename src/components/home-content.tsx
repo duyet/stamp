@@ -54,22 +54,6 @@ export function HomeContent() {
 				>
 					Stamps, builders
 				</h1>
-				<p
-					className="mt-6 text-lg text-stone-600 max-w-md mx-auto leading-relaxed"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
-					Create vintage postage stamps with AI. Describe your vision, we do the
-					rest.
-				</p>
-				<div className="mt-8">
-					<a
-						href="#generate"
-						className="inline-flex items-center gap-2 bg-stamp-navy text-white px-8 py-3 rounded-full font-medium text-base hover:bg-stone-800 transition shadow-sm"
-						style={{ fontFamily: "var(--font-stamp)" }}
-					>
-						Start Creating
-					</a>
-				</div>
 			</section>
 
 			{/* Generate form */}
@@ -99,7 +83,7 @@ export function HomeContent() {
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer rounded-xl overflow-hidden transition hover:shadow-lg"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden transition"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">
