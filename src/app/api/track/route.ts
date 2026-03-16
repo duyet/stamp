@@ -9,6 +9,7 @@ export const ALLOWED_EVENTS = new Set([
 	"download",
 	"share",
 	"copy_link",
+	"stamp_view",
 ]);
 
 const MAX_METADATA_LENGTH = 1024;

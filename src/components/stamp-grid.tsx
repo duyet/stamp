@@ -1,10 +1,30 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { StampCard } from "@/components/stamp-card";
+import { StampModal } from "@/components/stamp-modal";
+import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
+import { useTrack } from "@/hooks/use-track";
 
 export function StampGrid() {
 	const { stamps, loading } = useStamps(50);
+	const { trackEvent } = useTrack();
+	const [selectedStamp, setSelectedStamp] = useState<string | null>(null);
+
+	const selectedStampData = stamps.find((s) => s.id === selectedStamp) ?? null;
+
+	const handleStampClick = useCallback(
+		(stamp: Stamp) => {
+			trackEvent("stamp_view", {
+				stampId: stamp.id,
+				style: stamp.style ?? "unknown",
+				promptLength: stamp.prompt.length,
+			});
+			setSelectedStamp(stamp.id);
+		},
+		[trackEvent],
+	);
 
 	if (loading) {
 		return (
@@ -40,10 +60,22 @@ export function StampGrid() {
 	}
 
 	return (
-		<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-			{stamps.map((stamp) => (
-				<StampCard key={stamp.id} stamp={stamp} />
-			))}
-		</div>
+		<>
+			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+				{stamps.map((stamp) => (
+					<StampCard
+						key={stamp.id}
+						stamp={stamp}
+						onClick={() => handleStampClick(stamp)}
+					/>
+				))}
+			</div>
+			{selectedStampData && (
+				<StampModal
+					stamp={selectedStampData}
+					onClose={() => setSelectedStamp(null)}
+				/>
+			)}
+		</>
 	);
 }
