@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
 
-const ALLOWED_EVENTS = new Set([
+export const ALLOWED_EVENTS = new Set([
 	"page_view",
 	"generation",
 	"download",
