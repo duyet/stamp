@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import type { Stamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
+import { useTrack } from "@/hooks/use-track";
 import {
 	CheckIcon,
 	ChevronIcon,
@@ -19,6 +20,7 @@ interface StampModalProps {
 
 export function StampModal({ stamp, onClose }: StampModalProps) {
 	const { copied, copy } = useCopy();
+	const { track } = useTrack();
 
 	useEffect(() => {
 		function handleKey(e: KeyboardEvent) {
@@ -114,13 +116,19 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 							href={stamp.imageUrl}
 							download={`stamp-${stamp.id}.png`}
 							className="inline-flex items-center gap-2 px-5 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-800 transition-all duration-200 shadow-sm"
+							onClick={() =>
+								track("download", { stampId: stamp.id, style: stamp.style })
+							}
 						>
 							<DownloadIcon />
 							Download
 						</a>
 						<button
 							type="button"
-							onClick={() => copy(`${window.location.origin}${stamp.imageUrl}`)}
+							onClick={() => {
+								copy(`${window.location.origin}${stamp.imageUrl}`);
+								track("copy_link", { stampId: stamp.id, style: stamp.style });
+							}}
 							className="inline-flex items-center gap-2 px-5 py-2 text-stone-600 bg-stone-50 border border-stone-200/80 rounded-full text-sm hover:bg-stone-100 hover:border-stone-300 transition-all duration-200"
 						>
 							{copied ? (
