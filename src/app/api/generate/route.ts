@@ -1,7 +1,9 @@
+import { auth } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
+import { checkAndDeductCredit } from "@/lib/credits";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
 import { getClientIp } from "@/lib/get-client-ip";
@@ -13,14 +15,19 @@ export async function POST(request: NextRequest) {
 		const env = getEnv();
 		const db = getDb();
 
+		const { userId } = await auth();
 		const userIp = getClientIp(request.headers);
 
-		const { allowed, remaining } = await checkRateLimit(db, userIp);
+		const { allowed, remaining } = userId
+			? await checkAndDeductCredit(db, userId)
+			: await checkRateLimit(db, userIp);
+
 		if (!allowed) {
 			return NextResponse.json(
 				{
-					error:
-						"Rate limit exceeded. You can generate 10 stamps per day for free.",
+					error: userId
+						? "Credit limit exceeded. Purchase more credits to continue."
+						: "Rate limit exceeded. Sign in for 100 stamps per day, or try again tomorrow.",
 					remaining: 0,
 				},
 				{ status: 429 },
@@ -96,6 +103,7 @@ export async function POST(request: NextRequest) {
 			style,
 			isPublic,
 			userIp,
+			userId: userId ?? null,
 		});
 
 		// Fire-and-forget event tracking
