@@ -20,7 +20,7 @@ describe("checkRateLimit edge cases", () => {
 		const exactlyAt24h = new Date(FIXED_NOW.getTime() - DAY_MS);
 		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 3,
+			generationsCount: 20,
 			windowStart: exactlyAt24h,
 		});
 
@@ -35,18 +35,18 @@ describe("checkRateLimit edge cases", () => {
 		const justPast24h = new Date(FIXED_NOW.getTime() - DAY_MS - 1);
 		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 3,
+			generationsCount: 20,
 			windowStart: justPast24h,
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
 
 		expect(result.allowed).toBe(true);
-		expect(result.remaining).toBe(2); // 3 - 1 = 2
+		expect(result.remaining).toBe(19); // 20 - 1 = 19
 	});
 
 	it("correctly reports remaining count at each generation", async () => {
-		for (let count = 0; count < 3; count++) {
+		for (let count = 0; count < 20; count++) {
 			const { db } = createMockRateLimitDb({
 				userIp: "1.2.3.4",
 				generationsCount: count,
@@ -55,7 +55,7 @@ describe("checkRateLimit edge cases", () => {
 
 			const result = await checkRateLimit(db, "1.2.3.4");
 			expect(result.allowed).toBe(true);
-			expect(result.remaining).toBe(2 - count); // 3 - count - 1
+			expect(result.remaining).toBe(19 - count); // 20 - count - 1
 		}
 	});
 
@@ -75,14 +75,14 @@ describe("checkRateLimit edge cases", () => {
 		const veryOld = new Date(0); // epoch
 		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 3,
+			generationsCount: 20,
 			windowStart: veryOld,
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
 
 		expect(result.allowed).toBe(true);
-		expect(result.remaining).toBe(2); // 3 - 1 = 2
+		expect(result.remaining).toBe(19); // 20 - 1 = 19
 	});
 
 	it("increments count correctly for allowed users", async () => {
