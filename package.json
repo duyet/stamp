@@ -11,6 +11,7 @@
 		"deploy": "opennextjs-cloudflare build && wrangler deploy",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
+		"fmt": "biome format --write .",
 		"format": "biome format --write .",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate:local": "wrangler d1 migrations apply stamp-db --local",
@@ -23,6 +24,7 @@
 		"test:watch": "vitest"
 	},
 	"dependencies": {
+		"@clerk/nextjs": "^7.0.4",
 		"@opennextjs/cloudflare": "^1.17.1",
 		"drizzle-orm": "^0.45.1",
 		"nanoid": "^5.1.7",
