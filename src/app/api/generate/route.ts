@@ -3,7 +3,11 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
-import { checkAndDeductCredit } from "@/lib/credits";
+import {
+	HD_CREDIT_COST,
+	STANDARD_CREDIT_COST,
+	checkAndDeductCredit,
+} from "@/lib/credits";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
 import { getClientIp } from "@/lib/get-client-ip";
@@ -18,33 +22,20 @@ export async function POST(request: NextRequest) {
 		const { userId } = await auth();
 		const userIp = getClientIp(request.headers);
 
-		const { allowed, remaining } = userId
-			? await checkAndDeductCredit(db, userId)
-			: await checkRateLimit(db, userIp);
-
-		if (!allowed) {
-			return NextResponse.json(
-				{
-					error: userId
-						? "Credit limit exceeded. Purchase more credits to continue."
-						: "Rate limit exceeded. Sign in for 100 stamps per day, or try again tomorrow.",
-					remaining: 0,
-				},
-				{ status: 429 },
-			);
-		}
-
 		const body = await request.json();
 		const {
 			prompt,
 			style = "vintage",
 			isPublic = true,
+			hd = false,
 		} = body as {
 			prompt: string;
 			style?: StampStyle;
 			isPublic?: boolean;
+			hd?: boolean;
 		};
 
+		// Validate input before deducting credits
 		if (
 			!prompt ||
 			typeof prompt !== "string" ||
@@ -65,6 +56,31 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		// HD generation requires authentication
+		if (hd && !userId) {
+			return NextResponse.json(
+				{ error: "HD generation requires sign-in." },
+				{ status: 401 },
+			);
+		}
+
+		const creditCost = hd ? HD_CREDIT_COST : STANDARD_CREDIT_COST;
+		const { allowed, remaining } = userId
+			? await checkAndDeductCredit(db, userId, creditCost)
+			: await checkRateLimit(db, userIp);
+
+		if (!allowed) {
+			return NextResponse.json(
+				{
+					error: userId
+						? "Credit limit exceeded. Purchase more credits to continue."
+						: "Rate limit exceeded. Sign in for 100 stamps per day, or try again tomorrow.",
+					remaining: 0,
+				},
+				{ status: 429 },
+			);
+		}
+
 		const ai = env.AI;
 		if (!ai) {
 			return NextResponse.json(
@@ -80,6 +96,7 @@ export async function POST(request: NextRequest) {
 			ai,
 			prompt,
 			style,
+			hd,
 		);
 
 		const generationTimeMs = Date.now() - genStart;
@@ -113,6 +130,7 @@ export async function POST(request: NextRequest) {
 				event: "generation",
 				metadata: JSON.stringify({
 					style,
+					hd,
 					prompt_length: prompt.length,
 					stamp_id: stampId,
 					generation_time_ms: generationTimeMs,
@@ -130,6 +148,7 @@ export async function POST(request: NextRequest) {
 			prompt,
 			enhancedPrompt,
 			style,
+			hd,
 			remaining,
 			generationTimeMs,
 		});

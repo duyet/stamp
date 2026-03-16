@@ -17,6 +17,8 @@ vi.mock("@/lib/rate-limit", () => ({
 
 vi.mock("@/lib/credits", () => ({
 	checkAndDeductCredit: vi.fn(),
+	STANDARD_CREDIT_COST: 1,
+	HD_CREDIT_COST: 5,
 }));
 
 vi.mock("@/lib/generate-stamp", () => ({
@@ -294,13 +296,14 @@ describe("POST /api/generate", () => {
 			expect(insertCall).toBeDefined();
 		});
 
-		it("defaults style to vintage", async () => {
+		it("defaults style to vintage and hd to false", async () => {
 			await POST(req({ prompt: "a cat" }));
 
 			expect(generateStamp).toHaveBeenCalledWith(
 				expect.anything(),
 				"a cat",
 				"vintage",
+				false,
 			);
 		});
 
@@ -312,6 +315,79 @@ describe("POST /api/generate", () => {
 
 			expect(res.status).toBe(500);
 			expect(data.error).toContain("Failed to generate stamp");
+		});
+	});
+
+	describe("HD generation", () => {
+		it("returns 401 when anonymous user requests HD", async () => {
+			const res = await POST(req({ prompt: "a cat", hd: true }));
+			const data = (await res.json()) as Record<string, unknown>;
+
+			expect(res.status).toBe(401);
+			expect(data.error).toContain("HD generation requires sign-in");
+		});
+
+		it("passes hd=true to generateStamp for authenticated users", async () => {
+			vi.mocked(auth).mockResolvedValue({
+				userId: "user_abc123",
+			} as never);
+
+			await POST(req({ prompt: "a cat", hd: true }));
+
+			expect(generateStamp).toHaveBeenCalledWith(
+				expect.anything(),
+				"a cat",
+				"vintage",
+				true,
+			);
+		});
+
+		it("deducts HD credit cost for authenticated HD requests", async () => {
+			vi.mocked(auth).mockResolvedValue({
+				userId: "user_abc123",
+			} as never);
+
+			await POST(req({ prompt: "a cat", hd: true }));
+
+			expect(checkAndDeductCredit).toHaveBeenCalledWith(
+				expect.anything(),
+				"user_abc123",
+				5,
+			);
+		});
+
+		it("deducts standard credit cost for non-HD requests", async () => {
+			vi.mocked(auth).mockResolvedValue({
+				userId: "user_abc123",
+			} as never);
+
+			await POST(req({ prompt: "a cat", hd: false }));
+
+			expect(checkAndDeductCredit).toHaveBeenCalledWith(
+				expect.anything(),
+				"user_abc123",
+				1,
+			);
+		});
+
+		it("includes hd flag in response", async () => {
+			vi.mocked(auth).mockResolvedValue({
+				userId: "user_abc123",
+			} as never);
+
+			const res = await POST(req({ prompt: "a cat", hd: true }));
+			const data = (await res.json()) as Record<string, unknown>;
+
+			expect(res.status).toBe(200);
+			expect(data.hd).toBe(true);
+		});
+
+		it("returns hd=false in response for standard generation", async () => {
+			const res = await POST(req({ prompt: "a cat" }));
+			const data = (await res.json()) as Record<string, unknown>;
+
+			expect(res.status).toBe(200);
+			expect(data.hd).toBe(false);
 		});
 	});
 });
