@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import {
-	EXAMPLE_PROMPTS,
+	PROMPT_GROUPS,
 	STAMP_STYLE_PRESETS,
 	type StampStyle,
 } from "@/lib/stamp-prompts";
@@ -119,28 +119,45 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						<p className="text-xs text-stone-500">{prompt.length}/500</p>
 					</div>
 
-					{/* Example prompts */}
-					<div className="flex flex-wrap gap-2 mt-4">
-						{EXAMPLE_PROMPTS.map((example) => (
-							<button
-								key={example}
-								type="button"
-								onClick={() => {
-									setPrompt((prev) =>
-										prev
-											? `${prev.trimEnd()}, ${example.toLowerCase()}`
-											: example,
-									);
-									requestAnimationFrame(() => {
-										if (textareaRef.current) autoResize(textareaRef.current);
-									});
-								}}
-								className="text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-full px-3 py-1.5 text-xs cursor-pointer transition"
-							>
-								{example}
-							</button>
-						))}
-					</div>
+					{/* Prompt quick-picks */}
+					{PROMPT_GROUPS.map((group) => (
+						<div
+							key={group.label ?? "default"}
+							className={group.label ? "mt-3" : "mt-4"}
+						>
+							{group.label && (
+								<p
+									className="text-xs text-stone-500 mb-2 px-1"
+									style={{ fontFamily: "var(--font-stamp)" }}
+								>
+									{group.label}
+								</p>
+							)}
+							<div className="flex flex-wrap gap-2">
+								{group.prompts.map((example) => (
+									<button
+										key={example}
+										type="button"
+										onClick={() => {
+											setPrompt((prev) =>
+												prev
+													? `${prev.trimEnd()}, ${example.toLowerCase()}`
+													: example,
+											);
+											requestAnimationFrame(() => {
+												if (textareaRef.current)
+													autoResize(textareaRef.current);
+											});
+											if (group.style) setStyle(group.style);
+										}}
+										className={`${group.className} ${group.hoverClassName} rounded-full px-3 py-1.5 text-xs cursor-pointer transition`}
+									>
+										{example}
+									</button>
+								))}
+							</div>
+						</div>
+					))}
 				</div>
 
 				{/* Style selector */}
