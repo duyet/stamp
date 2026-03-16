@@ -145,7 +145,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 													: example,
 											);
 											requestAnimationFrame(() => {
-												if (textareaRef.current) autoResize(textareaRef.current);
+												if (textareaRef.current)
+													autoResize(textareaRef.current);
 											});
 											if (group.style) setStyle(group.style);
 										}}

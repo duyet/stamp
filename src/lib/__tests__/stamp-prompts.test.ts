@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-	EXAMPLE_PROMPTS,
 	buildStampPrompt,
+	EXAMPLE_PROMPTS,
 	PROMPT_GROUPS,
 	STAMP_BASE_STYLE,
 	STAMP_STYLE_PRESETS,
