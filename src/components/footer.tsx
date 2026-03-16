@@ -7,19 +7,19 @@ export function Footer() {
 				<nav className="flex items-center justify-center gap-10 text-sm mb-10">
 					<Link
 						href="/generate"
-						className="text-stone-500 hover:text-stone-700 transition-colors"
+						className="text-stone-600 hover:text-stone-800 transition-colors"
 					>
 						Create
 					</Link>
 					<Link
 						href="/collections"
-						className="text-stone-500 hover:text-stone-700 transition-colors"
+						className="text-stone-600 hover:text-stone-800 transition-colors"
 					>
 						Collections
 					</Link>
 					<Link
 						href="/pricing"
-						className="text-stone-500 hover:text-stone-700 transition-colors"
+						className="text-stone-600 hover:text-stone-800 transition-colors"
 					>
 						Pricing
 					</Link>
@@ -27,7 +27,7 @@ export function Footer() {
 				<div className="text-center">
 					<a
 						href="https://stamp.builders"
-						className="text-sm text-stone-500 hover:text-stone-700 transition-colors"
+						className="text-sm text-stone-600 hover:text-stone-800 transition-colors"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					>
 						stamp.builders

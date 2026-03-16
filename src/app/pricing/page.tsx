@@ -39,7 +39,7 @@ export default function PricingPage() {
 				>
 					Simple, honest pricing
 				</h1>
-				<p className="text-stone-500 text-base max-w-md mx-auto">
+				<p className="text-stone-600 text-base max-w-md mx-auto">
 					Start creating stamps for free. 3 stamps per day without an account,
 					100 with one.
 				</p>
@@ -77,7 +77,7 @@ export default function PricingPage() {
 								</li>
 							))}
 						</ul>
-						<p className="text-xs text-stone-400 mb-6">
+						<p className="text-xs text-stone-500 mb-6">
 							No account? You still get 3 stamps per day.
 						</p>
 						<Link
@@ -131,7 +131,7 @@ export default function PricingPage() {
 				</div>
 			</div>
 
-			<p className="text-center text-stone-500 text-sm mt-14">
+			<p className="text-center text-stone-600 text-sm mt-14">
 				Questions?{" "}
 				<a
 					href="mailto:hello@stamp.builders"

@@ -16,7 +16,7 @@ export default function GeneratePage() {
 				>
 					Create your stamp
 				</h1>
-				<p className="mt-2 text-sm text-stone-500">
+				<p className="mt-2 text-sm text-stone-600">
 					Describe what you want, pick a style, and let AI do the rest.
 				</p>
 			</div>

@@ -55,7 +55,7 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 				<button
 					type="button"
 					onClick={onClose}
-					className="absolute -top-2 -right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-400 hover:bg-stone-200 hover:text-stone-600 transition-all duration-200"
+					className="absolute -top-2 -right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-700 transition-all duration-200"
 					aria-label="Close"
 				>
 					<CloseIcon />
@@ -86,7 +86,7 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 							{stamp.prompt}
 						</p>
 						{stamp.style && (
-							<span className="inline-block text-[11px] tracking-wider uppercase text-stone-400 bg-stone-100/80 rounded-full px-3 py-0.5">
+							<span className="inline-block text-[11px] tracking-wider uppercase text-stone-500 bg-stone-100/80 rounded-full px-3 py-0.5">
 								{stamp.style}
 							</span>
 						)}
@@ -95,11 +95,11 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 					{/* Enhanced prompt disclosure */}
 					{stamp.enhancedPrompt && (
 						<details className="group mx-auto max-w-sm">
-							<summary className="flex items-center justify-center gap-1.5 cursor-pointer text-[11px] tracking-wider uppercase text-stone-400 hover:text-stone-500 transition select-none list-none [&::-webkit-details-marker]:hidden">
+							<summary className="flex items-center justify-center gap-1.5 cursor-pointer text-[11px] tracking-wider uppercase text-stone-500 hover:text-stone-700 transition select-none list-none [&::-webkit-details-marker]:hidden">
 								<ChevronIcon className="w-3 h-3 transition-transform duration-200 group-open:rotate-90" />
 								Enhanced prompt
 							</summary>
-							<p className="mt-2 text-xs text-stone-500 leading-relaxed text-center px-2">
+							<p className="mt-2 text-xs text-stone-600 leading-relaxed text-center px-2">
 								{stamp.enhancedPrompt}
 							</p>
 						</details>

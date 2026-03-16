@@ -22,7 +22,7 @@ export default function CollectionsPage() {
 				>
 					Collections
 				</h1>
-				<p className="text-stone-500">Stamps created by the community</p>
+				<p className="text-stone-600">Stamps created by the community</p>
 			</div>
 			<StampGrid />
 		</div>

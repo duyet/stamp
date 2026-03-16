@@ -55,7 +55,7 @@ export function HomeContent() {
 					Stamps, builders
 				</h1>
 				<p
-					className="mt-6 text-lg text-stone-500 max-w-md mx-auto leading-relaxed"
+					className="mt-6 text-lg text-stone-600 max-w-md mx-auto leading-relaxed"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Create vintage postage stamps with AI. Describe your vision, we do the
@@ -80,7 +80,7 @@ export function HomeContent() {
 						</h2>
 						<Link
 							href="/collections"
-							className="text-sm text-stone-500 hover:text-stamp-navy transition-colors"
+							className="text-sm text-stone-600 hover:text-stamp-navy transition-colors"
 						>
 							View all &rarr;
 						</Link>
@@ -114,7 +114,7 @@ export function HomeContent() {
 			{/* Free tier note */}
 			<section className="py-16 text-center">
 				<p
-					className="text-sm text-stone-500"
+					className="text-sm text-stone-600"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					100 free stamps per day with an account. 3 without signing in.

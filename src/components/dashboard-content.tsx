@@ -33,7 +33,7 @@ function formatDate(ts: number): string {
 function StatCard({ label, value }: { label: string; value: number }) {
 	return (
 		<div className="bg-white rounded-xl p-5 border border-stone-200">
-			<p className="text-xs text-stone-500 uppercase tracking-wide mb-2">
+			<p className="text-xs text-stone-600 uppercase tracking-wide mb-2">
 				{label}
 			</p>
 			<p className="text-3xl font-bold text-stone-900">{value}</p>
@@ -104,7 +104,7 @@ export function DashboardContent() {
 										}}
 									/>
 								</div>
-								<span className="w-10 text-sm text-stone-500 text-right shrink-0">
+								<span className="w-10 text-sm text-stone-600 text-right shrink-0">
 									{s.count}
 								</span>
 							</div>
@@ -135,7 +135,7 @@ export function DashboardContent() {
 								</div>
 							))}
 						</div>
-						<div className="flex justify-between mt-2 text-xs text-stone-500">
+						<div className="flex justify-between mt-2 text-xs text-stone-600">
 							{data.dailyTrend.length > 0 && (
 								<>
 									<span>{formatDate(data.dailyTrend[0].day)}</span>
@@ -152,7 +152,7 @@ export function DashboardContent() {
 			)}
 
 			{data.popularStyles.length === 0 && data.dailyTrend.length === 0 && (
-				<div className="text-center text-stone-500 py-16 text-sm">
+				<div className="text-center text-stone-600 py-16 text-sm">
 					No data yet. Generate some stamps first.
 				</div>
 			)}

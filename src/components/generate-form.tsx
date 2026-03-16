@@ -108,7 +108,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					<SignInButton>
 						<button
 							type="button"
-							className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
+							className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
 						>
 							Sign in
 						</button>
@@ -136,7 +136,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						className="w-full px-4 py-3 sm:px-5 sm:py-3.5 rounded-xl border border-stone-200 bg-cream text-stamp-navy text-sm sm:text-base leading-relaxed placeholder:text-stone-400 focus:border-stamp-navy/20 focus:ring-2 focus:ring-stamp-navy/5 outline-none transition-colors resize-none overflow-hidden"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					/>
-					<p className="text-[11px] text-stone-400 mt-1 px-1 text-right">
+					<p className="text-[11px] text-stone-500 mt-1 px-1 text-right">
 						{prompt.length}/500
 					</p>
 
@@ -150,7 +150,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								className={`rounded-full px-2.5 py-0.5 text-[11px] cursor-pointer transition ${
 									activeGroupIndex === groupIndex
 										? "bg-stone-800 text-white"
-										: "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+										: "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
 								}`}
 							>
 								{group.label ?? "Ideas"}
@@ -220,7 +220,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								</div>
 								<p
 									className={`text-[11px] font-medium ${
-										style === key ? "text-stamp-navy" : "text-stone-500"
+										style === key ? "text-stamp-navy" : "text-stone-700"
 									}`}
 								>
 									{preset.name}
@@ -239,7 +239,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							onChange={(e) => setIsPublic(e.target.checked)}
 							className="w-3.5 h-3.5 rounded border-stone-300 text-neutral-900 focus:ring-neutral-200"
 						/>
-						<span className="text-xs text-stone-500">Public</span>
+						<span className="text-xs text-stone-700">Public</span>
 					</label>
 
 					<button
@@ -314,7 +314,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								<div className="w-9 h-5 bg-stone-200 rounded-full peer-checked:bg-stone-800 transition-colors duration-200" />
 								<div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-4" />
 							</div>
-							<span className="text-sm text-stone-500 group-hover:text-stone-700 transition-colors">
+							<span className="text-sm text-stone-700 group-hover:text-stone-900 transition-colors">
 								Show in public collection
 							</span>
 						</label>
@@ -356,7 +356,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						</div>
 
 						{/* Meta */}
-						<p className="text-[11px] text-stone-400 tracking-wide">
+						<p className="text-[11px] text-stone-500 tracking-wide">
 							{result.remaining} remaining today
 							{result.generationTimeMs && (
 								<span className="ml-1.5">
