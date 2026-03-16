@@ -77,7 +77,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						placeholder="Describe your stamp — a mountain village at dawn, a cat reading by candlelight, wildflowers in a glass jar..."
 						maxLength={500}
 						rows={6}
-						className="w-full px-7 py-6 rounded-2xl border border-neutral-200 bg-cream text-stamp-navy text-lg leading-loose placeholder:text-neutral-400/80 focus:border-stamp-navy/20 focus:ring-2 focus:ring-stamp-navy/5 outline-none transition resize-none"
+						className="w-full px-4 py-4 sm:px-7 sm:py-6 rounded-2xl border border-neutral-200 bg-cream text-stamp-navy text-base sm:text-lg leading-relaxed sm:leading-loose placeholder:text-neutral-400/80 focus:border-stamp-navy/20 focus:ring-2 focus:ring-stamp-navy/5 outline-none transition resize-none"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					/>
 					<div className="flex items-center justify-between mt-2 px-2">

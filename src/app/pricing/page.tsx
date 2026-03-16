@@ -47,7 +47,7 @@ export default function PricingPage() {
 				{/* Free card */}
 				<div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden flex flex-col">
 					<div className="h-1 bg-stamp-navy" />
-					<div className="p-10 flex flex-col flex-1">
+					<div className="p-6 sm:p-10 flex flex-col flex-1">
 						<div className="flex items-start justify-between mb-2">
 							<h2
 								className="text-lg font-semibold text-stamp-navy"
@@ -94,7 +94,7 @@ export default function PricingPage() {
 							Coming Soon
 						</span>
 					</div>
-					<div className="p-10 flex flex-col flex-1">
+					<div className="p-6 sm:p-10 flex flex-col flex-1">
 						<div className="flex items-start justify-between mb-2">
 							<h2 className="text-lg font-semibold text-neutral-400">Pro</h2>
 						</div>
