@@ -8,7 +8,7 @@ import {
 } from "../stamp-prompts";
 
 describe("STAMP_STYLE_PRESETS", () => {
-	it("has all 6 styles", () => {
+	it("has all 5 styles", () => {
 		const keys = Object.keys(STAMP_STYLE_PRESETS);
 		expect(keys).toEqual([
 			"vintage",
@@ -16,7 +16,6 @@ describe("STAMP_STYLE_PRESETS", () => {
 			"modern",
 			"botanical",
 			"portrait",
-			"anime",
 		]);
 	});
 
@@ -29,22 +28,12 @@ describe("STAMP_STYLE_PRESETS", () => {
 		}
 	});
 
-	it("each style includes the base style keywords (except anime which has custom base)", () => {
-		for (const [key, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
-			// Anime has a custom base style to avoid conflicting directives
-			if (key !== "anime") {
-				expect(preset.prompt).toContain("naive folk art");
-				expect(preset.prompt).toContain("dot eyes");
-			}
+	it("each style includes the base style keywords", () => {
+		for (const [, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
+			expect(preset.prompt).toContain("naive folk art");
+			expect(preset.prompt).toContain("dot eyes");
 			expect(preset.prompt).toContain("bold black outlines");
 		}
-	});
-
-	it("anime style has custom base without conflicting directives", () => {
-		const anime = STAMP_STYLE_PRESETS.anime;
-		expect(anime.prompt).toContain("anime manga style");
-		expect(anime.prompt).toContain("large expressive eyes");
-		expect(anime.prompt).not.toContain("dot eyes");
 	});
 });
 
