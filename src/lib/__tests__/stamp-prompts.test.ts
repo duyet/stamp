@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
 	buildStampPrompt,
-	EXAMPLE_PROMPTS,
+	PROMPT_GROUPS,
 	STAMP_BASE_STYLE,
 	STAMP_STYLE_PRESETS,
 } from "../stamp-prompts";
 
 describe("STAMP_STYLE_PRESETS", () => {
-	it("has all 5 styles", () => {
+	it("has all 6 styles", () => {
 		const keys = Object.keys(STAMP_STYLE_PRESETS);
 		expect(keys).toEqual([
 			"vintage",
@@ -15,6 +15,7 @@ describe("STAMP_STYLE_PRESETS", () => {
 			"modern",
 			"botanical",
 			"portrait",
+			"anime",
 		]);
 	});
 
@@ -75,19 +76,38 @@ describe("buildStampPrompt", () => {
 	});
 });
 
-describe("EXAMPLE_PROMPTS", () => {
-	it("has at least 5 examples", () => {
-		expect(EXAMPLE_PROMPTS.length).toBeGreaterThanOrEqual(5);
+describe("PROMPT_GROUPS", () => {
+	it("has at least one group", () => {
+		expect(PROMPT_GROUPS.length).toBeGreaterThanOrEqual(1);
 	});
 
-	it("each prompt is non-empty", () => {
-		for (const prompt of EXAMPLE_PROMPTS) {
-			expect(prompt.trim().length).toBeGreaterThan(0);
+	it("each group has at least 5 prompts", () => {
+		for (const group of PROMPT_GROUPS) {
+			expect(group.prompts.length).toBeGreaterThanOrEqual(5);
 		}
 	});
 
-	it("no duplicates", () => {
-		const unique = new Set(EXAMPLE_PROMPTS);
-		expect(unique.size).toBe(EXAMPLE_PROMPTS.length);
+	it("each prompt is non-empty", () => {
+		for (const group of PROMPT_GROUPS) {
+			for (const prompt of group.prompts) {
+				expect(prompt.trim().length).toBeGreaterThan(0);
+			}
+		}
+	});
+
+	it("no duplicates within each group", () => {
+		for (const group of PROMPT_GROUPS) {
+			const unique = new Set(group.prompts);
+			expect(unique.size).toBe(group.prompts.length);
+		}
+	});
+
+	it("groups with a style reference a valid style key", () => {
+		const validStyles = Object.keys(STAMP_STYLE_PRESETS);
+		for (const group of PROMPT_GROUPS) {
+			if (group.style) {
+				expect(validStyles).toContain(group.style);
+			}
+		}
 	});
 });

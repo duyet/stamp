@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import {
-	ANIME_PROMPTS,
-	EXAMPLE_PROMPTS,
+	PROMPT_GROUPS,
 	STAMP_STYLE_PRESETS,
 	type StampStyle,
 } from "@/lib/stamp-prompts";
@@ -84,43 +83,37 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						<p className="text-xs text-neutral-400">{prompt.length}/500</p>
 					</div>
 
-					{/* Example prompts */}
-					<div className="flex flex-wrap gap-2 mt-4">
-						{EXAMPLE_PROMPTS.map((example) => (
-							<button
-								key={example}
-								type="button"
-								onClick={() => setPrompt(example)}
-								className="text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-full px-3 py-1.5 text-xs cursor-pointer transition"
-							>
-								{example}
-							</button>
-						))}
-					</div>
-					{/* Anime prompts */}
-					<div className="mt-3">
-						<p
-							className="text-xs text-neutral-400 mb-2 px-1"
-							style={{ fontFamily: "var(--font-stamp)" }}
+					{/* Prompt quick-picks */}
+					{PROMPT_GROUPS.map((group) => (
+						<div
+							key={group.label ?? "default"}
+							className={group.label ? "mt-3" : "mt-4"}
 						>
-							Funny anime characters
-						</p>
-						<div className="flex flex-wrap gap-2">
-							{ANIME_PROMPTS.map((example) => (
-								<button
-									key={example}
-									type="button"
-									onClick={() => {
-										setPrompt(example);
-										setStyle("anime");
-									}}
-									className="text-purple-400 hover:text-purple-600 hover:bg-purple-50 rounded-full px-3 py-1.5 text-xs cursor-pointer transition"
+							{group.label && (
+								<p
+									className="text-xs text-neutral-400 mb-2 px-1"
+									style={{ fontFamily: "var(--font-stamp)" }}
 								>
-									{example}
-								</button>
-							))}
+									{group.label}
+								</p>
+							)}
+							<div className="flex flex-wrap gap-2">
+								{group.prompts.map((example) => (
+									<button
+										key={example}
+										type="button"
+										onClick={() => {
+											setPrompt(example);
+											if (group.style) setStyle(group.style);
+										}}
+										className={`${group.className} ${group.hoverClassName} rounded-full px-3 py-1.5 text-xs cursor-pointer transition`}
+									>
+										{example}
+									</button>
+								))}
+							</div>
 						</div>
-					</div>
+					))}
 				</div>
 
 				{/* Style selector */}

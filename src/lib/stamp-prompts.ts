@@ -48,34 +48,51 @@ export function buildStampPrompt(
 	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers on the stamp.`;
 }
 
-/**
- * Example prompts for the landing page / inspiration.
- */
-export const EXAMPLE_PROMPTS = [
-	"A girl with glasses and black hair",
-	"A cat sitting on a windowsill",
-	"A lighthouse on a rocky coast",
-	"A wise owl with big round eyes",
-	"A cozy coffee cup with steam",
-	"An astronaut in a spacesuit",
-	"A fox in an autumn forest",
-	"A sunflower in a garden",
-];
+export interface PromptGroup {
+	label?: string;
+	style?: StampStyle;
+	className: string;
+	hoverClassName: string;
+	prompts: readonly string[];
+}
 
 /**
- * Funny anime character prompts for quick-pick inspiration.
+ * Prompt groups for quick-pick inspiration on the generate form.
+ * Each group can optionally auto-select a style when clicked.
  */
-export const ANIME_PROMPTS = [
-	"A bald superhero with a cape looking bored after one punch",
-	"A spiky-haired warrior screaming and powering up with golden aura",
-	"A rubber pirate boy with a straw hat grinning wide",
-	"A ninja kid with whisker marks eating a giant bowl of ramen",
-	"A pink-haired girl punching through a wall with fury",
-	"A sleepy tanuki raccoon spirit wearing a leaf on its head",
-	"A tiny blue cat robot pulling gadgets from a belly pocket",
-	"A tall skeleton musician with an afro sipping tea elegantly",
-	"A serious potato-shaped detective with a bowtie and glasses",
-	"A grumpy green-haired swordsman lost and holding three swords",
-	"A cheerful slime blob bouncing happily in a fantasy meadow",
-	"A dramatic villain laughing on a throne eating potato chips",
-];
+export const PROMPT_GROUPS: readonly PromptGroup[] = [
+	{
+		className: "text-neutral-400",
+		hoverClassName: "hover:text-neutral-600 hover:bg-neutral-100",
+		prompts: [
+			"A girl with glasses and black hair",
+			"A cat sitting on a windowsill",
+			"A lighthouse on a rocky coast",
+			"A wise owl with big round eyes",
+			"A cozy coffee cup with steam",
+			"An astronaut in a spacesuit",
+			"A fox in an autumn forest",
+			"A sunflower in a garden",
+		],
+	},
+	{
+		label: "Funny anime characters",
+		style: "anime",
+		className: "text-purple-400",
+		hoverClassName: "hover:text-purple-600 hover:bg-purple-50",
+		prompts: [
+			"A bald superhero with a cape looking bored after one punch",
+			"A spiky-haired warrior screaming and powering up with golden aura",
+			"A rubber pirate boy with a straw hat grinning wide",
+			"A ninja kid with whisker marks eating a giant bowl of ramen",
+			"A pink-haired girl punching through a wall with fury",
+			"A sleepy tanuki raccoon spirit wearing a leaf on its head",
+			"A tiny blue cat robot pulling gadgets from a belly pocket",
+			"A tall skeleton musician with an afro sipping tea elegantly",
+			"A serious potato-shaped detective with a bowtie and glasses",
+			"A grumpy green-haired swordsman lost and holding three swords",
+			"A cheerful slime blob bouncing happily in a fantasy meadow",
+			"A dramatic villain laughing on a throne eating potato chips",
+		],
+	},
+] as const;
