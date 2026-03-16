@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import {
 	EXAMPLE_PROMPTS,
@@ -187,10 +188,12 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			{result && (
 				<div className="mt-10 text-center">
 					<div className="stamp-border inline-block">
-						<img
+						<Image
 							src={result.imageUrl}
 							alt={prompt}
-							className="w-72 h-72 object-cover"
+							width={288}
+							height={288}
+							className="object-cover"
 						/>
 					</div>
 

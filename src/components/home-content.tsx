@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
@@ -100,12 +101,15 @@ export function HomeContent() {
 								className="group text-left cursor-pointer hover:opacity-80 transition"
 								onClick={() => setSelectedStamp(stamp)}
 							>
-								<img
-									src={stamp.imageUrl}
-									alt={stamp.prompt}
-									className="w-full aspect-square object-cover rounded-xl"
-									loading="lazy"
-								/>
+								<div className="relative aspect-square">
+									<Image
+										src={stamp.imageUrl}
+										alt={stamp.prompt}
+										fill
+										sizes="(max-width: 768px) 50vw, 25vw"
+										className="object-cover rounded-xl"
+									/>
+								</div>
 								<p className="mt-3 text-xs text-neutral-400 truncate">
 									{stamp.prompt}
 								</p>

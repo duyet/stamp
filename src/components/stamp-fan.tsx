@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface StampFanProps {
 	images?: string[];
 	onClickStamp?: (index: number) => void;
@@ -23,18 +25,22 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 							className="stamp-border w-full h-full"
 							onClick={() => onClickStamp(idx)}
 						>
-							<img
+							<Image
 								src={images[idx]}
 								alt=""
+								width={130}
+								height={130}
 								className="w-full h-full object-cover"
 							/>
 						</button>
 					) : (
 						<div className="stamp-border">
 							{images[idx] ? (
-								<img
+								<Image
 									src={images[idx]}
 									alt=""
+									width={130}
+									height={130}
 									className="w-full h-full object-cover"
 								/>
 							) : (

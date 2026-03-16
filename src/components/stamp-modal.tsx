@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect } from "react";
 import type { Stamp } from "@/db/schema";
 
@@ -53,11 +54,16 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 
 				{/* Stamp image with perforated border + shadow */}
 				<div className="stamp-border stamp-modal-shadow">
-					<img
-						src={stamp.imageUrl}
-						alt={stamp.prompt}
-						className="w-full aspect-square object-cover"
-					/>
+					<div className="relative aspect-square">
+						<Image
+							src={stamp.imageUrl}
+							alt={stamp.prompt}
+							fill
+							sizes="(max-width: 768px) 90vw, 512px"
+							className="object-cover"
+							priority
+						/>
+					</div>
 				</div>
 
 				{/* Stamp info */}

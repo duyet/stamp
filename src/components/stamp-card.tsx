@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { Stamp } from "@/db/schema";
 
 interface StampCardProps {
@@ -10,12 +11,15 @@ interface StampCardProps {
 export function StampCard({ stamp, onClick }: StampCardProps) {
 	const content = (
 		<>
-			<img
-				src={stamp.imageUrl}
-				alt={stamp.prompt}
-				className="w-full aspect-square object-cover"
-				loading="lazy"
-			/>
+			<div className="relative aspect-square">
+				<Image
+					src={stamp.imageUrl}
+					alt={stamp.prompt}
+					fill
+					sizes="(max-width: 768px) 50vw, 25vw"
+					className="object-cover"
+				/>
+			</div>
 			<div className="p-3">
 				<p className="text-sm text-neutral-600 truncate">{stamp.prompt}</p>
 				<div className="mt-2 flex items-center justify-between">
