@@ -21,7 +21,7 @@ interface GenerateFormProps {
 
 function autoResize(el: HTMLTextAreaElement) {
 	el.style.height = "auto";
-	el.style.height = `${Math.max(56, el.scrollHeight)}px`;
+	el.style.height = `${Math.max(48, el.scrollHeight)}px`;
 }
 
 export function GenerateForm({ onGenerated }: GenerateFormProps) {
@@ -106,26 +106,10 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	}
 
 	return (
-		<div className="max-w-3xl mx-auto">
-			<div className="flex justify-end mb-2">
-				<Show when="signed-out">
-					<SignInButton>
-						<button
-							type="button"
-							className="text-sm text-stone-600 hover:text-stone-900 transition-colors"
-						>
-							Sign in
-						</button>
-					</SignInButton>
-				</Show>
-				<Show when="signed-in">
-					<UserButton />
-				</Show>
-			</div>
-
-			<form onSubmit={handleSubmit} className="space-y-3">
-				{/* Prompt input */}
-				<div>
+		<div className="max-w-2xl mx-auto">
+			<form onSubmit={handleSubmit} className="space-y-4">
+				{/* Prompt + auth row */}
+				<div className="relative">
 					<textarea
 						ref={textareaRef}
 						id="prompt"
@@ -137,31 +121,48 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						placeholder="Describe your stamp..."
 						maxLength={500}
 						rows={1}
-						className="w-full px-4 py-3 sm:px-5 sm:py-3.5 rounded-xl border border-stone-200 bg-cream text-stamp-navy text-sm sm:text-base leading-relaxed placeholder:text-stone-400 focus:border-stamp-navy/20 focus:ring-2 focus:ring-stamp-navy/5 outline-none transition-colors resize-none overflow-hidden"
+						className="w-full pl-4 pr-12 py-3 rounded-lg border border-stone-300 bg-white text-stamp-navy text-sm leading-relaxed placeholder:text-stone-400 focus:border-stamp-navy focus:ring-1 focus:ring-stamp-navy/10 outline-none transition resize-none overflow-hidden"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					/>
-					<p className="text-[11px] text-stone-500 mt-1 px-1 text-right">
-						{prompt.length}/500
-					</p>
-
-					{/* Prompt quick-picks */}
-					<div className="mt-2 flex items-center gap-1.5">
-						{PROMPT_GROUPS.map((group, groupIndex) => (
-							<button
-								key={group.label ?? "default"}
-								type="button"
-								onClick={() => setActiveGroupIndex(groupIndex)}
-								className={`rounded-full px-2.5 py-0.5 text-[11px] cursor-pointer transition ${
-									activeGroupIndex === groupIndex
-										? "bg-stone-800 text-white"
-										: "text-stone-600 hover:text-stone-800 hover:bg-stone-100"
-								}`}
-							>
-								{group.label ?? "Ideas"}
-							</button>
-						))}
+					{/* Auth button inside textarea row */}
+					<div className="absolute right-3 top-3">
+						<Show when="signed-out">
+							<SignInButton>
+								<button
+									type="button"
+									className="text-xs text-stone-400 hover:text-stamp-navy transition-colors"
+								>
+									Sign in
+								</button>
+							</SignInButton>
+						</Show>
+						<Show when="signed-in">
+							<UserButton appearance={{ elements: { avatarBox: "w-6 h-6" } }} />
+						</Show>
 					</div>
-					<div className="mt-1.5 flex gap-1.5 overflow-x-auto scrollbar-hide">
+				</div>
+
+				{/* Prompt suggestions */}
+				<div>
+					{PROMPT_GROUPS.length > 1 && (
+						<div className="flex items-center gap-1 mb-1.5">
+							{PROMPT_GROUPS.map((group, groupIndex) => (
+								<button
+									key={group.label ?? "default"}
+									type="button"
+									onClick={() => setActiveGroupIndex(groupIndex)}
+									className={`rounded px-2 py-0.5 text-[10px] font-medium cursor-pointer transition ${
+										activeGroupIndex === groupIndex
+											? "bg-stamp-navy text-white"
+											: "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
+									}`}
+								>
+									{group.label ?? "Ideas"}
+								</button>
+							))}
+						</div>
+					)}
+					<div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
 						{PROMPT_GROUPS[activeGroupIndex].prompts.map((example) => {
 							const group = PROMPT_GROUPS[activeGroupIndex];
 							return (
@@ -179,7 +180,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 										});
 										if (group.style) setStyle(group.style);
 									}}
-									className={`${group.className} ${group.hoverClassName} shrink-0 rounded-full px-2.5 py-1 text-[11px] cursor-pointer transition`}
+									className="shrink-0 rounded px-2 py-0.5 text-[10px] text-stone-400 hover:text-stone-600 hover:bg-stone-50 cursor-pointer transition"
 								>
 									{example}
 								</button>
@@ -188,43 +189,38 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					</div>
 				</div>
 
-				{/* Style selector */}
-				<fieldset>
-					<legend
-						className="text-sm font-medium text-stamp-navy mb-2"
-						style={{ fontFamily: "var(--font-stamp)" }}
-					>
-						Style
-					</legend>
-					<div className="flex gap-2 overflow-x-auto scrollbar-hide">
+				{/* Styles + actions row */}
+				<div className="flex items-end justify-between gap-4">
+					{/* Style selector */}
+					<div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
 						{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
 							<button
 								key={key}
 								type="button"
 								onClick={() => setStyle(key as StampStyle)}
-								className={`group shrink-0 flex flex-col items-center gap-1 cursor-pointer transition ${
-									style === key ? "opacity-100" : "opacity-60 hover:opacity-100"
-								}`}
+								className="shrink-0 cursor-pointer transition"
 							>
 								<div
-									className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden transition ${
+									className={`w-10 h-10 rounded overflow-hidden transition ${
 										style === key
 											? "ring-2 ring-stamp-navy ring-offset-1"
-											: "hover:ring-1 hover:ring-stone-300"
+											: "opacity-50 hover:opacity-80"
 									}`}
 								>
 									<Image
 										src={preset.thumbnail}
-										alt={`${preset.name} style`}
-										width={80}
-										height={80}
+										alt={preset.name}
+										width={40}
+										height={40}
 										className="object-cover w-full h-full"
 										unoptimized
 									/>
 								</div>
 								<p
-									className={`text-[11px] font-medium ${
-										style === key ? "text-stamp-navy" : "text-stone-700"
+									className={`text-[9px] mt-0.5 text-center ${
+										style === key
+											? "text-stamp-navy font-medium"
+											: "text-stone-400"
 									}`}
 								>
 									{preset.name}
@@ -232,72 +228,71 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							</button>
 						))}
 					</div>
-				</fieldset>
 
-				{/* Submit row: toggle + button */}
-				<div className="flex items-center justify-between gap-4">
-					<label className="flex items-center gap-2 cursor-pointer">
-						<input
-							type="checkbox"
-							checked={isPublic}
-							onChange={(e) => setIsPublic(e.target.checked)}
-							className="w-3.5 h-3.5 rounded border-stone-300 text-neutral-900 focus:ring-neutral-200"
-						/>
-						<span className="text-xs text-stone-700">Public</span>
-					</label>
-
-					<button
-						type="submit"
-						disabled={loading || !prompt.trim()}
-						className="px-8 py-2.5 bg-stamp-navy text-white rounded-lg font-medium text-sm hover:bg-neutral-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
-						style={{ fontFamily: "var(--font-stamp)" }}
-					>
-						{loading ? (
-							<span className="flex items-center gap-2">
-								<svg
-									className="animate-spin h-3.5 w-3.5"
-									viewBox="0 0 24 24"
-									fill="none"
-									role="img"
-									aria-label="Loading"
-								>
-									<title>Loading</title>
-									<circle
-										className="opacity-25"
-										cx="12"
-										cy="12"
-										r="10"
-										stroke="currentColor"
-										strokeWidth="4"
-									/>
-									<path
-										className="opacity-75"
-										fill="currentColor"
-										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-									/>
-								</svg>
-								Creating...
-							</span>
-						) : (
-							"Generate"
-						)}
-					</button>
+					{/* Submit + public toggle */}
+					<div className="flex items-center gap-3 shrink-0">
+						<label className="flex items-center gap-1.5 cursor-pointer">
+							<input
+								type="checkbox"
+								checked={isPublic}
+								onChange={(e) => setIsPublic(e.target.checked)}
+								className="w-3 h-3 rounded border-stone-300 text-stamp-navy focus:ring-stamp-navy/20"
+							/>
+							<span className="text-[10px] text-stone-500">Public</span>
+						</label>
+						<button
+							type="submit"
+							disabled={loading || !prompt.trim()}
+							className="px-5 py-2 bg-stamp-navy text-white rounded-lg text-xs font-medium hover:bg-stone-800 transition disabled:opacity-30 disabled:cursor-not-allowed"
+							style={{ fontFamily: "var(--font-stamp)" }}
+						>
+							{loading ? (
+								<span className="flex items-center gap-1.5">
+									<svg
+										className="animate-spin h-3 w-3"
+										viewBox="0 0 24 24"
+										fill="none"
+										role="img"
+										aria-label="Loading"
+									>
+										<title>Loading</title>
+										<circle
+											className="opacity-25"
+											cx="12"
+											cy="12"
+											r="10"
+											stroke="currentColor"
+											strokeWidth="4"
+										/>
+										<path
+											className="opacity-75"
+											fill="currentColor"
+											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+										/>
+									</svg>
+									Creating...
+								</span>
+							) : (
+								"Generate"
+							)}
+						</button>
+					</div>
 				</div>
 			</form>
 
 			{/* Error */}
 			{error && (
-				<div className="mt-6 p-4 bg-stamp-red/5 border border-stamp-red/20 rounded-xl text-sm">
+				<div className="mt-4 p-3 bg-stamp-red/5 border border-stamp-red/15 rounded-lg text-xs">
 					<p className="text-stamp-red">{error}</p>
 					{isRateLimited && !isSignedIn && (
-						<div className="mt-3 pt-3 border-t border-stamp-red/10 flex items-center justify-between">
-							<p className="text-stone-600 text-sm">
+						<div className="mt-2 pt-2 border-t border-stamp-red/10 flex items-center justify-between">
+							<p className="text-stone-600">
 								Sign in for 100 free stamps per day
 							</p>
 							<SignInButton>
 								<button
 									type="button"
-									className="px-4 py-1.5 bg-stamp-navy text-white rounded-lg text-sm font-medium hover:bg-stone-800 transition"
+									className="px-3 py-1 bg-stamp-navy text-white rounded text-xs font-medium hover:bg-stone-800 transition"
 								>
 									Sign in
 								</button>
@@ -309,20 +304,20 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 			{/* Result */}
 			{result && (
-				<div className="mt-10 text-center animate-stamp-appear">
+				<div className="mt-8 text-center animate-stamp-appear">
 					<div className="stamp-border stamp-modal-shadow inline-block">
 						<Image
 							src={result.imageUrl}
 							alt={prompt}
-							width={288}
-							height={288}
+							width={256}
+							height={256}
 							className="object-cover"
 						/>
 					</div>
 
-					<div className="mt-5 space-y-3">
-						{/* Public collection toggle */}
-						<label className="inline-flex items-center gap-3 cursor-pointer group">
+					<div className="mt-4 space-y-2">
+						{/* Public toggle */}
+						<label className="inline-flex items-center gap-2 cursor-pointer group">
 							<div className="relative">
 								<input
 									type="checkbox"
@@ -330,23 +325,18 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 									onChange={handleVisibilityChange}
 									className="peer sr-only"
 								/>
-								<div className="w-9 h-5 bg-stone-200 rounded-full peer-checked:bg-stone-800 transition-colors duration-200" />
-								<div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-4" />
+								<div className="w-8 h-4 bg-stone-200 rounded-full peer-checked:bg-stone-800 transition-colors" />
+								<div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4" />
 							</div>
-							<span className="text-sm text-stone-700 group-hover:text-stone-900 transition-colors">
-								Show in public collection
-							</span>
+							<span className="text-xs text-stone-500">Public collection</span>
 						</label>
-
-						{/* Divider */}
-						<div className="border-t border-stone-100 mx-12" />
 
 						{/* Actions */}
 						<div className="flex justify-center gap-2">
 							<a
 								href={result.imageUrl}
 								download={`stamp-${result.id}.png`}
-								className="inline-flex items-center gap-2 px-5 py-2 bg-stamp-navy text-white rounded-full text-sm hover:bg-stone-800 transition-all duration-200 shadow-sm"
+								className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-stamp-navy text-white rounded-full text-xs hover:bg-stone-800 transition"
 							>
 								<DownloadIcon />
 								Download
@@ -358,7 +348,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 										`${window.location.origin}/api/stamps/${result.id}/image`,
 									)
 								}
-								className="inline-flex items-center gap-2 px-5 py-2 text-stone-600 bg-stone-50 border border-stone-200/80 rounded-full text-sm hover:bg-stone-100 hover:border-stone-300 transition-all duration-200"
+								className="inline-flex items-center gap-1.5 px-4 py-1.5 text-stone-600 bg-white border border-stone-200 rounded-full text-xs hover:bg-stone-50 transition"
 							>
 								{copied ? (
 									<>
@@ -375,10 +365,10 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						</div>
 
 						{/* Meta */}
-						<p className="text-[11px] text-stone-500 tracking-wide">
+						<p className="text-[10px] text-stone-400">
 							{result.remaining} remaining today
 							{result.generationTimeMs && (
-								<span className="ml-1.5">
+								<span className="ml-1">
 									· {(result.generationTimeMs / 1000).toFixed(1)}s
 								</span>
 							)}

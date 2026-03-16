@@ -10,7 +10,7 @@ import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 
 export function HomeContent() {
-	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(20);
+	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(30);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
 
 	function handleGenerated(stamp: {
@@ -78,7 +78,7 @@ export function HomeContent() {
 							View all &rarr;
 						</Link>
 					</div>
-					<div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+					<div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
 						{recentStamps.map((stamp) => (
 							<button
 								key={stamp.id}
@@ -91,7 +91,7 @@ export function HomeContent() {
 										src={stamp.imageUrl}
 										alt={stamp.prompt}
 										fill
-										sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
+										sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 16vw, 10vw"
 										className="object-cover"
 									/>
 								</div>
