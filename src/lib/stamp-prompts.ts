@@ -29,6 +29,10 @@ export const STAMP_STYLE_PRESETS = {
 		name: "Portrait",
 		prompt: `${STAMP_BASE_STYLE}, close-up face portrait, stippled shading on skin, expressive simple eyes, blue-grey background with subtle texture`,
 	},
+	anime: {
+		name: "Anime",
+		prompt: `${STAMP_BASE_STYLE}, anime manga inspired style, big expressive eyes, dynamic pose, bold linework, vibrant accent color, chibi proportions, kawaii aesthetic`,
+	},
 } as const;
 
 export type StampStyle = keyof typeof STAMP_STYLE_PRESETS;
@@ -56,4 +60,22 @@ export const EXAMPLE_PROMPTS = [
 	"An astronaut in a spacesuit",
 	"A fox in an autumn forest",
 	"A sunflower in a garden",
+];
+
+/**
+ * Funny anime character prompts for quick-pick inspiration.
+ */
+export const ANIME_PROMPTS = [
+	"A bald superhero with a cape looking bored after one punch",
+	"A spiky-haired warrior screaming and powering up with golden aura",
+	"A rubber pirate boy with a straw hat grinning wide",
+	"A ninja kid with whisker marks eating a giant bowl of ramen",
+	"A pink-haired girl punching through a wall with fury",
+	"A sleepy tanuki raccoon spirit wearing a leaf on its head",
+	"A tiny blue cat robot pulling gadgets from a belly pocket",
+	"A tall skeleton musician with an afro sipping tea elegantly",
+	"A serious potato-shaped detective with a bowtie and glasses",
+	"A grumpy green-haired swordsman lost and holding three swords",
+	"A cheerful slime blob bouncing happily in a fantasy meadow",
+	"A dramatic villain laughing on a throne eating potato chips",
 ];

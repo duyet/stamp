@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+	ANIME_PROMPTS,
 	EXAMPLE_PROMPTS,
 	STAMP_STYLE_PRESETS,
 	type StampStyle,
@@ -95,6 +96,30 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								{example}
 							</button>
 						))}
+					</div>
+					{/* Anime prompts */}
+					<div className="mt-3">
+						<p
+							className="text-xs text-neutral-400 mb-2 px-1"
+							style={{ fontFamily: "var(--font-stamp)" }}
+						>
+							Funny anime characters
+						</p>
+						<div className="flex flex-wrap gap-2">
+							{ANIME_PROMPTS.map((example) => (
+								<button
+									key={example}
+									type="button"
+									onClick={() => {
+										setPrompt(example);
+										setStyle("anime");
+									}}
+									className="text-purple-400 hover:text-purple-600 hover:bg-purple-50 rounded-full px-3 py-1.5 text-xs cursor-pointer transition"
+								>
+									{example}
+								</button>
+							))}
+						</div>
 					</div>
 				</div>
 
