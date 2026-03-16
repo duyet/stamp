@@ -1,5 +1,6 @@
 "use client";
 
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
@@ -102,6 +103,22 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	return (
 		<div className="max-w-3xl mx-auto">
+			<div className="flex justify-end mb-2">
+				<Show when="signed-out">
+					<SignInButton>
+						<button
+							type="button"
+							className="text-sm text-stone-500 hover:text-stone-900 transition-colors"
+						>
+							Sign in
+						</button>
+					</SignInButton>
+				</Show>
+				<Show when="signed-in">
+					<UserButton />
+				</Show>
+			</div>
+
 			<form onSubmit={handleSubmit} className="space-y-3">
 				{/* Prompt input */}
 				<div>
