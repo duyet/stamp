@@ -77,8 +77,8 @@ export interface PromptGroup {
  */
 export const PROMPT_GROUPS: readonly PromptGroup[] = [
 	{
-		className: "text-neutral-400",
-		hoverClassName: "hover:text-neutral-600 hover:bg-neutral-100",
+		className: "text-stone-600",
+		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: [
 			"A girl with glasses and black hair",
 			"A cat sitting on a windowsill",

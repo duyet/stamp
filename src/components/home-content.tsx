@@ -10,7 +10,7 @@ import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 
 export function HomeContent() {
-	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(8);
+	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(20);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
 
 	function handleGenerated(stamp: {
@@ -61,10 +61,19 @@ export function HomeContent() {
 					Create vintage postage stamps with AI. Describe your vision, we do the
 					rest.
 				</p>
+				<div className="mt-8">
+					<a
+						href="#generate"
+						className="inline-flex items-center gap-2 bg-stamp-navy text-white px-8 py-3 rounded-full font-medium text-base hover:bg-stone-800 transition shadow-sm"
+						style={{ fontFamily: "var(--font-stamp)" }}
+					>
+						Start Creating
+					</a>
+				</div>
 			</section>
 
 			{/* Generate form */}
-			<section className="pb-20">
+			<section id="generate" className="pb-20 scroll-mt-8">
 				<GenerateForm onGenerated={handleGenerated} />
 			</section>
 
@@ -85,7 +94,7 @@ export function HomeContent() {
 							View all &rarr;
 						</Link>
 					</div>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+					<div className="grid grid-cols-3 md:grid-cols-6 gap-3">
 						{recentStamps.map((stamp) => (
 							<button
 								key={stamp.id}
@@ -98,7 +107,7 @@ export function HomeContent() {
 										src={stamp.imageUrl}
 										alt={stamp.prompt}
 										fill
-										sizes="(max-width: 768px) 50vw, 25vw"
+										sizes="(max-width: 768px) 33vw, 16vw"
 										className="object-cover"
 									/>
 								</div>

@@ -150,7 +150,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								className={`rounded-full px-2.5 py-0.5 text-[11px] cursor-pointer transition ${
 									activeGroupIndex === groupIndex
 										? "bg-stone-800 text-white"
-										: "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
+										: "text-stone-600 hover:text-stone-800 hover:bg-stone-100"
 								}`}
 							>
 								{group.label ?? "Ideas"}
