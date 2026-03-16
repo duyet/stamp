@@ -15,7 +15,7 @@ export default function DashboardPage() {
 				>
 					Dashboard
 				</h1>
-				<p className="text-neutral-400 mt-2 text-sm">
+				<p className="text-stone-500 mt-2 text-sm">
 					stamp.builders — internal analytics
 				</p>
 			</div>

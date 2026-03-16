@@ -38,16 +38,15 @@ export default function PricingPage() {
 				>
 					Simple, honest pricing
 				</h1>
-				<p className="text-neutral-400 text-base max-w-md mx-auto">
+				<p className="text-stone-500 text-base max-w-md mx-auto">
 					Start creating stamps for free. No account needed.
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-				{/* Free card */}
-				<div className="bg-white rounded-2xl border border-neutral-200 overflow-hidden flex flex-col">
-					<div className="h-1 bg-stamp-navy" />
-					<div className="p-6 sm:p-10 flex flex-col flex-1">
+			<div className="bg-stone-100 rounded-2xl p-6 sm:p-10 max-w-3xl mx-auto">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					{/* Free card */}
+					<div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col">
 						<div className="flex items-start justify-between mb-2">
 							<h2
 								className="text-lg font-semibold text-stamp-navy"
@@ -61,13 +60,13 @@ export default function PricingPage() {
 						</div>
 						<div className="mb-8">
 							<span className="text-5xl font-bold text-stamp-navy">$0</span>
-							<span className="text-neutral-400 text-sm ml-2">/ month</span>
+							<span className="text-stone-500 text-sm ml-2">/ month</span>
 						</div>
 						<ul className="space-y-4 mb-10 flex-1">
 							{freeFeatures.map((feature) => (
 								<li
 									key={feature}
-									className="flex items-center gap-3 text-sm text-neutral-500"
+									className="flex items-center gap-3 text-sm text-stone-700"
 								>
 									<span className="text-stamp-green text-base leading-none">
 										&#10003;
@@ -78,59 +77,58 @@ export default function PricingPage() {
 						</ul>
 						<Link
 							href="/"
-							className="block text-center bg-stamp-navy text-white rounded-xl py-3 px-6 text-sm font-medium hover:bg-neutral-800 transition"
+							className="block text-center bg-stamp-navy text-white rounded-xl py-3 px-6 text-sm font-medium hover:bg-stone-800 transition"
 						>
 							Start Creating
 						</Link>
 					</div>
-				</div>
 
-				{/* Pro card */}
-				<div className="relative bg-neutral-50 rounded-2xl border border-neutral-200 overflow-hidden flex flex-col">
-					<div className="h-1 bg-neutral-300" />
-					{/* Coming soon overlay */}
-					<div className="absolute inset-0 top-1 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-b-2xl">
-						<span className="text-xs font-medium bg-neutral-100 text-neutral-500 px-3 py-1.5 rounded-full tracking-wide uppercase border border-neutral-200">
-							Coming Soon
-						</span>
-					</div>
-					<div className="p-6 sm:p-10 flex flex-col flex-1">
-						<div className="flex items-start justify-between mb-2">
-							<h2 className="text-lg font-semibold text-neutral-400">Pro</h2>
+					{/* Pro card */}
+					<div className="relative bg-stone-200/60 rounded-2xl overflow-hidden flex flex-col">
+						{/* Coming soon overlay */}
+						<div className="absolute inset-0 bg-stone-100/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-2xl">
+							<span className="text-xs font-medium bg-white text-stone-500 px-3 py-1.5 rounded-full tracking-wide uppercase">
+								Coming Soon
+							</span>
 						</div>
-						<div className="mb-8">
-							<span className="text-5xl font-bold text-neutral-300">$5</span>
-							<span className="text-neutral-300 text-sm ml-2">/ month</span>
+						<div className="p-6 sm:p-8 flex flex-col flex-1">
+							<div className="flex items-start justify-between mb-2">
+								<h2 className="text-lg font-semibold text-stone-400">Pro</h2>
+							</div>
+							<div className="mb-8">
+								<span className="text-5xl font-bold text-stone-300">$5</span>
+								<span className="text-stone-300 text-sm ml-2">/ month</span>
+							</div>
+							<ul className="space-y-4 mb-10 flex-1">
+								{proFeatures.map((feature) => (
+									<li
+										key={feature}
+										className="flex items-center gap-3 text-sm text-stone-300"
+									>
+										<span className="text-stone-300 text-base leading-none">
+											&#10003;
+										</span>
+										{feature}
+									</li>
+								))}
+							</ul>
+							<button
+								type="button"
+								disabled
+								className="block w-full text-center bg-stone-300 text-stone-400 rounded-xl py-3 px-6 text-sm font-medium cursor-not-allowed"
+							>
+								Coming Soon
+							</button>
 						</div>
-						<ul className="space-y-4 mb-10 flex-1">
-							{proFeatures.map((feature) => (
-								<li
-									key={feature}
-									className="flex items-center gap-3 text-sm text-neutral-300"
-								>
-									<span className="text-neutral-300 text-base leading-none">
-										&#10003;
-									</span>
-									{feature}
-								</li>
-							))}
-						</ul>
-						<button
-							type="button"
-							disabled
-							className="block w-full text-center bg-neutral-200 text-neutral-400 rounded-xl py-3 px-6 text-sm font-medium cursor-not-allowed"
-						>
-							Coming Soon
-						</button>
 					</div>
 				</div>
 			</div>
 
-			<p className="text-center text-neutral-400 text-sm mt-14">
+			<p className="text-center text-stone-500 text-sm mt-14">
 				Questions?{" "}
 				<a
 					href="mailto:hello@stamp.builders"
-					className="text-neutral-500 hover:text-stamp-navy transition underline underline-offset-2"
+					className="text-stone-600 hover:text-stamp-navy transition underline underline-offset-2"
 				>
 					Get in touch
 				</a>

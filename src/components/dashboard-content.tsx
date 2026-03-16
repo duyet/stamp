@@ -32,11 +32,11 @@ function formatDate(ts: number): string {
 
 function StatCard({ label, value }: { label: string; value: number }) {
 	return (
-		<div className="bg-white rounded-xl p-5 border border-neutral-200">
-			<p className="text-xs text-neutral-400 uppercase tracking-wide mb-2">
+		<div className="bg-white rounded-xl p-5 border border-stone-200">
+			<p className="text-xs text-stone-500 uppercase tracking-wide mb-2">
 				{label}
 			</p>
-			<p className="text-3xl font-bold text-neutral-900">{value}</p>
+			<p className="text-3xl font-bold text-stone-900">{value}</p>
 		</div>
 	);
 }
@@ -61,7 +61,7 @@ export function DashboardContent() {
 				{Array.from({ length: 4 }, (_, i) => `sk-${i}`).map((id) => (
 					<div
 						key={id}
-						className="h-24 rounded-xl bg-neutral-100 animate-pulse"
+						className="h-24 rounded-xl bg-stone-100 animate-pulse"
 					/>
 				))}
 			</div>
@@ -87,24 +87,24 @@ export function DashboardContent() {
 
 			{data.popularStyles.length > 0 && (
 				<section className="mb-8">
-					<h2 className="text-xs font-medium text-neutral-500 mb-4 uppercase tracking-wide">
+					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
 						Popular styles
 					</h2>
-					<div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-3">
+					<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
 						{data.popularStyles.map((s) => (
 							<div key={s.style} className="flex items-center gap-3">
-								<span className="w-20 text-sm text-neutral-600 capitalize shrink-0">
+								<span className="w-20 text-sm text-stone-700 capitalize shrink-0">
 									{s.style}
 								</span>
-								<div className="flex-1 bg-neutral-100 rounded-full h-4 overflow-hidden">
+								<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
 									<div
-										className="h-full bg-neutral-900 rounded-full transition-all"
+										className="h-full bg-stone-800 rounded-full transition-all"
 										style={{
 											width: `${Math.round((s.count / maxStyleCount) * 100)}%`,
 										}}
 									/>
 								</div>
-								<span className="w-10 text-sm text-neutral-400 text-right shrink-0">
+								<span className="w-10 text-sm text-stone-500 text-right shrink-0">
 									{s.count}
 								</span>
 							</div>
@@ -115,10 +115,10 @@ export function DashboardContent() {
 
 			{data.dailyTrend.length > 0 && (
 				<section className="mb-10">
-					<h2 className="text-xs font-medium text-neutral-500 mb-4 uppercase tracking-wide">
+					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
 						Generations per day (last 30 days)
 					</h2>
-					<div className="bg-white rounded-xl border border-neutral-200 p-6">
+					<div className="bg-white rounded-xl border border-stone-200 p-6">
 						<div className="flex items-end gap-1 h-32">
 							{data.dailyTrend.map((d) => (
 								<div
@@ -127,7 +127,7 @@ export function DashboardContent() {
 									title={`${formatDate(d.day)}: ${d.count}`}
 								>
 									<div
-										className="w-full bg-neutral-900 rounded-t opacity-40 group-hover:opacity-80 transition-opacity"
+										className="w-full bg-stone-800 rounded-t opacity-40 group-hover:opacity-80 transition-opacity"
 										style={{
 											height: `${Math.max(4, Math.round((d.count / maxDayCount) * 112))}px`,
 										}}
@@ -135,7 +135,7 @@ export function DashboardContent() {
 								</div>
 							))}
 						</div>
-						<div className="flex justify-between mt-2 text-xs text-neutral-400">
+						<div className="flex justify-between mt-2 text-xs text-stone-500">
 							{data.dailyTrend.length > 0 && (
 								<>
 									<span>{formatDate(data.dailyTrend[0].day)}</span>
@@ -152,7 +152,7 @@ export function DashboardContent() {
 			)}
 
 			{data.popularStyles.length === 0 && data.dailyTrend.length === 0 && (
-				<div className="text-center text-neutral-400 py-16 text-sm">
+				<div className="text-center text-stone-500 py-16 text-sm">
 					No data yet. Generate some stamps first.
 				</div>
 			)}
