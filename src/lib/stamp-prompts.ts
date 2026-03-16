@@ -51,8 +51,7 @@ export function buildStampPrompt(
 export interface PromptGroup {
 	label?: string;
 	style?: StampStyle;
-	className: string;
-	hoverClassName: string;
+	variant: "default" | "anime";
 	prompts: readonly string[];
 }
 
@@ -62,8 +61,7 @@ export interface PromptGroup {
  */
 export const PROMPT_GROUPS: readonly PromptGroup[] = [
 	{
-		className: "text-neutral-400",
-		hoverClassName: "hover:text-neutral-600 hover:bg-neutral-100",
+		variant: "default",
 		prompts: [
 			"A girl with glasses and black hair",
 			"A cat sitting on a windowsill",
@@ -78,8 +76,7 @@ export const PROMPT_GROUPS: readonly PromptGroup[] = [
 	{
 		label: "Funny anime characters",
 		style: "anime",
-		className: "text-purple-400",
-		hoverClassName: "hover:text-purple-600 hover:bg-purple-50",
+		variant: "anime",
 		prompts: [
 			"A bald superhero with a cape looking bored after one punch",
 			"A spiky-haired warrior screaming and powering up with golden aura",
@@ -95,4 +92,4 @@ export const PROMPT_GROUPS: readonly PromptGroup[] = [
 			"A dramatic villain laughing on a throne eating potato chips",
 		],
 	},
-] as const;
+];

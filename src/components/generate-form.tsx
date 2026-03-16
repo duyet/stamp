@@ -9,6 +9,11 @@ import {
 
 const SUGGESTIONS_PER_GROUP = 4;
 
+const VARIANT_CLASSES = {
+	default: "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100",
+	anime: "text-purple-400 hover:text-purple-600 hover:bg-purple-50",
+} as const;
+
 function shuffled<T>(arr: readonly T[]): T[] {
 	const copy = [...arr];
 	for (let i = copy.length - 1; i > 0; i--) {
@@ -125,11 +130,13 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 											setPrompt((prev) => {
 												const trimmed = prev.trim();
 												if (!trimmed) return example;
-												return `${trimmed}, ${example.toLowerCase()}`;
+												const suffix =
+													example.charAt(0).toLowerCase() + example.slice(1);
+												return `${trimmed}, ${suffix}`;
 											});
 											if (group.style) setStyle(group.style);
 										}}
-										className={`${group.className} ${group.hoverClassName} rounded-full px-3 py-1.5 text-xs cursor-pointer transition`}
+										className={`${VARIANT_CLASSES[group.variant]} rounded-full px-3 py-1.5 text-xs cursor-pointer transition`}
 									>
 										{example}
 									</button>
