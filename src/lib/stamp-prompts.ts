@@ -12,22 +12,27 @@ export const STAMP_STYLE_PRESETS = {
 	vintage: {
 		name: "Vintage",
 		prompt: `${STAMP_BASE_STYLE}, blue-grey and cream color palette, delicate floral accents, stippled blue background`,
+		thumbnail: "/styles/vintage.jpg",
 	},
 	folk: {
 		name: "Folk Art",
 		prompt: `${STAMP_BASE_STYLE}, warm mustard yellow and black palette, bold graphic shapes, geometric decorative borders`,
+		thumbnail: "/styles/folk.jpg",
 	},
 	modern: {
 		name: "Modern",
 		prompt: `${STAMP_BASE_STYLE}, clean flat colors, bold single accent color, geometric composition, minimal decoration`,
+		thumbnail: "/styles/modern.jpg",
 	},
 	botanical: {
 		name: "Botanical",
 		prompt: `${STAMP_BASE_STYLE}, detailed plant or flower as subject, fine crosshatching, muted green and cream palette, scientific illustration feel`,
+		thumbnail: "/styles/botanical.jpg",
 	},
 	portrait: {
 		name: "Portrait",
 		prompt: `${STAMP_BASE_STYLE}, close-up face portrait, stippled shading on skin, expressive simple eyes, blue-grey background with subtle texture`,
+		thumbnail: "/styles/portrait.jpg",
 	},
 } as const;
 

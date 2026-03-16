@@ -15,18 +15,18 @@ export const metadata: Metadata = {
 export default function CollectionsPage() {
 	return (
 		<div className="max-w-5xl mx-auto px-6 py-20">
-			<div className="mb-12">
+			<div className="text-center mb-12">
 				<h1
-					className="text-2xl font-semibold text-stamp-navy"
+					className="text-4xl font-bold text-stamp-navy tracking-tight mb-3"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Collections
 				</h1>
-				<p className="mt-2 text-sm text-neutral-400">
-					Stamps created by the community
-				</p>
+				<p className="text-stone-500">Stamps created by the community</p>
 			</div>
-			<StampGrid />
+			<div className="bg-stone-100 rounded-2xl p-4 sm:p-6">
+				<StampGrid />
+			</div>
 		</div>
 	);
 }

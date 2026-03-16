@@ -54,12 +54,11 @@ export function HomeContent() {
 					Stamps, builders
 				</h1>
 				<p
-					className="mt-6 text-lg text-neutral-400 max-w-md mx-auto leading-relaxed"
+					className="mt-6 text-lg text-stone-500 max-w-md mx-auto leading-relaxed"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
-					Create vintage postage stamps with AI.
-					<br />
-					Describe your vision. We do the rest.
+					Create vintage postage stamps with AI. Describe your vision, we do the
+					rest.
 				</p>
 			</section>
 
@@ -70,8 +69,8 @@ export function HomeContent() {
 
 			{/* Latest stamps */}
 			{recentStamps.length > 0 && (
-				<section className="py-20">
-					<div className="flex items-baseline justify-between mb-10">
+				<section className="bg-stone-100 rounded-2xl p-6 sm:p-10 mb-16">
+					<div className="flex items-baseline justify-between mb-8">
 						<h2
 							className="text-2xl font-semibold text-stamp-navy"
 							style={{ fontFamily: "var(--font-stamp)" }}
@@ -80,17 +79,17 @@ export function HomeContent() {
 						</h2>
 						<Link
 							href="/collections"
-							className="text-sm text-neutral-400 hover:text-stamp-navy transition-colors"
+							className="text-sm text-stone-500 hover:text-stamp-navy transition-colors"
 						>
 							View all &rarr;
 						</Link>
 					</div>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 						{recentStamps.map((stamp) => (
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer hover:opacity-80 transition"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden bg-stone-200/60 hover:bg-stone-200 transition"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">
@@ -99,10 +98,10 @@ export function HomeContent() {
 										alt={stamp.prompt}
 										fill
 										sizes="(max-width: 768px) 50vw, 25vw"
-										className="object-cover rounded-xl"
+										className="object-cover"
 									/>
 								</div>
-								<p className="mt-3 text-xs text-neutral-400 truncate">
+								<p className="px-3 py-2.5 text-xs text-stone-600 truncate">
 									{stamp.prompt}
 								</p>
 							</button>
@@ -114,7 +113,7 @@ export function HomeContent() {
 			{/* Free tier note */}
 			<section className="py-16 text-center">
 				<p
-					className="text-sm text-neutral-400"
+					className="text-sm text-stone-500"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					10 free stamps per day. No account needed.

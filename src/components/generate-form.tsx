@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
 	EXAMPLE_PROMPTS,
 	STAMP_STYLE_PRESETS,
@@ -16,9 +16,15 @@ interface GenerateFormProps {
 	}) => void;
 }
 
+function autoResize(el: HTMLTextAreaElement) {
+	el.style.height = "auto";
+	el.style.height = `${Math.max(56, el.scrollHeight)}px`;
+}
+
 export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [prompt, setPrompt] = useState("");
 	const [style, setStyle] = useState<StampStyle>("vintage");
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [isPublic, setIsPublic] = useState(true);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -96,17 +102,21 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				{/* Prompt input */}
 				<div>
 					<textarea
+						ref={textareaRef}
 						id="prompt"
 						value={prompt}
-						onChange={(e) => setPrompt(e.target.value)}
-						placeholder="Describe your stamp — a mountain village at dawn, a cat reading by candlelight, wildflowers in a glass jar..."
+						onChange={(e) => {
+							setPrompt(e.target.value);
+							autoResize(e.target);
+						}}
+						placeholder="Describe your stamp..."
 						maxLength={500}
-						rows={6}
-						className="w-full px-4 py-4 sm:px-7 sm:py-6 rounded-2xl border border-neutral-200 bg-cream text-stamp-navy text-base sm:text-lg leading-relaxed sm:leading-loose placeholder:text-neutral-400/80 focus:border-stamp-navy/20 focus:ring-2 focus:ring-stamp-navy/5 outline-none transition resize-none"
+						rows={1}
+						className="w-full px-4 py-4 sm:px-7 sm:py-5 rounded-2xl border border-stone-200 bg-cream text-stamp-navy text-base sm:text-lg leading-relaxed sm:leading-loose placeholder:text-stone-400 focus:border-stamp-navy/20 focus:ring-2 focus:ring-stamp-navy/5 outline-none transition-colors resize-none overflow-hidden"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					/>
 					<div className="flex items-center justify-between mt-2 px-2">
-						<p className="text-xs text-neutral-400">{prompt.length}/500</p>
+						<p className="text-xs text-stone-500">{prompt.length}/500</p>
 					</div>
 
 					{/* Example prompts */}
@@ -115,8 +125,17 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							<button
 								key={example}
 								type="button"
-								onClick={() => setPrompt(example)}
-								className="text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-full px-3 py-1.5 text-xs cursor-pointer transition"
+								onClick={() => {
+									setPrompt((prev) =>
+										prev
+											? `${prev.trimEnd()}, ${example.toLowerCase()}`
+											: example,
+									);
+									requestAnimationFrame(() => {
+										if (textareaRef.current) autoResize(textareaRef.current);
+									});
+								}}
+								className="text-stone-500 hover:text-stone-700 hover:bg-stone-100 rounded-full px-3 py-1.5 text-xs cursor-pointer transition"
 							>
 								{example}
 							</button>
@@ -125,26 +144,46 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				</div>
 
 				{/* Style selector */}
-				<fieldset>
+				<fieldset className="bg-stone-100 rounded-2xl p-5 sm:p-6">
 					<legend
-						className="block text-sm text-neutral-500 mb-3"
+						className="text-xl font-semibold text-stamp-navy mb-1"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					>
 						Choose a style
 					</legend>
-					<div className="flex flex-wrap gap-2">
+					<p className="text-sm text-stone-500 mb-5">
+						Each style gives your stamp a distinct look and feel.
+					</p>
+					<div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
 						{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
 							<button
 								key={key}
 								type="button"
 								onClick={() => setStyle(key as StampStyle)}
-								className={`px-4 py-2 rounded-full text-sm transition ${
+								className={`group relative rounded-xl overflow-hidden transition cursor-pointer ${
 									style === key
-										? "bg-stamp-navy text-white"
-										: "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
+										? "ring-2 ring-stamp-navy ring-offset-2 ring-offset-stone-100"
+										: "hover:ring-1 hover:ring-stone-300"
 								}`}
 							>
-								{preset.name}
+								<div className="bg-stone-200/80 p-3 pb-2">
+									<div className="aspect-square rounded-lg overflow-hidden">
+										<Image
+											src={preset.thumbnail}
+											alt={`${preset.name} style`}
+											width={200}
+											height={200}
+											className="object-cover w-full h-full"
+										/>
+									</div>
+									<p
+										className={`mt-2 text-sm font-medium text-center ${
+											style === key ? "text-stamp-navy" : "text-stone-700"
+										}`}
+									>
+										{preset.name}
+									</p>
+								</div>
 							</button>
 						))}
 					</div>
@@ -156,9 +195,9 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						type="checkbox"
 						checked={isPublic}
 						onChange={(e) => setIsPublic(e.target.checked)}
-						className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-200"
+						className="w-4 h-4 rounded border-stone-300 text-neutral-900 focus:ring-neutral-200"
 					/>
-					<span className="text-sm text-neutral-500">
+					<span className="text-sm text-stone-600">
 						Show in public collection
 					</span>
 				</label>
@@ -228,9 +267,9 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							type="checkbox"
 							checked={isPublic}
 							onChange={handleVisibilityChange}
-							className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-200"
+							className="w-4 h-4 rounded border-stone-300 text-neutral-900 focus:ring-neutral-200"
 						/>
-						<span className="text-sm text-neutral-500">
+						<span className="text-sm text-stone-600">
 							Show in public collection
 						</span>
 					</label>
@@ -250,15 +289,15 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 									`${window.location.origin}/api/stamps/${result.id}/image`,
 								);
 							}}
-							className="px-5 py-2.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-xl transition text-sm"
+							className="px-5 py-2.5 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition text-sm"
 						>
 							Copy Link
 						</button>
 					</div>
-					<p className="mt-4 text-xs text-neutral-400">
+					<p className="mt-4 text-xs text-stone-500">
 						{result.remaining} free generations remaining today
 						{result.generationTimeMs && (
-							<span className="ml-2 text-neutral-300">
+							<span className="ml-2 text-stone-500">
 								({(result.generationTimeMs / 1000).toFixed(1)}s)
 							</span>
 						)}

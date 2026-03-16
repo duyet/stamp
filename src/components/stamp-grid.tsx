@@ -13,7 +13,7 @@ export function StampGrid() {
 					(id) => (
 						<div
 							key={id}
-							className="aspect-square rounded-xl bg-neutral-100 animate-pulse"
+							className="aspect-square rounded-xl bg-stone-100 animate-pulse"
 						/>
 					),
 				)}
@@ -24,12 +24,12 @@ export function StampGrid() {
 	if (stamps.length === 0) {
 		return (
 			<div className="text-center py-20">
-				<p className="text-neutral-500 text-base">No stamps yet.</p>
-				<p className="text-neutral-400 text-sm mt-1">
+				<p className="text-stone-600 text-base">No stamps yet.</p>
+				<p className="text-stone-500 text-sm mt-1">
 					Be the first to{" "}
 					<a
 						href="/generate"
-						className="text-neutral-700 hover:text-neutral-900 underline underline-offset-2 transition"
+						className="text-stone-700 hover:text-stone-900 underline underline-offset-2 transition"
 					>
 						create one
 					</a>

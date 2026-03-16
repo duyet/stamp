@@ -21,16 +21,16 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 				/>
 			</div>
 			<div className="p-3">
-				<p className="text-sm text-neutral-600 truncate">{stamp.prompt}</p>
+				<p className="text-sm text-stone-700 truncate">{stamp.prompt}</p>
 				<div className="mt-2 flex items-center justify-between">
-					<span className="text-xs bg-neutral-100 text-neutral-400 rounded-full px-2 py-0.5 capitalize">
+					<span className="text-xs text-stone-500 capitalize">
 						{stamp.style}
 					</span>
 					<a
 						href={stamp.imageUrl}
 						download={`stamp-${stamp.id}.png`}
 						onClick={(e) => e.stopPropagation()}
-						className="text-xs text-neutral-500 hover:text-neutral-700 transition"
+						className="text-xs text-stone-500 hover:text-stone-800 transition"
 					>
 						Download
 					</a>
@@ -43,7 +43,7 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 		return (
 			<button
 				type="button"
-				className="group relative text-left cursor-pointer rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-300 transition-colors w-full"
+				className="group relative text-left cursor-pointer rounded-xl overflow-hidden bg-stone-200/60 hover:bg-stone-200 transition w-full"
 				onClick={onClick}
 			>
 				{content}
@@ -52,7 +52,7 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 	}
 
 	return (
-		<div className="group relative rounded-xl overflow-hidden border border-neutral-200 hover:border-neutral-300 transition-colors">
+		<div className="group relative rounded-xl overflow-hidden bg-stone-200/60 hover:bg-stone-200 transition">
 			{content}
 		</div>
 	);
