@@ -202,11 +202,23 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							onChange={async (e) => {
 								const newValue = e.target.checked;
 								setIsPublic(newValue);
-								await fetch(`/api/stamps/${result.id}/visibility`, {
-									method: "PATCH",
-									headers: { "Content-Type": "application/json" },
-									body: JSON.stringify({ isPublic: newValue }),
-								});
+								try {
+									const res = await fetch(
+										`/api/stamps/${result.id}/visibility`,
+										{
+											method: "PATCH",
+											headers: { "Content-Type": "application/json" },
+											body: JSON.stringify({ isPublic: newValue }),
+										},
+									);
+									if (!res.ok) {
+										setIsPublic(!newValue);
+										setError("Failed to update visibility. Please try again.");
+									}
+								} catch {
+									setIsPublic(!newValue);
+									setError("Failed to update visibility. Please try again.");
+								}
 							}}
 							className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-200"
 						/>
