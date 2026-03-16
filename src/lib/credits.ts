@@ -5,6 +5,8 @@ import { creditTransactions, userCredits } from "@/db/schema";
 
 export const DEFAULT_DAILY_LIMIT = 100;
 export const ANONYMOUS_DAILY_LIMIT = 20;
+export const STANDARD_CREDIT_COST = 1;
+export const HD_CREDIT_COST = 5;
 const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
@@ -49,12 +51,15 @@ export async function getUserCredits(db: Database, userId: string) {
 }
 
 /**
- * Check if a user has credits available and deduct one.
+ * Check if a user has credits available and deduct the given cost.
  * Deducts from daily credits first, then purchased credits.
+ *
+ * @param cost - Number of credits to deduct (default 1, e.g. 5 for HD).
  */
 export async function checkAndDeductCredit(
 	db: Database,
 	userId: string,
+	cost = 1,
 ): Promise<{
 	allowed: boolean;
 	remaining: number;
@@ -66,8 +71,8 @@ export async function checkAndDeductCredit(
 	const dailyRemaining = credits.dailyLimit - credits.dailyUsed;
 
 	// Try daily credits first
-	if (dailyRemaining > 0) {
-		const newDailyUsed = credits.dailyUsed + 1;
+	if (dailyRemaining >= cost) {
+		const newDailyUsed = credits.dailyUsed + cost;
 		await db
 			.update(userCredits)
 			.set({ dailyUsed: newDailyUsed, updatedAt: now })
@@ -79,8 +84,8 @@ export async function checkAndDeductCredit(
 	}
 
 	// Try purchased credits
-	if (credits.purchasedCredits > 0) {
-		const newPurchased = credits.purchasedCredits - 1;
+	if (credits.purchasedCredits >= cost) {
+		const newPurchased = credits.purchasedCredits - cost;
 		await db
 			.update(userCredits)
 			.set({ purchasedCredits: newPurchased, updatedAt: now })
@@ -90,7 +95,7 @@ export async function checkAndDeductCredit(
 			id: nanoid(12),
 			userId,
 			type: "deduct_purchased",
-			amount: -1,
+			amount: -cost,
 			balanceAfter: newPurchased,
 			metadata: null,
 			createdAt: now,

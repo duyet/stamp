@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockCreditsDb } from "@/test-utils";
 import {
+	HD_CREDIT_COST,
+	STANDARD_CREDIT_COST,
 	addCredits,
 	checkAndDeductCredit,
 	DEFAULT_DAILY_LIMIT,
@@ -175,6 +177,105 @@ describe("credits", () => {
 			expect(result.allowed).toBe(true);
 			expect(result.source).toBe("daily");
 			expect(result.remaining).toBe(99); // 100 - 1 + 0
+		});
+
+		it("deducts HD cost (5) from daily credits", async () => {
+			const { db, updateSet } = createMockCreditsDb({
+				userId: "user_123",
+				dailyLimit: 100,
+				dailyUsed: 90,
+				dailyResetAt: FIXED_NOW + WINDOW_MS,
+				purchasedCredits: 0,
+				createdAt: FIXED_NOW,
+				updatedAt: FIXED_NOW,
+			});
+
+			const result = await checkAndDeductCredit(
+				db,
+				"user_123",
+				HD_CREDIT_COST,
+			);
+
+			expect(result.allowed).toBe(true);
+			expect(result.source).toBe("daily");
+			expect(result.remaining).toBe(5); // 100 - 95 + 0
+			expect(updateSet).toHaveBeenCalledWith(
+				expect.objectContaining({ dailyUsed: 95 }),
+			);
+		});
+
+		it("blocks HD generation when daily credits insufficient for cost", async () => {
+			const { db } = createMockCreditsDb({
+				userId: "user_123",
+				dailyLimit: 100,
+				dailyUsed: 97, // only 3 remaining, need 5
+				dailyResetAt: FIXED_NOW + WINDOW_MS,
+				purchasedCredits: 0,
+				createdAt: FIXED_NOW,
+				updatedAt: FIXED_NOW,
+			});
+
+			const result = await checkAndDeductCredit(
+				db,
+				"user_123",
+				HD_CREDIT_COST,
+			);
+
+			expect(result.allowed).toBe(false);
+			expect(result.remaining).toBe(0);
+		});
+
+		it("falls through to purchased credits for HD when daily insufficient", async () => {
+			const { db } = createMockCreditsDb({
+				userId: "user_123",
+				dailyLimit: 100,
+				dailyUsed: 97, // only 3 remaining daily
+				dailyResetAt: FIXED_NOW + WINDOW_MS,
+				purchasedCredits: 10,
+				createdAt: FIXED_NOW,
+				updatedAt: FIXED_NOW,
+			});
+
+			const result = await checkAndDeductCredit(
+				db,
+				"user_123",
+				HD_CREDIT_COST,
+			);
+
+			expect(result.allowed).toBe(true);
+			expect(result.source).toBe("purchased");
+			expect(result.remaining).toBe(5); // 10 - 5
+		});
+
+		it("blocks HD when both daily and purchased credits insufficient", async () => {
+			const { db } = createMockCreditsDb({
+				userId: "user_123",
+				dailyLimit: 100,
+				dailyUsed: 97,
+				dailyResetAt: FIXED_NOW + WINDOW_MS,
+				purchasedCredits: 3, // only 3 purchased, need 5
+				createdAt: FIXED_NOW,
+				updatedAt: FIXED_NOW,
+			});
+
+			const result = await checkAndDeductCredit(
+				db,
+				"user_123",
+				HD_CREDIT_COST,
+			);
+
+			expect(result.allowed).toBe(false);
+			expect(result.remaining).toBe(0);
+		});
+	});
+
+	describe("credit cost constants", () => {
+		it("has correct standard credit cost", () => {
+			expect(STANDARD_CREDIT_COST).toBe(1);
+		});
+
+		it("has correct HD credit cost", () => {
+			expect(HD_CREDIT_COST).toBe(5);
 		});
 	});
 
