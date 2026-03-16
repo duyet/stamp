@@ -20,7 +20,7 @@ describe("checkRateLimit", () => {
 		const result = await checkRateLimit(db, "1.2.3.4");
 
 		expect(result.allowed).toBe(true);
-		expect(result.remaining).toBe(4);
+		expect(result.remaining).toBe(9);
 		expect(insertValues).toHaveBeenCalledWith(
 			expect.objectContaining({
 				userIp: "1.2.3.4",
@@ -39,26 +39,26 @@ describe("checkRateLimit", () => {
 		const result = await checkRateLimit(db, "1.2.3.4");
 
 		expect(result.allowed).toBe(true);
-		expect(result.remaining).toBe(2); // 5 - 2 - 1 = 2
+		expect(result.remaining).toBe(7); // 10 - 2 - 1 = 7
 	});
 
-	it("allows user at count 4 (one more left)", async () => {
+	it("allows user at count 9 (one more left)", async () => {
 		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 4,
+			generationsCount: 9,
 			windowStart: FIXED_NOW,
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
 
 		expect(result.allowed).toBe(true);
-		expect(result.remaining).toBe(0); // 5 - 4 - 1 = 0
+		expect(result.remaining).toBe(0); // 10 - 9 - 1 = 0
 	});
 
-	it("blocks user at the limit (5 generations)", async () => {
+	it("blocks user at the limit (10 generations)", async () => {
 		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 5,
+			generationsCount: 10,
 			windowStart: FIXED_NOW,
 		});
 
@@ -71,7 +71,7 @@ describe("checkRateLimit", () => {
 	it("blocks user over the limit", async () => {
 		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 10,
+			generationsCount: 15,
 			windowStart: FIXED_NOW,
 		});
 
@@ -85,14 +85,14 @@ describe("checkRateLimit", () => {
 		const expiredWindow = new Date(FIXED_NOW.getTime() - 25 * 60 * 60 * 1000);
 		const { db, updateSet } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 5,
+			generationsCount: 10,
 			windowStart: expiredWindow,
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
 
 		expect(result.allowed).toBe(true);
-		expect(result.remaining).toBe(4);
+		expect(result.remaining).toBe(9);
 		expect(updateSet).toHaveBeenCalledWith(
 			expect.objectContaining({
 				generationsCount: 1,
@@ -106,21 +106,21 @@ describe("checkRateLimit", () => {
 		);
 		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 5,
+			generationsCount: 10,
 			windowStart: barelyExpired,
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
 
 		expect(result.allowed).toBe(true);
-		expect(result.remaining).toBe(4);
+		expect(result.remaining).toBe(9);
 	});
 
 	it("does NOT reset window just under 24 hours", async () => {
 		const notExpired = new Date(FIXED_NOW.getTime() - 23 * 60 * 60 * 1000);
 		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
-			generationsCount: 5,
+			generationsCount: 10,
 			windowStart: notExpired,
 		});
 

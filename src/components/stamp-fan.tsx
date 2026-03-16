@@ -8,11 +8,19 @@ interface StampFanProps {
 }
 
 export function StampFan({ images = [], onClickStamp }: StampFanProps) {
-	const positions = ["stamp-fan-left", "stamp-fan-center", "stamp-fan-right"];
+	const positions = [
+		"stamp-fan-far-left",
+		"stamp-fan-left",
+		"stamp-fan-center",
+		"stamp-fan-right",
+		"stamp-fan-far-right",
+	];
 	const fallbacks = [
-		<GlassesGirl key="f1" />,
-		<FlowerGirl key="f2" />,
-		<PortraitMan key="f3" />,
+		<PortraitMan key="f1" />,
+		<GlassesGirl key="f2" />,
+		<FlowerGirl key="f3" />,
+		<PortraitMan key="f4" />,
+		<GlassesGirl key="f5" />,
 	];
 
 	return (

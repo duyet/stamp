@@ -26,7 +26,30 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		id: string;
 		imageUrl: string;
 		remaining: number;
+		generationTimeMs?: number;
 	} | null>(null);
+
+	async function handleVisibilityChange(
+		e: React.ChangeEvent<HTMLInputElement>,
+	) {
+		if (!result) return;
+		const newValue = e.target.checked;
+		setIsPublic(newValue);
+		try {
+			const res = await fetch(`/api/stamps/${result.id}/visibility`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ isPublic: newValue }),
+			});
+			if (!res.ok) {
+				setIsPublic(!newValue);
+				setError("Failed to update visibility. Please try again.");
+			}
+		} catch {
+			setIsPublic(!newValue);
+			setError("Failed to update visibility. Please try again.");
+		}
+	}
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -47,7 +70,9 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				id: string;
 				imageUrl: string;
 				prompt: string;
+				enhancedPrompt?: string;
 				remaining: number;
+				generationTimeMs?: number;
 				error?: string;
 			};
 
@@ -202,27 +227,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						<input
 							type="checkbox"
 							checked={isPublic}
-							onChange={async (e) => {
-								const newValue = e.target.checked;
-								setIsPublic(newValue);
-								try {
-									const res = await fetch(
-										`/api/stamps/${result.id}/visibility`,
-										{
-											method: "PATCH",
-											headers: { "Content-Type": "application/json" },
-											body: JSON.stringify({ isPublic: newValue }),
-										},
-									);
-									if (!res.ok) {
-										setIsPublic(!newValue);
-										setError("Failed to update visibility. Please try again.");
-									}
-								} catch {
-									setIsPublic(!newValue);
-									setError("Failed to update visibility. Please try again.");
-								}
-							}}
+							onChange={handleVisibilityChange}
 							className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-200"
 						/>
 						<span className="text-sm text-neutral-500">
@@ -252,6 +257,11 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					</div>
 					<p className="mt-4 text-xs text-neutral-400">
 						{result.remaining} free generations remaining today
+						{result.generationTimeMs && (
+							<span className="ml-2 text-neutral-300">
+								({(result.generationTimeMs / 1000).toFixed(1)}s)
+							</span>
+						)}
 					</p>
 				</div>
 			)}

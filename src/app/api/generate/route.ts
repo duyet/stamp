@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
+import { getClientIp } from "@/lib/get-client-ip";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
@@ -12,17 +13,14 @@ export async function POST(request: NextRequest) {
 		const env = getEnv();
 		const db = getDb();
 
-		const userIp =
-			request.headers.get("cf-connecting-ip") ||
-			request.headers.get("x-forwarded-for") ||
-			"unknown";
+		const userIp = getClientIp(request.headers);
 
 		const { allowed, remaining } = await checkRateLimit(db, userIp);
 		if (!allowed) {
 			return NextResponse.json(
 				{
 					error:
-						"Rate limit exceeded. You can generate 5 stamps per day for free.",
+						"Rate limit exceeded. You can generate 10 stamps per day for free.",
 					remaining: 0,
 				},
 				{ status: 429 },
@@ -68,11 +66,16 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		// Time the generation (LLM enhancement + image generation)
+		const genStart = Date.now();
+
 		const { imageData, mimeType, enhancedPrompt } = await generateStamp(
 			ai,
 			prompt,
 			style,
 		);
+
+		const generationTimeMs = Date.now() - genStart;
 
 		// Upload to R2
 		const stampId = nanoid(12);
@@ -95,7 +98,7 @@ export async function POST(request: NextRequest) {
 			userIp,
 		});
 
-		// Fire-and-forget event tracking — do not await to avoid slowing response
+		// Fire-and-forget event tracking
 		db.insert(events)
 			.values({
 				id: nanoid(12),
@@ -104,6 +107,7 @@ export async function POST(request: NextRequest) {
 					style,
 					prompt_length: prompt.length,
 					stamp_id: stampId,
+					generation_time_ms: generationTimeMs,
 				}),
 				userIp,
 				createdAt: Date.now(),
@@ -119,6 +123,7 @@ export async function POST(request: NextRequest) {
 			enhancedPrompt,
 			style,
 			remaining,
+			generationTimeMs,
 		});
 	} catch (error) {
 		console.error("Stamp generation failed:", error);

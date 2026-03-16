@@ -1,26 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { StampCard } from "@/components/stamp-card";
-import type { Stamp } from "@/db/schema";
+import { useStamps } from "@/hooks/use-stamps";
 
 export function StampGrid() {
-	const [stamps, setStamps] = useState<Stamp[]>([]);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		async function load() {
-			try {
-				const r = await fetch("/api/stamps?limit=50");
-				const data = (await r.json()) as { stamps?: Stamp[] };
-				setStamps(data.stamps ?? []);
-			} catch {
-			} finally {
-				setLoading(false);
-			}
-		}
-		load();
-	}, []);
+	const { stamps, loading } = useStamps(50);
 
 	if (loading) {
 		return (

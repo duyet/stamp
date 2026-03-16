@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
+import { getClientIp } from "@/lib/get-client-ip";
 
 export async function PATCH(
 	request: NextRequest,
@@ -26,10 +27,7 @@ export async function PATCH(
 		}
 
 		// Verify the stamp exists and the requester is the creator (by IP)
-		const userIp =
-			request.headers.get("cf-connecting-ip") ||
-			request.headers.get("x-forwarded-for") ||
-			null;
+		const userIp = getClientIp(request.headers, null);
 
 		const stamp = await db.query.stamps.findFirst({
 			where: eq(stamps.id, id),

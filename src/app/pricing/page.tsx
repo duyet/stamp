@@ -4,16 +4,16 @@ import Link from "next/link";
 export const metadata: Metadata = {
 	title: "Pricing — stamp.builders",
 	description:
-		"Generate AI stamps for free. 5 stamps per day, all styles included.",
+		"Generate AI stamps for free. 10 stamps per day, all styles included.",
 	openGraph: {
 		title: "Pricing — stamp.builders",
-		description: "Generate AI stamps for free. 5 stamps per day.",
+		description: "Generate AI stamps for free. 10 stamps per day.",
 		url: "https://stamp.builders/pricing",
 	},
 };
 
 const freeFeatures = [
-	"5 stamps per day",
+	"10 stamps per day",
 	"All 5 styles available",
 	"Public collection sharing",
 	"Download stamps",

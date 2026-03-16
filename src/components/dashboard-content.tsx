@@ -58,7 +58,7 @@ export function DashboardContent() {
 	if (!data) {
 		return (
 			<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-				{["sk-a", "sk-b", "sk-c", "sk-d"].map((id) => (
+				{Array.from({ length: 4 }, (_, i) => `sk-${i}`).map((id) => (
 					<div
 						key={id}
 						className="h-24 rounded-xl bg-neutral-100 animate-pulse"

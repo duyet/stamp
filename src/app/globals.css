@@ -42,51 +42,69 @@ body {
 	mask-composite: intersect;
 }
 
-/* Stamp fan — 3 cards stacked, expand on hover */
+/* Stamp fan — 5 cards stacked, expand on hover */
 .stamp-fan {
 	position: relative;
-	width: 200px;
+	width: 280px;
 	height: 200px;
 	margin: 0 auto;
 }
 
 .stamp-fan-card {
 	position: absolute;
-	width: 130px;
-	height: 130px;
+	width: 120px;
+	height: 120px;
 	transition: all 0.4s ease-out;
 	transform-origin: bottom center;
 }
 
 /* Stacked state (default) */
-.stamp-fan-left {
-	left: 20px;
-	top: 20px;
-	transform: rotate(-8deg);
+.stamp-fan-far-left {
+	left: 30px;
+	top: 30px;
+	transform: rotate(-14deg);
 	z-index: 1;
 }
+.stamp-fan-left {
+	left: 50px;
+	top: 20px;
+	transform: rotate(-7deg);
+	z-index: 2;
+}
 .stamp-fan-center {
-	left: 35px;
+	left: 80px;
 	top: 10px;
 	transform: rotate(0deg);
-	z-index: 3;
+	z-index: 5;
 }
 .stamp-fan-right {
-	left: 50px;
-	top: 15px;
-	transform: rotate(6deg);
+	left: 110px;
+	top: 20px;
+	transform: rotate(7deg);
 	z-index: 2;
+}
+.stamp-fan-far-right {
+	left: 130px;
+	top: 30px;
+	transform: rotate(14deg);
+	z-index: 1;
 }
 
 /* Expanded state (hover) — fan out like a card spread */
+.stamp-fan:hover .stamp-fan-far-left {
+	transform: rotate(-24deg) translateX(-50px) translateY(-8px);
+}
 .stamp-fan:hover .stamp-fan-left {
-	transform: rotate(-18deg) translateX(-30px) translateY(-5px);
+	transform: rotate(-12deg) translateX(-25px) translateY(-10px);
 }
 .stamp-fan:hover .stamp-fan-center {
-	transform: rotate(0deg) translateY(-12px);
+	transform: rotate(0deg) translateY(-14px);
 }
 .stamp-fan:hover .stamp-fan-right {
-	transform: rotate(18deg) translateX(30px) translateY(-5px);
+	transform: rotate(12deg) translateX(25px) translateY(-10px);
+}
+.stamp-fan:hover .stamp-fan-far-right {
+	transform: rotate(24deg) translateX(50px) translateY(-8px);
 }
 
 /* Subtle lift shadow on hover */

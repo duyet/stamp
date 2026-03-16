@@ -18,6 +18,7 @@
 		"db:studio": "drizzle-kit studio",
 		"setup": "./scripts/setup.sh",
 		"setup:remote": "./scripts/setup.sh --remote",
+		"setup:ci": "./scripts/setup-ci-secrets.sh",
 		"test": "vitest run",
 		"test:watch": "vitest"
 	},

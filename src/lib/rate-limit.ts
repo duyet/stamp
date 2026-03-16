@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Database } from "@/db";
 import { rateLimits } from "@/db/schema";
 
-const MAX_GENERATIONS_PER_DAY = 5;
+const MAX_GENERATIONS_PER_DAY = 10;
 const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export async function checkRateLimit(

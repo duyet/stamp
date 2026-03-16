@@ -2,26 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { StampFan } from "@/components/stamp-fan";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
+import { useStamps } from "@/hooks/use-stamps";
 
 export function HomeContent() {
-	const [recentStamps, setRecentStamps] = useState<Stamp[]>([]);
+	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(8);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
-
-	useEffect(() => {
-		async function load() {
-			try {
-				const r = await fetch("/api/stamps?limit=8");
-				const data = (await r.json()) as { stamps?: Stamp[] };
-				setRecentStamps(data.stamps ?? []);
-			} catch {}
-		}
-		load();
-	}, []);
 
 	function handleGenerated(stamp: {
 		id: string;
@@ -49,7 +39,7 @@ export function HomeContent() {
 			<section className="pt-16 pb-20 text-center">
 				<div className="flex justify-center mb-10">
 					<StampFan
-						images={recentStamps.slice(0, 3).map((s) => s.imageUrl)}
+						images={recentStamps.slice(0, 5).map((s) => s.imageUrl)}
 						onClickStamp={(idx) => {
 							const stamp = recentStamps[idx];
 							if (stamp) setSelectedStamp(stamp);
@@ -127,7 +117,7 @@ export function HomeContent() {
 					className="text-sm text-neutral-400"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
-					5 free stamps per day. No account needed.
+					10 free stamps per day. No account needed.
 				</p>
 			</section>
 
