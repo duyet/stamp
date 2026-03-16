@@ -116,7 +116,7 @@ export function HomeContent() {
 					className="text-sm text-stone-500"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
-					10 free stamps per day. No account needed.
+					100 free stamps per day with an account. 3 without signing in.
 				</p>
 			</section>
 
