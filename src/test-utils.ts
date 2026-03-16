@@ -96,6 +96,41 @@ export function createMockAi(
 }
 
 /**
+ * Create a mock Drizzle database for credits tests.
+ * Returns the mock db plus references to the insert/update spies for assertions.
+ */
+export function createMockCreditsDb(
+	existing: {
+		userId: string;
+		dailyLimit: number;
+		dailyUsed: number;
+		dailyResetAt: number;
+		purchasedCredits: number;
+		createdAt: number;
+		updatedAt: number;
+	} | null,
+) {
+	const insertValues = vi.fn().mockResolvedValue(undefined);
+	const updateSet = vi.fn().mockReturnValue({
+		where: vi.fn().mockResolvedValue(undefined),
+	});
+
+	return {
+		db: {
+			query: {
+				userCredits: {
+					findFirst: vi.fn().mockResolvedValue(existing),
+				},
+			},
+			insert: vi.fn().mockReturnValue({ values: insertValues }),
+			update: vi.fn().mockReturnValue({ set: updateSet }),
+		} as unknown as Database,
+		insertValues,
+		updateSet,
+	};
+}
+
+/**
  * Create a mock drizzle select() chain that resolves to the given results.
  *
  * Models the chain: db.select().from().where().groupBy().orderBy().limit().offset()

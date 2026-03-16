@@ -28,6 +28,7 @@ export function HomeContent() {
 			style: "vintage",
 			isPublic: true,
 			userIp: null,
+			userId: null,
 			createdAt: new Date(),
 		};
 		setRecentStamps((prev) => [newStamp, ...prev].slice(0, 12));
