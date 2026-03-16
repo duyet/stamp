@@ -28,6 +28,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [style, setStyle] = useState<StampStyle>("vintage");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [isPublic, setIsPublic] = useState(true);
+	const [showMorePrompts, setShowMorePrompts] = useState(false);
 	const { copied, copy } = useCopy();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -101,7 +102,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	return (
 		<div className="max-w-3xl mx-auto">
-			<form onSubmit={handleSubmit} className="space-y-8">
+			<form onSubmit={handleSubmit} className="space-y-5">
 				{/* Prompt input */}
 				<div>
 					<textarea
@@ -115,90 +116,106 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						placeholder="Describe your stamp..."
 						maxLength={500}
 						rows={1}
-						className="w-full px-4 py-4 sm:px-7 sm:py-5 rounded-2xl border border-stone-200 bg-cream text-stamp-navy text-base sm:text-lg leading-relaxed sm:leading-loose placeholder:text-stone-400 focus:border-stamp-navy/20 focus:ring-2 focus:ring-stamp-navy/5 outline-none transition-colors resize-none overflow-hidden"
+						className="w-full px-4 py-3 sm:px-5 sm:py-3.5 rounded-xl border border-stone-200 bg-cream text-stamp-navy text-sm sm:text-base leading-relaxed placeholder:text-stone-400 focus:border-stamp-navy/20 focus:ring-2 focus:ring-stamp-navy/5 outline-none transition-colors resize-none overflow-hidden"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					/>
-					<div className="flex items-center justify-between mt-2 px-2">
-						<p className="text-xs text-stone-500">{prompt.length}/500</p>
-					</div>
+					<p className="text-[11px] text-stone-400 mt-1 px-1 text-right">
+						{prompt.length}/500
+					</p>
 
 					{/* Prompt quick-picks */}
-					{PROMPT_GROUPS.map((group) => (
-						<div
-							key={group.label ?? "default"}
-							className={group.label ? "mt-3" : "mt-4"}
-						>
-							{group.label && (
-								<p
-									className="text-xs text-stone-500 mb-2 px-1"
-									style={{ fontFamily: "var(--font-stamp)" }}
-								>
-									{group.label}
-								</p>
-							)}
-							<div className="flex flex-wrap gap-2">
-								{group.prompts.map((example) => (
-									<button
-										key={example}
-										type="button"
-										onClick={() => {
-											setPrompt((prev) =>
-												prev
-													? `${prev.trimEnd()}, ${example.toLowerCase()}`
-													: example,
-											);
-											requestAnimationFrame(() => {
-												if (textareaRef.current)
-													autoResize(textareaRef.current);
-											});
-											if (group.style) setStyle(group.style);
-										}}
-										className={`${group.className} ${group.hoverClassName} rounded-full px-3 py-1.5 text-xs cursor-pointer transition`}
+					{PROMPT_GROUPS.map((group, groupIndex) => {
+						const isFirstGroup = groupIndex === 0;
+						const visiblePrompts =
+							!showMorePrompts && isFirstGroup
+								? group.prompts.slice(0, 4)
+								: group.prompts;
+
+						if (!showMorePrompts && !isFirstGroup) return null;
+
+						return (
+							<div
+								key={group.label ?? "default"}
+								className={group.label ? "mt-2" : "mt-3"}
+							>
+								{group.label && (
+									<p
+										className="text-[11px] text-stone-400 mb-1.5 px-1"
+										style={{ fontFamily: "var(--font-stamp)" }}
 									>
-										{example}
-									</button>
-								))}
+										{group.label}
+									</p>
+								)}
+								<div className="flex flex-wrap gap-1.5">
+									{visiblePrompts.map((example) => (
+										<button
+											key={example}
+											type="button"
+											onClick={() => {
+												setPrompt((prev) =>
+													prev
+														? `${prev.trimEnd()}, ${example.toLowerCase()}`
+														: example,
+												);
+												requestAnimationFrame(() => {
+													if (textareaRef.current)
+														autoResize(textareaRef.current);
+												});
+												if (group.style) setStyle(group.style);
+											}}
+											className={`${group.className} ${group.hoverClassName} rounded-full px-2.5 py-1 text-[11px] cursor-pointer transition`}
+										>
+											{example}
+										</button>
+									))}
+									{isFirstGroup && !showMorePrompts && (
+										<button
+											type="button"
+											onClick={() => setShowMorePrompts(true)}
+											className="text-stone-400 hover:text-stone-600 rounded-full px-2.5 py-1 text-[11px] cursor-pointer transition border border-stone-200 hover:border-stone-300"
+										>
+											More ideas...
+										</button>
+									)}
+								</div>
 							</div>
-						</div>
-					))}
+						);
+					})}
 				</div>
 
 				{/* Style selector */}
-				<fieldset className="bg-stone-100 rounded-2xl p-5 sm:p-6">
+				<fieldset>
 					<legend
-						className="text-xl font-semibold text-stamp-navy mb-1"
+						className="text-sm font-medium text-stamp-navy mb-3"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					>
-						Choose a style
+						Style
 					</legend>
-					<p className="text-sm text-stone-500 mb-5">
-						Each style gives your stamp a distinct look and feel.
-					</p>
-					<div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+					<div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
 						{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
 							<button
 								key={key}
 								type="button"
 								onClick={() => setStyle(key as StampStyle)}
-								className={`group relative rounded-xl overflow-hidden transition cursor-pointer ${
+								className={`group relative rounded-lg overflow-hidden transition cursor-pointer ${
 									style === key
-										? "ring-2 ring-stamp-navy ring-offset-2 ring-offset-stone-100"
+										? "ring-2 ring-stamp-navy ring-offset-1"
 										: "hover:ring-1 hover:ring-stone-300"
 								}`}
 							>
-								<div className="bg-stone-200/80 p-3 pb-2">
-									<div className="aspect-square rounded-lg overflow-hidden">
+								<div className="bg-stone-100 p-1.5 pb-1">
+									<div className="aspect-square rounded overflow-hidden">
 										<Image
 											src={preset.thumbnail}
 											alt={`${preset.name} style`}
-											width={200}
-											height={200}
+											width={120}
+											height={120}
 											className="object-cover w-full h-full"
 										/>
 									</div>
 									<p
-										className={`mt-2 text-sm font-medium text-center ${
-											style === key ? "text-stamp-navy" : "text-stone-700"
+										className={`mt-1 text-xs font-medium text-center ${
+											style === key ? "text-stamp-navy" : "text-stone-500"
 										}`}
 									>
 										{preset.name}
@@ -209,56 +226,55 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					</div>
 				</fieldset>
 
-				{/* Public toggle */}
-				<label className="flex items-center gap-3 cursor-pointer">
-					<input
-						type="checkbox"
-						checked={isPublic}
-						onChange={(e) => setIsPublic(e.target.checked)}
-						className="w-4 h-4 rounded border-stone-300 text-neutral-900 focus:ring-neutral-200"
-					/>
-					<span className="text-sm text-stone-600">
-						Show in public collection
-					</span>
-				</label>
+				{/* Submit row: toggle + button */}
+				<div className="flex items-center justify-between gap-4">
+					<label className="flex items-center gap-2 cursor-pointer">
+						<input
+							type="checkbox"
+							checked={isPublic}
+							onChange={(e) => setIsPublic(e.target.checked)}
+							className="w-3.5 h-3.5 rounded border-stone-300 text-neutral-900 focus:ring-neutral-200"
+						/>
+						<span className="text-xs text-stone-500">Public</span>
+					</label>
 
-				{/* Submit */}
-				<button
-					type="submit"
-					disabled={loading || !prompt.trim()}
-					className="w-full py-4 px-6 bg-stamp-navy text-white rounded-xl font-medium text-base hover:bg-neutral-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
-					{loading ? (
-						<span className="flex items-center justify-center gap-2">
-							<svg
-								className="animate-spin h-4 w-4"
-								viewBox="0 0 24 24"
-								fill="none"
-								role="img"
-								aria-label="Loading"
-							>
-								<title>Loading</title>
-								<circle
-									className="opacity-25"
-									cx="12"
-									cy="12"
-									r="10"
-									stroke="currentColor"
-									strokeWidth="4"
-								/>
-								<path
-									className="opacity-75"
-									fill="currentColor"
-									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-								/>
-							</svg>
-							Creating your stamp...
-						</span>
-					) : (
-						"Generate Stamp"
-					)}
-				</button>
+					<button
+						type="submit"
+						disabled={loading || !prompt.trim()}
+						className="px-8 py-2.5 bg-stamp-navy text-white rounded-lg font-medium text-sm hover:bg-neutral-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
+						style={{ fontFamily: "var(--font-stamp)" }}
+					>
+						{loading ? (
+							<span className="flex items-center gap-2">
+								<svg
+									className="animate-spin h-3.5 w-3.5"
+									viewBox="0 0 24 24"
+									fill="none"
+									role="img"
+									aria-label="Loading"
+								>
+									<title>Loading</title>
+									<circle
+										className="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										strokeWidth="4"
+									/>
+									<path
+										className="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+									/>
+								</svg>
+								Creating...
+							</span>
+						) : (
+							"Generate"
+						)}
+					</button>
+				</div>
 			</form>
 
 			{/* Error */}
