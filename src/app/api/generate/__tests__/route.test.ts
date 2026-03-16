@@ -140,6 +140,7 @@ describe("POST /api/generate", () => {
 			expect(checkAndDeductCredit).toHaveBeenCalledWith(
 				expect.anything(),
 				"user_abc123",
+				1,
 			);
 			expect(checkRateLimit).not.toHaveBeenCalled();
 		});
