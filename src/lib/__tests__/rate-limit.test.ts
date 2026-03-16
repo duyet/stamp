@@ -1,37 +1,21 @@
-import { describe, expect, it, vi } from "vitest";
-import type { Database } from "@/db";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createMockRateLimitDb } from "@/test-utils";
 import { checkRateLimit } from "../rate-limit";
 
-function createMockDb(
-	existing: {
-		userIp: string;
-		generationsCount: number;
-		windowStart: Date;
-	} | null,
-) {
-	const insertValues = vi.fn().mockResolvedValue(undefined);
-	const updateSet = vi.fn().mockReturnValue({
-		where: vi.fn().mockResolvedValue(undefined),
-	});
-
-	return {
-		db: {
-			query: {
-				rateLimits: {
-					findFirst: vi.fn().mockResolvedValue(existing),
-				},
-			},
-			insert: vi.fn().mockReturnValue({ values: insertValues }),
-			update: vi.fn().mockReturnValue({ set: updateSet }),
-		} as unknown as Database,
-		insertValues,
-		updateSet,
-	};
-}
+const FIXED_NOW = new Date("2025-06-15T12:00:00Z");
 
 describe("checkRateLimit", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(FIXED_NOW);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it("allows new user and creates record", async () => {
-		const { db, insertValues } = createMockDb(null);
+		const { db, insertValues } = createMockRateLimitDb(null);
 
 		const result = await checkRateLimit(db, "1.2.3.4");
 
@@ -46,10 +30,10 @@ describe("checkRateLimit", () => {
 	});
 
 	it("allows user under the limit", async () => {
-		const { db } = createMockDb({
+		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 2,
-			windowStart: new Date(), // current window
+			windowStart: FIXED_NOW, // current window
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
@@ -59,10 +43,10 @@ describe("checkRateLimit", () => {
 	});
 
 	it("allows user at count 4 (one more left)", async () => {
-		const { db } = createMockDb({
+		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 4,
-			windowStart: new Date(),
+			windowStart: FIXED_NOW,
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
@@ -72,10 +56,10 @@ describe("checkRateLimit", () => {
 	});
 
 	it("blocks user at the limit (5 generations)", async () => {
-		const { db } = createMockDb({
+		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 5,
-			windowStart: new Date(),
+			windowStart: FIXED_NOW,
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
@@ -85,10 +69,10 @@ describe("checkRateLimit", () => {
 	});
 
 	it("blocks user over the limit", async () => {
-		const { db } = createMockDb({
+		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 10,
-			windowStart: new Date(),
+			windowStart: FIXED_NOW,
 		});
 
 		const result = await checkRateLimit(db, "1.2.3.4");
@@ -98,8 +82,8 @@ describe("checkRateLimit", () => {
 	});
 
 	it("resets when window has expired", async () => {
-		const expiredWindow = new Date(Date.now() - 25 * 60 * 60 * 1000); // 25 hours ago
-		const { db, updateSet } = createMockDb({
+		const expiredWindow = new Date(FIXED_NOW.getTime() - 25 * 60 * 60 * 1000);
+		const { db, updateSet } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 5,
 			windowStart: expiredWindow,
@@ -117,8 +101,10 @@ describe("checkRateLimit", () => {
 	});
 
 	it("resets window just over 24 hours", async () => {
-		const barelyExpired = new Date(Date.now() - 24 * 60 * 60 * 1000 - 1);
-		const { db } = createMockDb({
+		const barelyExpired = new Date(
+			FIXED_NOW.getTime() - 24 * 60 * 60 * 1000 - 1,
+		);
+		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 5,
 			windowStart: barelyExpired,
@@ -131,8 +117,8 @@ describe("checkRateLimit", () => {
 	});
 
 	it("does NOT reset window just under 24 hours", async () => {
-		const notExpired = new Date(Date.now() - 23 * 60 * 60 * 1000);
-		const { db } = createMockDb({
+		const notExpired = new Date(FIXED_NOW.getTime() - 23 * 60 * 60 * 1000);
+		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 5,
 			windowStart: notExpired,

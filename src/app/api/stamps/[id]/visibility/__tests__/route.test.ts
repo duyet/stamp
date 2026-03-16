@@ -1,5 +1,5 @@
-import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createJsonRequest, createRouteParams } from "@/test-utils";
 
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
@@ -8,20 +8,9 @@ vi.mock("@/db", () => ({
 import { getDb } from "@/db";
 import { PATCH } from "../route";
 
-function createRequest(
-	body: Record<string, unknown>,
-	headers: Record<string, string> = {},
-): NextRequest {
-	return new Request("http://localhost/api/stamps/abc123def456/visibility", {
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...headers },
-		body: JSON.stringify(body),
-	}) as unknown as NextRequest;
-}
-
-function createParams(id: string) {
-	return { params: Promise.resolve({ id }) };
-}
+const URL = "http://localhost/api/stamps/abc123def456/visibility";
+const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>
+	createJsonRequest(URL, "PATCH", body, headers);
 
 describe("PATCH /api/stamps/[id]/visibility", () => {
 	const mockUpdate = vi.fn().mockReturnValue({
@@ -56,8 +45,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("returns 400 for invalid ID length", async () => {
-		const req = createRequest({ isPublic: false });
-		const res = await PATCH(req, createParams("short"));
+		const res = await PATCH(
+			req({ isPublic: false }),
+			createRouteParams({ id: "short" }),
+		);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -65,8 +56,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("returns 400 for empty ID", async () => {
-		const req = createRequest({ isPublic: false });
-		const res = await PATCH(req, createParams(""));
+		const res = await PATCH(
+			req({ isPublic: false }),
+			createRouteParams({ id: "" }),
+		);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -74,8 +67,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("returns 400 when isPublic is not a boolean", async () => {
-		const req = createRequest({ isPublic: "yes" });
-		const res = await PATCH(req, createParams("abc123def456"));
+		const res = await PATCH(
+			req({ isPublic: "yes" }),
+			createRouteParams({ id: "abc123def456" }),
+		);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -83,27 +78,25 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("returns 400 when isPublic is missing", async () => {
-		const req = createRequest({});
-		const res = await PATCH(req, createParams("abc123def456"));
-
+		const res = await PATCH(req({}), createRouteParams({ id: "abc123def456" }));
 		expect(res.status).toBe(400);
 	});
 
 	it("returns 400 when isPublic is a number", async () => {
-		const req = createRequest({ isPublic: 1 });
-		const res = await PATCH(req, createParams("abc123def456"));
-
+		const res = await PATCH(
+			req({ isPublic: 1 }),
+			createRouteParams({ id: "abc123def456" }),
+		);
 		expect(res.status).toBe(400);
 	});
 
 	it("returns 404 when stamp not found", async () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue(null);
 
-		const req = createRequest(
-			{ isPublic: false },
-			{ "cf-connecting-ip": "1.2.3.4" },
+		const res = await PATCH(
+			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
+			createRouteParams({ id: "abc123def456" }),
 		);
-		const res = await PATCH(req, createParams("abc123def456"));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(404);
@@ -116,11 +109,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 			userIp: "1.2.3.4",
 		});
 
-		const req = createRequest(
-			{ isPublic: false },
-			{ "cf-connecting-ip": "9.9.9.9" },
+		const res = await PATCH(
+			req({ isPublic: false }, { "cf-connecting-ip": "9.9.9.9" }),
+			createRouteParams({ id: "abc123def456" }),
 		);
-		const res = await PATCH(req, createParams("abc123def456"));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(403);
@@ -128,11 +120,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("allows toggle when IP matches creator", async () => {
-		const req = createRequest(
-			{ isPublic: false },
-			{ "cf-connecting-ip": "1.2.3.4" },
+		const res = await PATCH(
+			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
+			createRouteParams({ id: "abc123def456" }),
 		);
-		const res = await PATCH(req, createParams("abc123def456"));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -145,11 +136,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 			userIp: null,
 		});
 
-		const req = createRequest(
-			{ isPublic: true },
-			{ "cf-connecting-ip": "9.9.9.9" },
+		const res = await PATCH(
+			req({ isPublic: true }, { "cf-connecting-ip": "9.9.9.9" }),
+			createRouteParams({ id: "abc123def456" }),
 		);
-		const res = await PATCH(req, createParams("abc123def456"));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -157,8 +147,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("allows toggle when requester has no IP", async () => {
-		const req = createRequest({ isPublic: true });
-		const res = await PATCH(req, createParams("abc123def456"));
+		const res = await PATCH(
+			req({ isPublic: true }),
+			createRouteParams({ id: "abc123def456" }),
+		);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -171,11 +163,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 			userIp: "5.6.7.8",
 		});
 
-		const req = createRequest(
-			{ isPublic: false },
-			{ "x-forwarded-for": "5.6.7.8" },
+		const res = await PATCH(
+			req({ isPublic: false }, { "x-forwarded-for": "5.6.7.8" }),
+			createRouteParams({ id: "abc123def456" }),
 		);
-		const res = await PATCH(req, createParams("abc123def456"));
 
 		expect(res.status).toBe(200);
 	});
@@ -183,11 +174,10 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	it("returns 500 on database error", async () => {
 		mockDb.query.stamps.findFirst.mockRejectedValue(new Error("DB down"));
 
-		const req = createRequest(
-			{ isPublic: false },
-			{ "cf-connecting-ip": "1.2.3.4" },
+		const res = await PATCH(
+			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
+			createRouteParams({ id: "abc123def456" }),
 		);
-		const res = await PATCH(req, createParams("abc123def456"));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(500);

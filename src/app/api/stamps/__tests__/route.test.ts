@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createGetRequest } from "@/test-utils";
 
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
@@ -7,13 +8,7 @@ vi.mock("@/db", () => ({
 import { getDb } from "@/db";
 import { GET } from "../route";
 
-function createRequest(params: Record<string, string> = {}): Request {
-	const url = new URL("http://localhost/api/stamps");
-	for (const [key, value] of Object.entries(params)) {
-		url.searchParams.set(key, value);
-	}
-	return new Request(url.toString());
-}
+const URL = "http://localhost/api/stamps";
 
 describe("GET /api/stamps", () => {
 	const mockResults = [
@@ -63,8 +58,7 @@ describe("GET /api/stamps", () => {
 	});
 
 	it("returns stamps with default pagination", async () => {
-		const req = createRequest();
-		const res = await GET(req);
+		const res = await GET(createGetRequest(URL));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -72,39 +66,31 @@ describe("GET /api/stamps", () => {
 	});
 
 	it("uses default limit of 50", async () => {
-		const req = createRequest();
-		await GET(req);
-
+		await GET(createGetRequest(URL));
 		expect(mockChain.limit).toHaveBeenCalledWith(50);
 	});
 
 	it("uses default offset of 0", async () => {
-		const req = createRequest();
-		await GET(req);
-
+		await GET(createGetRequest(URL));
 		expect(mockChain.offset).toHaveBeenCalledWith(0);
 	});
 
 	it("respects custom limit and offset", async () => {
-		const req = createRequest({ limit: "20", offset: "10" });
-		await GET(req);
+		await GET(createGetRequest(URL, { limit: "20", offset: "10" }));
 
 		expect(mockChain.limit).toHaveBeenCalledWith(20);
 		expect(mockChain.offset).toHaveBeenCalledWith(10);
 	});
 
 	it("caps limit at 100", async () => {
-		const req = createRequest({ limit: "200" });
-		await GET(req);
-
+		await GET(createGetRequest(URL, { limit: "200" }));
 		expect(mockChain.limit).toHaveBeenCalledWith(100);
 	});
 
 	it("returns empty array when no stamps", async () => {
 		mockChain.offset.mockResolvedValue([]);
 
-		const req = createRequest();
-		const res = await GET(req);
+		const res = await GET(createGetRequest(URL));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(data.stamps).toEqual([]);
@@ -113,8 +99,7 @@ describe("GET /api/stamps", () => {
 	it("returns 500 on database error", async () => {
 		mockChain.offset.mockRejectedValue(new Error("DB error"));
 
-		const req = createRequest();
-		const res = await GET(req);
+		const res = await GET(createGetRequest(URL));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(500);

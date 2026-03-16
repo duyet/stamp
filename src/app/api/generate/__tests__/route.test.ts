@@ -1,5 +1,5 @@
-import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createJsonRequest } from "@/test-utils";
 
 // Mock dependencies before importing the route
 vi.mock("@/db", () => ({
@@ -28,16 +28,9 @@ import { generateStamp } from "@/lib/generate-stamp";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { POST } from "../route";
 
-function createRequest(
-	body: Record<string, unknown>,
-	headers: Record<string, string> = {},
-): NextRequest {
-	return new Request("http://localhost/api/generate", {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...headers },
-		body: JSON.stringify(body),
-	}) as unknown as NextRequest;
-}
+const URL = "http://localhost/api/generate";
+const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>
+	createJsonRequest(URL, "POST", body, headers);
 
 describe("POST /api/generate", () => {
 	const mockDb = {
@@ -82,8 +75,7 @@ describe("POST /api/generate", () => {
 			remaining: 0,
 		});
 
-		const req = createRequest({ prompt: "a cat" });
-		const res = await POST(req);
+		const res = await POST(req({ prompt: "a cat" }));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(429);
@@ -92,8 +84,7 @@ describe("POST /api/generate", () => {
 	});
 
 	it("returns 400 when prompt is missing", async () => {
-		const req = createRequest({});
-		const res = await POST(req);
+		const res = await POST(req({}));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -101,22 +92,17 @@ describe("POST /api/generate", () => {
 	});
 
 	it("returns 400 when prompt is empty string", async () => {
-		const req = createRequest({ prompt: "" });
-		const res = await POST(req);
-
+		const res = await POST(req({ prompt: "" }));
 		expect(res.status).toBe(400);
 	});
 
 	it("returns 400 when prompt is only whitespace", async () => {
-		const req = createRequest({ prompt: "   " });
-		const res = await POST(req);
-
+		const res = await POST(req({ prompt: "   " }));
 		expect(res.status).toBe(400);
 	});
 
 	it("returns 400 when prompt exceeds 500 characters", async () => {
-		const req = createRequest({ prompt: "x".repeat(501) });
-		const res = await POST(req);
+		const res = await POST(req({ prompt: "x".repeat(501) }));
 
 		expect(res.status).toBe(400);
 		const data = (await res.json()) as Record<string, unknown>;
@@ -124,22 +110,17 @@ describe("POST /api/generate", () => {
 	});
 
 	it("accepts prompt at exactly 500 characters", async () => {
-		const req = createRequest({ prompt: "x".repeat(500) });
-		const res = await POST(req);
-
+		const res = await POST(req({ prompt: "x".repeat(500) }));
 		expect(res.status).toBe(200);
 	});
 
 	it("returns 400 when prompt is not a string", async () => {
-		const req = createRequest({ prompt: 123 });
-		const res = await POST(req);
-
+		const res = await POST(req({ prompt: 123 }));
 		expect(res.status).toBe(400);
 	});
 
 	it("returns 400 for invalid style", async () => {
-		const req = createRequest({ prompt: "a cat", style: "invalid_style" });
-		const res = await POST(req);
+		const res = await POST(req({ prompt: "a cat", style: "invalid_style" }));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -175,8 +156,7 @@ describe("POST /api/generate", () => {
 				values: vi.fn().mockReturnValue(valuesResult),
 			});
 
-			const req = createRequest({ prompt: "a cat", style });
-			const res = await POST(req);
+			const res = await POST(req({ prompt: "a cat", style }));
 			expect(res.status).toBe(200);
 		}
 	});
@@ -187,8 +167,7 @@ describe("POST /api/generate", () => {
 			STAMPS_BUCKET: mockBucket,
 		} as never);
 
-		const req = createRequest({ prompt: "a cat" });
-		const res = await POST(req);
+		const res = await POST(req({ prompt: "a cat" }));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(503);
@@ -196,11 +175,12 @@ describe("POST /api/generate", () => {
 	});
 
 	it("returns stamp data on success", async () => {
-		const req = createRequest(
-			{ prompt: "a cat", style: "vintage", isPublic: true },
-			{ "cf-connecting-ip": "1.2.3.4" },
+		const res = await POST(
+			req(
+				{ prompt: "a cat", style: "vintage", isPublic: true },
+				{ "cf-connecting-ip": "1.2.3.4" },
+			),
 		);
-		const res = await POST(req);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -213,8 +193,7 @@ describe("POST /api/generate", () => {
 	});
 
 	it("uploads image to R2 with correct key", async () => {
-		const req = createRequest({ prompt: "a cat" });
-		await POST(req);
+		await POST(req({ prompt: "a cat" }));
 
 		expect(mockBucket.put).toHaveBeenCalledWith(
 			"stamps/abc123def456.jpg",
@@ -230,8 +209,7 @@ describe("POST /api/generate", () => {
 			enhancedPrompt: "enhanced",
 		});
 
-		const req = createRequest({ prompt: "a cat" });
-		await POST(req);
+		await POST(req({ prompt: "a cat" }));
 
 		expect(mockBucket.put).toHaveBeenCalledWith(
 			"stamps/abc123def456.png",
@@ -241,46 +219,34 @@ describe("POST /api/generate", () => {
 	});
 
 	it("inserts stamp record into database", async () => {
-		const req = createRequest(
-			{ prompt: "a cat", style: "folk", isPublic: false },
-			{ "cf-connecting-ip": "5.6.7.8" },
+		await POST(
+			req(
+				{ prompt: "a cat", style: "folk", isPublic: false },
+				{ "cf-connecting-ip": "5.6.7.8" },
+			),
 		);
-		await POST(req);
 
 		const insertCall = mockDb.insert.mock.calls[0];
 		expect(insertCall).toBeDefined();
 	});
 
 	it("extracts IP from cf-connecting-ip header", async () => {
-		const req = createRequest(
-			{ prompt: "a cat" },
-			{ "cf-connecting-ip": "1.2.3.4" },
-		);
-		await POST(req);
-
+		await POST(req({ prompt: "a cat" }, { "cf-connecting-ip": "1.2.3.4" }));
 		expect(checkRateLimit).toHaveBeenCalledWith(expect.anything(), "1.2.3.4");
 	});
 
 	it("falls back to x-forwarded-for header", async () => {
-		const req = createRequest(
-			{ prompt: "a cat" },
-			{ "x-forwarded-for": "5.6.7.8" },
-		);
-		await POST(req);
-
+		await POST(req({ prompt: "a cat" }, { "x-forwarded-for": "5.6.7.8" }));
 		expect(checkRateLimit).toHaveBeenCalledWith(expect.anything(), "5.6.7.8");
 	});
 
 	it("uses 'unknown' when no IP headers present", async () => {
-		const req = createRequest({ prompt: "a cat" });
-		await POST(req);
-
+		await POST(req({ prompt: "a cat" }));
 		expect(checkRateLimit).toHaveBeenCalledWith(expect.anything(), "unknown");
 	});
 
 	it("defaults style to vintage", async () => {
-		const req = createRequest({ prompt: "a cat" });
-		await POST(req);
+		await POST(req({ prompt: "a cat" }));
 
 		expect(generateStamp).toHaveBeenCalledWith(
 			expect.anything(),
@@ -292,8 +258,7 @@ describe("POST /api/generate", () => {
 	it("returns 500 when generation throws", async () => {
 		vi.mocked(generateStamp).mockRejectedValue(new Error("AI failure"));
 
-		const req = createRequest({ prompt: "a cat" });
-		const res = await POST(req);
+		const res = await POST(req({ prompt: "a cat" }));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(500);

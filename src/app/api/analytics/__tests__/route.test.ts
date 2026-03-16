@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createSelectChain } from "@/test-utils";
 
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
@@ -6,32 +7,6 @@ vi.mock("@/db", () => ({
 
 import { getDb } from "@/db";
 import { GET } from "../route";
-
-/**
- * Creates a chainable mock that resolves through the drizzle query chain.
- * The chain supports: select().from().where().groupBy().orderBy()
- * Each terminal call (orderBy, or the last in chain) resolves to `result`.
- */
-function createChain(result: unknown[]) {
-	// Use a Proxy to make the chain thenable without a literal `then` property
-	const handler: ProxyHandler<Record<string, ReturnType<typeof vi.fn>>> = {
-		get(target, prop) {
-			if (prop === "then") {
-				return (fn: (v: unknown) => unknown) =>
-					Promise.resolve(result).then(fn);
-			}
-			return target[prop as string];
-		},
-	};
-
-	const chain: Record<string, ReturnType<typeof vi.fn>> = {};
-	chain.from = vi.fn().mockReturnValue(new Proxy(chain, handler));
-	chain.where = vi.fn().mockReturnValue(new Proxy(chain, handler));
-	chain.groupBy = vi.fn().mockReturnValue(new Proxy(chain, handler));
-	chain.orderBy = vi.fn().mockResolvedValue(result);
-
-	return new Proxy(chain, handler);
-}
 
 describe("GET /api/analytics", () => {
 	beforeEach(() => {
@@ -60,7 +35,7 @@ describe("GET /api/analytics", () => {
 		const mockSelect = vi.fn().mockImplementation(() => {
 			const result = selectResults[callCount] || [];
 			callCount++;
-			return createChain(result);
+			return createSelectChain(result);
 		});
 
 		vi.mocked(getDb).mockReturnValue({
@@ -85,7 +60,7 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns defaults when queries return empty results", async () => {
-		const mockSelect = vi.fn().mockImplementation(() => createChain([]));
+		const mockSelect = vi.fn().mockImplementation(() => createSelectChain([]));
 
 		vi.mocked(getDb).mockReturnValue({
 			select: mockSelect,
@@ -135,7 +110,7 @@ describe("GET /api/analytics", () => {
 		const mockSelect = vi.fn().mockImplementation(() => {
 			const result = selectResults[callCount] || [];
 			callCount++;
-			return createChain(result);
+			return createSelectChain(result);
 		});
 
 		vi.mocked(getDb).mockReturnValue({
@@ -147,7 +122,10 @@ describe("GET /api/analytics", () => {
 
 		expect(res.status).toBe(200);
 		// null style should default to "vintage"
-		const styles = data.popularStyles as Array<{ style: string; count: number }>;
+		const styles = data.popularStyles as Array<{
+			style: string;
+			count: number;
+		}>;
 		expect(styles[0]?.style).toBe("vintage");
 	});
 });

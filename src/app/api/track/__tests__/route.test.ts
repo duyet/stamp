@@ -1,5 +1,5 @@
-import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createJsonRequest } from "@/test-utils";
 
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
@@ -12,16 +12,9 @@ vi.mock("nanoid", () => ({
 import { getDb } from "@/db";
 import { POST } from "../route";
 
-function createRequest(
-	body: Record<string, unknown>,
-	headers: Record<string, string> = {},
-): NextRequest {
-	return new Request("http://localhost/api/track", {
-		method: "POST",
-		headers: { "Content-Type": "application/json", ...headers },
-		body: JSON.stringify(body),
-	}) as unknown as NextRequest;
-}
+const URL = "http://localhost/api/track";
+const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>
+	createJsonRequest(URL, "POST", body, headers);
 
 describe("POST /api/track", () => {
 	const mockDb = {
@@ -39,8 +32,7 @@ describe("POST /api/track", () => {
 	});
 
 	it("returns 400 for missing event", async () => {
-		const req = createRequest({});
-		const res = await POST(req);
+		const res = await POST(req({}));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -48,22 +40,17 @@ describe("POST /api/track", () => {
 	});
 
 	it("returns 400 for empty event string", async () => {
-		const req = createRequest({ event: "" });
-		const res = await POST(req);
-
+		const res = await POST(req({ event: "" }));
 		expect(res.status).toBe(400);
 	});
 
 	it("returns 400 for non-string event", async () => {
-		const req = createRequest({ event: 123 });
-		const res = await POST(req);
-
+		const res = await POST(req({ event: 123 }));
 		expect(res.status).toBe(400);
 	});
 
 	it("returns 400 for event not in allowlist", async () => {
-		const req = createRequest({ event: "hack_attempt" });
-		const res = await POST(req);
+		const res = await POST(req({ event: "hack_attempt" }));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -86,9 +73,7 @@ describe("POST /api/track", () => {
 				values: vi.fn().mockResolvedValue(undefined),
 			});
 
-			const req = createRequest({ event });
-			const res = await POST(req);
-
+			const res = await POST(req({ event }));
 			expect(res.status).toBe(200);
 		}
 	});
@@ -100,11 +85,9 @@ describe("POST /api/track", () => {
 			largeMetadata[`key_${i}`] = "x".repeat(30);
 		}
 
-		const req = createRequest({
-			event: "page_view",
-			metadata: largeMetadata,
-		});
-		const res = await POST(req);
+		const res = await POST(
+			req({ event: "page_view", metadata: largeMetadata }),
+		);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -112,11 +95,12 @@ describe("POST /api/track", () => {
 	});
 
 	it("accepts metadata within size limit", async () => {
-		const req = createRequest({
-			event: "page_view",
-			metadata: { page: "/home", referrer: "google" },
-		});
-		const res = await POST(req);
+		const res = await POST(
+			req({
+				event: "page_view",
+				metadata: { page: "/home", referrer: "google" },
+			}),
+		);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -124,8 +108,7 @@ describe("POST /api/track", () => {
 	});
 
 	it("accepts event without metadata", async () => {
-		const req = createRequest({ event: "download" });
-		const res = await POST(req);
+		const res = await POST(req({ event: "download" }));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -133,11 +116,7 @@ describe("POST /api/track", () => {
 	});
 
 	it("extracts IP from cf-connecting-ip", async () => {
-		const req = createRequest(
-			{ event: "page_view" },
-			{ "cf-connecting-ip": "1.2.3.4" },
-		);
-		await POST(req);
+		await POST(req({ event: "page_view" }, { "cf-connecting-ip": "1.2.3.4" }));
 
 		const valuesCall =
 			mockDb.insert.mock.results[0]?.value.values.mock.calls[0][0];
@@ -145,11 +124,7 @@ describe("POST /api/track", () => {
 	});
 
 	it("falls back to x-forwarded-for", async () => {
-		const req = createRequest(
-			{ event: "page_view" },
-			{ "x-forwarded-for": "5.6.7.8" },
-		);
-		await POST(req);
+		await POST(req({ event: "page_view" }, { "x-forwarded-for": "5.6.7.8" }));
 
 		const valuesCall =
 			mockDb.insert.mock.results[0]?.value.values.mock.calls[0][0];
@@ -157,8 +132,7 @@ describe("POST /api/track", () => {
 	});
 
 	it("sets null IP when no headers present", async () => {
-		const req = createRequest({ event: "page_view" });
-		await POST(req);
+		await POST(req({ event: "page_view" }));
 
 		const valuesCall =
 			mockDb.insert.mock.results[0]?.value.values.mock.calls[0][0];
@@ -170,8 +144,7 @@ describe("POST /api/track", () => {
 			values: vi.fn().mockRejectedValue(new Error("DB failure")),
 		});
 
-		const req = createRequest({ event: "page_view" });
-		const res = await POST(req);
+		const res = await POST(req({ event: "page_view" }));
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(500);
