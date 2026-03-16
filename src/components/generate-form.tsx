@@ -9,10 +9,10 @@ import {
 
 const SUGGESTIONS_PER_GROUP = 4;
 
-const VARIANT_CLASSES = {
-	default: "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100",
-	anime: "text-purple-400 hover:text-purple-600 hover:bg-purple-50",
-} as const;
+const ACCENT_CLASSES =
+	"text-purple-400 hover:text-purple-600 hover:bg-purple-50";
+const DEFAULT_CLASSES =
+	"text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100";
 
 function shuffled<T>(arr: readonly T[]): T[] {
 	const copy = [...arr];
@@ -136,7 +136,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 											});
 											if (group.style) setStyle(group.style);
 										}}
-										className={`${VARIANT_CLASSES[group.variant]} rounded-full px-3 py-1.5 text-xs cursor-pointer transition`}
+										className={`${group.style ? ACCENT_CLASSES : DEFAULT_CLASSES} rounded-full px-3 py-1.5 text-xs cursor-pointer transition`}
 									>
 										{example}
 									</button>

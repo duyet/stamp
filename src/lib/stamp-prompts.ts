@@ -51,7 +51,6 @@ export function buildStampPrompt(
 export interface PromptGroup {
 	label?: string;
 	style?: StampStyle;
-	variant: "default" | "anime";
 	prompts: readonly string[];
 }
 
@@ -61,7 +60,6 @@ export interface PromptGroup {
  */
 export const PROMPT_GROUPS: readonly PromptGroup[] = [
 	{
-		variant: "default",
 		prompts: [
 			"A girl with glasses and black hair",
 			"A cat sitting on a windowsill",
@@ -76,7 +74,6 @@ export const PROMPT_GROUPS: readonly PromptGroup[] = [
 	{
 		label: "Funny anime characters",
 		style: "anime",
-		variant: "anime",
 		prompts: [
 			"A bald superhero with a cape looking bored after one punch",
 			"A spiky-haired warrior screaming and powering up with golden aura",
