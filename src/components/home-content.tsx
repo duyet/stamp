@@ -77,10 +77,10 @@ export function HomeContent() {
 				<GenerateForm onGenerated={handleGenerated} />
 			</section>
 
-			{/* Latest stamps */}
+			{/* Latest stamps — full width breakout */}
 			{recentStamps.length > 0 && (
-				<section className="mb-16">
-					<div className="flex items-baseline justify-between mb-8">
+				<section className="mb-16 relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6">
+					<div className="flex items-baseline justify-between mb-8 max-w-5xl mx-auto">
 						<h2
 							className="text-2xl font-semibold text-stamp-navy"
 							style={{ fontFamily: "var(--font-stamp)" }}
@@ -94,12 +94,12 @@ export function HomeContent() {
 							View all &rarr;
 						</Link>
 					</div>
-					<div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
 						{recentStamps.map((stamp) => (
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer rounded-xl overflow-hidden transition"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden transition hover:shadow-lg"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">
@@ -107,7 +107,7 @@ export function HomeContent() {
 										src={stamp.imageUrl}
 										alt={stamp.prompt}
 										fill
-										sizes="(max-width: 768px) 33vw, 16vw"
+										sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
 										className="object-cover"
 									/>
 								</div>
