@@ -145,6 +145,15 @@ body {
 	animation: modal-fade 0.2s ease-out forwards;
 }
 
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+	display: none;
+}
+
 /* Card utility */
 .card {
 	background-color: var(--color-surface, #fafafa);

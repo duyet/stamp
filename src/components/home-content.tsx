@@ -69,7 +69,7 @@ export function HomeContent() {
 
 			{/* Latest stamps */}
 			{recentStamps.length > 0 && (
-				<section className="bg-stone-100 rounded-2xl p-6 sm:p-10 mb-16">
+				<section className="mb-16">
 					<div className="flex items-baseline justify-between mb-8">
 						<h2
 							className="text-2xl font-semibold text-stamp-navy"
@@ -89,7 +89,7 @@ export function HomeContent() {
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer rounded-xl overflow-hidden bg-stone-200/60 hover:bg-stone-200 transition"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden transition"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">

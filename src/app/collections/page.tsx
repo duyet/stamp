@@ -24,9 +24,7 @@ export default function CollectionsPage() {
 				</h1>
 				<p className="text-stone-500">Stamps created by the community</p>
 			</div>
-			<div className="bg-stone-100 rounded-2xl p-4 sm:p-6">
-				<StampGrid />
-			</div>
+			<StampGrid />
 		</div>
 	);
 }

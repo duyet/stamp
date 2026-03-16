@@ -28,7 +28,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [style, setStyle] = useState<StampStyle>("vintage");
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [isPublic, setIsPublic] = useState(true);
-	const [showMorePrompts, setShowMorePrompts] = useState(false);
+	const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 	const { copied, copy } = useCopy();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	return (
 		<div className="max-w-3xl mx-auto">
-			<form onSubmit={handleSubmit} className="space-y-5">
+			<form onSubmit={handleSubmit} className="space-y-3">
 				{/* Prompt input */}
 				<div>
 					<textarea
@@ -124,103 +124,90 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					</p>
 
 					{/* Prompt quick-picks */}
-					{PROMPT_GROUPS.map((group, groupIndex) => {
-						const isFirstGroup = groupIndex === 0;
-						const visiblePrompts =
-							!showMorePrompts && isFirstGroup
-								? group.prompts.slice(0, 4)
-								: group.prompts;
-
-						if (!showMorePrompts && !isFirstGroup) return null;
-
-						return (
-							<div
+					<div className="mt-2 flex items-center gap-1.5">
+						{PROMPT_GROUPS.map((group, groupIndex) => (
+							<button
 								key={group.label ?? "default"}
-								className={group.label ? "mt-2" : "mt-3"}
+								type="button"
+								onClick={() => setActiveGroupIndex(groupIndex)}
+								className={`rounded-full px-2.5 py-0.5 text-[11px] cursor-pointer transition ${
+									activeGroupIndex === groupIndex
+										? "bg-stone-800 text-white"
+										: "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+								}`}
 							>
-								{group.label && (
-									<p
-										className="text-[11px] text-stone-400 mb-1.5 px-1"
-										style={{ fontFamily: "var(--font-stamp)" }}
-									>
-										{group.label}
-									</p>
-								)}
-								<div className="flex flex-wrap gap-1.5">
-									{visiblePrompts.map((example) => (
-										<button
-											key={example}
-											type="button"
-											onClick={() => {
-												setPrompt((prev) =>
-													prev
-														? `${prev.trimEnd()}, ${example.toLowerCase()}`
-														: example,
-												);
-												requestAnimationFrame(() => {
-													if (textareaRef.current)
-														autoResize(textareaRef.current);
-												});
-												if (group.style) setStyle(group.style);
-											}}
-											className={`${group.className} ${group.hoverClassName} rounded-full px-2.5 py-1 text-[11px] cursor-pointer transition`}
-										>
-											{example}
-										</button>
-									))}
-									{isFirstGroup && !showMorePrompts && (
-										<button
-											type="button"
-											onClick={() => setShowMorePrompts(true)}
-											className="text-stone-400 hover:text-stone-600 rounded-full px-2.5 py-1 text-[11px] cursor-pointer transition border border-stone-200 hover:border-stone-300"
-										>
-											More ideas...
-										</button>
-									)}
-								</div>
-							</div>
-						);
-					})}
+								{group.label ?? "Ideas"}
+							</button>
+						))}
+					</div>
+					<div className="mt-1.5 flex gap-1.5 overflow-x-auto scrollbar-hide">
+						{PROMPT_GROUPS[activeGroupIndex].prompts.map((example) => {
+							const group = PROMPT_GROUPS[activeGroupIndex];
+							return (
+								<button
+									key={example}
+									type="button"
+									onClick={() => {
+										setPrompt((prev) =>
+											prev
+												? `${prev.trimEnd()}, ${example.toLowerCase()}`
+												: example,
+										);
+										requestAnimationFrame(() => {
+											if (textareaRef.current) autoResize(textareaRef.current);
+										});
+										if (group.style) setStyle(group.style);
+									}}
+									className={`${group.className} ${group.hoverClassName} shrink-0 rounded-full px-2.5 py-1 text-[11px] cursor-pointer transition`}
+								>
+									{example}
+								</button>
+							);
+						})}
+					</div>
 				</div>
 
 				{/* Style selector */}
 				<fieldset>
 					<legend
-						className="text-sm font-medium text-stamp-navy mb-3"
+						className="text-sm font-medium text-stamp-navy mb-2"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					>
 						Style
 					</legend>
-					<div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+					<div className="flex gap-2 overflow-x-auto scrollbar-hide">
 						{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
 							<button
 								key={key}
 								type="button"
 								onClick={() => setStyle(key as StampStyle)}
-								className={`group relative rounded-lg overflow-hidden transition cursor-pointer ${
-									style === key
-										? "ring-2 ring-stamp-navy ring-offset-1"
-										: "hover:ring-1 hover:ring-stone-300"
+								className={`group shrink-0 flex flex-col items-center gap-1 cursor-pointer transition ${
+									style === key ? "opacity-100" : "opacity-60 hover:opacity-100"
 								}`}
 							>
-								<div className="bg-stone-100 p-1.5 pb-1">
-									<div className="aspect-square rounded overflow-hidden">
-										<Image
-											src={preset.thumbnail}
-											alt={`${preset.name} style`}
-											width={120}
-											height={120}
-											className="object-cover w-full h-full"
-										/>
-									</div>
-									<p
-										className={`mt-1 text-xs font-medium text-center ${
-											style === key ? "text-stamp-navy" : "text-stone-500"
-										}`}
-									>
-										{preset.name}
-									</p>
+								<div
+									className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden transition ${
+										style === key
+											? "ring-2 ring-stamp-navy ring-offset-1"
+											: "hover:ring-1 hover:ring-stone-300"
+									}`}
+								>
+									<Image
+										src={preset.thumbnail}
+										alt={`${preset.name} style`}
+										width={80}
+										height={80}
+										className="object-cover w-full h-full"
+										unoptimized
+									/>
 								</div>
+								<p
+									className={`text-[11px] font-medium ${
+										style === key ? "text-stamp-navy" : "text-stone-500"
+									}`}
+								>
+									{preset.name}
+								</p>
 							</button>
 						))}
 					</div>
