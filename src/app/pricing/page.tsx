@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
 	title: "Pricing — stamp.builders",
 	description:
-		"Generate AI stamps for free. 100 credits per day with an account, 3 without signing in.",
+		"Generate AI stamps for free. 100 credits per day with an account, 20 without signing in.",
 	openGraph: {
 		title: "Pricing — stamp.builders",
 		description:
@@ -40,7 +40,7 @@ export default function PricingPage() {
 					Simple, honest pricing
 				</h1>
 				<p className="text-stone-600 text-base max-w-md mx-auto">
-					Start creating stamps for free. 3 stamps per day without an account,
+					Start creating stamps for free. 20 stamps per day without an account,
 					100 with one.
 				</p>
 			</div>
@@ -78,7 +78,7 @@ export default function PricingPage() {
 							))}
 						</ul>
 						<p className="text-xs text-stone-500 mb-6">
-							No account? You still get 3 stamps per day.
+							No account? You still get 20 stamps per day.
 						</p>
 						<Link
 							href="/"

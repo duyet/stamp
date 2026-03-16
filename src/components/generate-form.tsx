@@ -1,6 +1,6 @@
 "use client";
 
-import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton, UserButton, useAuth } from "@clerk/nextjs";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
@@ -33,6 +33,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const { copied, copy } = useCopy();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [isRateLimited, setIsRateLimited] = useState(false);
+	const { isSignedIn } = useAuth();
 	const [result, setResult] = useState<{
 		id: string;
 		imageUrl: string;
@@ -69,6 +71,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		setLoading(true);
 		setError(null);
 		setResult(null);
+		setIsRateLimited(false);
 
 		try {
 			const res = await fetch("/api/generate", {
@@ -88,6 +91,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			};
 
 			if (!res.ok) {
+				setIsRateLimited(res.status === 429);
 				setError(data.error || "Generation failed");
 				return;
 			}
@@ -283,8 +287,23 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 			{/* Error */}
 			{error && (
-				<div className="mt-6 p-4 bg-stamp-red/5 border border-stamp-red/20 rounded-xl text-stamp-red text-sm">
-					{error}
+				<div className="mt-6 p-4 bg-stamp-red/5 border border-stamp-red/20 rounded-xl text-sm">
+					<p className="text-stamp-red">{error}</p>
+					{isRateLimited && !isSignedIn && (
+						<div className="mt-3 pt-3 border-t border-stamp-red/10 flex items-center justify-between">
+							<p className="text-stone-600 text-sm">
+								Sign in for 100 free stamps per day
+							</p>
+							<SignInButton>
+								<button
+									type="button"
+									className="px-4 py-1.5 bg-stamp-navy text-white rounded-lg text-sm font-medium hover:bg-stone-800 transition"
+								>
+									Sign in
+								</button>
+							</SignInButton>
+						</div>
+					)}
 				</div>
 			)}
 

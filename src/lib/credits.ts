@@ -4,7 +4,7 @@ import type { Database } from "@/db";
 import { creditTransactions, userCredits } from "@/db/schema";
 
 export const DEFAULT_DAILY_LIMIT = 100;
-export const ANONYMOUS_DAILY_LIMIT = 3;
+export const ANONYMOUS_DAILY_LIMIT = 20;
 const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 /**
