@@ -20,6 +20,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [style, setStyle] = useState<StampStyle>("vintage");
 	const [isPublic, setIsPublic] = useState(true);
 	const [loading, setLoading] = useState(false);
+	const [updatingVisibility, setUpdatingVisibility] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [result, setResult] = useState<{
 		id: string;
@@ -199,9 +200,12 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 						<input
 							type="checkbox"
 							checked={isPublic}
+							disabled={updatingVisibility}
 							onChange={async (e) => {
 								const newValue = e.target.checked;
 								setIsPublic(newValue);
+								setError(null);
+								setUpdatingVisibility(true);
 								try {
 									const res = await fetch(
 										`/api/stamps/${result.id}/visibility`,
@@ -218,6 +222,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								} catch {
 									setIsPublic(!newValue);
 									setError("Failed to update visibility. Please try again.");
+								} finally {
+									setUpdatingVisibility(false);
 								}
 							}}
 							className="w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-200"
