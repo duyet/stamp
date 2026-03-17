@@ -8,7 +8,7 @@ import {
 	useClerk,
 } from "@clerk/nextjs";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
 import { useCopy } from "@/hooks/use-copy";
 import {
@@ -38,7 +38,7 @@ interface GenerateFormProps {
 
 function autoResize(el: HTMLTextAreaElement) {
 	el.style.height = "auto";
-	el.style.height = `${Math.max(48, el.scrollHeight)}px`;
+	el.style.height = `${Math.max(56, el.scrollHeight)}px`;
 }
 
 export function GenerateForm({ onGenerated }: GenerateFormProps) {
@@ -63,6 +63,15 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [results, setResults] = useState<GeneratedStamp[]>([]);
 
 	const latestResult = results[0] ?? null;
+
+	const shuffledPrompts = useMemo(() => {
+		const arr = [...PROMPT_GROUPS[activeGroupIndex].prompts];
+		for (let i = arr.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[arr[i], arr[j]] = [arr[j], arr[i]];
+		}
+		return arr;
+	}, [activeGroupIndex]);
 
 	async function handleVisibilityChange(
 		e: React.ChangeEvent<HTMLInputElement>,
@@ -134,76 +143,78 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	return (
 		<div className="max-w-2xl mx-auto">
-			<form onSubmit={handleSubmit} className="space-y-4">
-				{/* Prompt + auth row */}
-				<div className="relative">
-					<textarea
-						ref={textareaRef}
-						id="prompt"
-						value={prompt}
-						onChange={(e) => {
-							setPrompt(e.target.value);
-							autoResize(e.target);
-						}}
-						onKeyDown={(e) => {
-							if (
-								e.key === "Enter" &&
-								e.shiftKey &&
-								prompt.trim() &&
-								!loading
-							) {
-								e.preventDefault();
-								handleSubmit(e);
-							}
-						}}
-						placeholder="Describe your stamp..."
-						maxLength={500}
-						rows={1}
-						className="w-full pl-4 pr-12 py-3 rounded-lg border border-stone-300 bg-white text-stamp-navy text-sm leading-relaxed placeholder:text-stone-400 focus:border-stamp-navy focus:ring-1 focus:ring-stamp-navy/10 outline-none transition resize-none overflow-hidden"
-						style={{ fontFamily: "var(--font-stamp)" }}
-					/>
-					{/* Auth button inside textarea row */}
-					<div className="absolute right-3 top-3">
-						<Show when="signed-out">
-							<SignInButton mode="modal">
-								<button
-									type="button"
-									className="text-xs text-stone-400 hover:text-stamp-navy transition-colors"
-								>
-									Sign in
-								</button>
-							</SignInButton>
-						</Show>
-						<Show when="signed-in">
-							<UserButton appearance={{ elements: { avatarBox: "w-6 h-6" } }} />
-						</Show>
-					</div>
-				</div>
-
-				{/* Prompt suggestions */}
-				<div>
-					{PROMPT_GROUPS.length > 1 && (
-						<div className="flex items-center gap-1 mb-1.5">
-							{PROMPT_GROUPS.map((group, groupIndex) => (
-								<button
-									key={group.label ?? "default"}
-									type="button"
-									onClick={() => setActiveGroupIndex(groupIndex)}
-									className={`rounded px-2 py-0.5 text-[10px] font-medium cursor-pointer transition ${
-										activeGroupIndex === groupIndex
-											? "bg-stamp-navy text-white"
-											: "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
-									}`}
-								>
-									{group.label ?? "Ideas"}
-								</button>
-							))}
+			<div className="bg-white rounded-2xl border border-stone-200/60 shadow-sm p-6 sm:p-8">
+				<form onSubmit={handleSubmit} className="space-y-6">
+					{/* Prompt + auth row */}
+					<div className="relative">
+						<textarea
+							ref={textareaRef}
+							id="prompt"
+							value={prompt}
+							onChange={(e) => {
+								setPrompt(e.target.value);
+								autoResize(e.target);
+							}}
+							onKeyDown={(e) => {
+								if (
+									e.key === "Enter" &&
+									e.shiftKey &&
+									prompt.trim() &&
+									!loading
+								) {
+									e.preventDefault();
+									handleSubmit(e);
+								}
+							}}
+							placeholder="Describe your stamp..."
+							maxLength={500}
+							rows={1}
+							className="w-full pl-5 pr-14 py-4 rounded-xl border border-stone-200 bg-stone-50/50 text-stamp-navy text-base leading-relaxed placeholder:text-stone-400 focus:bg-white focus:border-stamp-navy focus:ring-2 focus:ring-stamp-navy/5 outline-none transition-all duration-200 resize-none overflow-hidden"
+							style={{ fontFamily: "var(--font-stamp)" }}
+						/>
+						{/* Auth button inside textarea row */}
+						<div className="absolute right-4 top-4">
+							<Show when="signed-out">
+								<SignInButton mode="modal">
+									<button
+										type="button"
+										className="text-xs text-stone-400 hover:text-stamp-navy transition-colors"
+									>
+										Sign in
+									</button>
+								</SignInButton>
+							</Show>
+							<Show when="signed-in">
+								<UserButton
+									appearance={{ elements: { avatarBox: "w-6 h-6" } }}
+								/>
+							</Show>
 						</div>
-					)}
-					<div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-						{PROMPT_GROUPS[activeGroupIndex].prompts.map((example) => {
-							const group = PROMPT_GROUPS[activeGroupIndex];
-							return (
+					</div>
+
+					{/* Prompt suggestions */}
+					<div>
+						{PROMPT_GROUPS.length > 1 && (
+							<div className="flex items-center gap-1 mb-1.5">
+								{PROMPT_GROUPS.map((group, groupIndex) => (
+									<button
+										key={group.label ?? "default"}
+										type="button"
+										onClick={() => setActiveGroupIndex(groupIndex)}
+										className={`rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition ${
+											activeGroupIndex === groupIndex
+												? "bg-stamp-navy text-white"
+												: "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
+										}`}
+									>
+										{group.label ?? "Ideas"}
+									</button>
+								))}
+							</div>
+						)}
+						<p className="text-xs text-stone-400 mb-2">Try an idea</p>
+						<div className="flex flex-wrap gap-1.5">
+							{shuffledPrompts.map((example) => (
 								<button
 									key={example}
 									type="button"
@@ -216,88 +227,96 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 										requestAnimationFrame(() => {
 											if (textareaRef.current) autoResize(textareaRef.current);
 										});
-										if (group.style) setStyle(group.style);
+										const { style: groupStyle } =
+											PROMPT_GROUPS[activeGroupIndex];
+										if (groupStyle) setStyle(groupStyle);
 									}}
-									className="shrink-0 rounded px-2 py-0.5 text-[10px] text-stone-400 hover:text-stone-600 hover:bg-stone-50 cursor-pointer transition"
+									className="shrink-0 rounded-full px-3 py-1.5 text-xs text-stone-500 bg-stone-100/60 hover:text-stone-700 hover:bg-stone-100 cursor-pointer transition-colors duration-150"
 								>
 									{example}
 								</button>
-							);
-						})}
+							))}
+						</div>
 					</div>
-				</div>
 
-				{/* Styles + actions row */}
-				<div className="flex items-end justify-between gap-4">
 					{/* Style selector */}
-					<div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-						{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
-							<button
-								key={key}
-								type="button"
-								onClick={() => setStyle(key as StampStyle)}
-								className="shrink-0 cursor-pointer transition"
-							>
-								<div
-									className={`w-10 h-10 rounded overflow-hidden transition ${
-										style === key
-											? "ring-2 ring-stamp-navy ring-offset-1"
-											: "opacity-50 hover:opacity-80"
-									}`}
+					<div>
+						<p className="text-xs text-stone-400 mb-2.5">Style</p>
+						<div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+							{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
+								<button
+									key={key}
+									type="button"
+									onClick={() => setStyle(key as StampStyle)}
+									className="shrink-0 cursor-pointer transition"
 								>
-									<Image
-										src={preset.thumbnail}
-										alt={preset.name}
-										width={40}
-										height={40}
-										className="object-cover w-full h-full"
-										unoptimized
-									/>
-								</div>
-								<p
-									className={`text-[9px] mt-0.5 text-center ${
-										style === key
-											? "text-stamp-navy font-medium"
-											: "text-stone-400"
-									}`}
-								>
-									{preset.name}
-								</p>
-							</button>
-						))}
+									<div
+										className={`w-16 h-16 rounded-lg overflow-hidden transition-all duration-200 ${
+											style === key
+												? "ring-2 ring-stamp-navy ring-offset-2"
+												: "opacity-60 hover:opacity-90"
+										}`}
+									>
+										<Image
+											src={preset.thumbnail}
+											alt={preset.name}
+											width={64}
+											height={64}
+											className="object-cover w-full h-full"
+											unoptimized
+										/>
+									</div>
+									<p
+										className={`text-[11px] mt-1 text-center transition-colors ${
+											style === key
+												? "text-stamp-navy font-medium"
+												: "text-stone-400"
+										}`}
+									>
+										{preset.name}
+									</p>
+								</button>
+							))}
+						</div>
 					</div>
 
-					{/* Submit + public toggle */}
-					<div className="flex items-center gap-3 shrink-0">
-						<label className="flex items-center gap-1.5 cursor-pointer">
-							<input
-								type="checkbox"
-								checked={isPublic}
-								onChange={(e) => setIsPublic(e.target.checked)}
-								className="w-3 h-3 rounded border-stone-300 text-stamp-navy focus:ring-stamp-navy/20"
-							/>
-							<span className="text-[10px] text-stone-500">Public</span>
-						</label>
-						<label className="flex items-center gap-1.5 cursor-pointer">
-							<input
-								type="checkbox"
-								checked={hd}
-								onChange={(e) => {
-									if (!isSignedIn) {
-										e.preventDefault();
-										clerk.openSignIn();
-										return;
-									}
-									setHd(e.target.checked);
-								}}
-								className="w-3 h-3 rounded border-stone-300 text-stamp-navy focus:ring-stamp-navy/20"
-							/>
-							<span className="text-[10px] text-stone-500">HD</span>
-						</label>
+					{/* Actions row */}
+					<div className="flex items-center justify-between pt-2">
+						<div className="flex items-center gap-4">
+							<label className="flex items-center gap-2 cursor-pointer group">
+								<input
+									type="checkbox"
+									checked={isPublic}
+									onChange={(e) => setIsPublic(e.target.checked)}
+									className="w-3.5 h-3.5 rounded border-stone-300 text-stamp-navy focus:ring-stamp-navy/20"
+								/>
+								<span className="text-xs text-stone-500 group-hover:text-stone-700 transition-colors">
+									Public
+								</span>
+							</label>
+							<label className="flex items-center gap-2 cursor-pointer group">
+								<input
+									type="checkbox"
+									checked={hd}
+									onChange={(e) => {
+										if (!isSignedIn) {
+											e.preventDefault();
+											clerk.openSignIn();
+											return;
+										}
+										setHd(e.target.checked);
+									}}
+									className="w-3.5 h-3.5 rounded border-stone-300 text-stamp-navy focus:ring-stamp-navy/20"
+								/>
+								<span className="text-xs text-stone-500 group-hover:text-stone-700 transition-colors">
+									HD
+								</span>
+							</label>
+						</div>
 						<button
 							type="submit"
 							disabled={loading || !prompt.trim()}
-							className="px-5 py-2 bg-stamp-navy text-white rounded-lg text-xs font-medium hover:bg-stone-800 transition disabled:opacity-30 disabled:cursor-not-allowed"
+							className="px-7 py-2.5 bg-stamp-navy text-white rounded-xl text-sm font-medium hover:bg-stone-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
 							style={{ fontFamily: "var(--font-stamp)" }}
 						>
 							{loading ? (
@@ -333,34 +352,34 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							)}
 						</button>
 					</div>
-				</div>
-			</form>
+				</form>
 
-			{/* Error */}
-			{error && (
-				<div className="mt-4 p-3 bg-stamp-red/5 border border-stamp-red/15 rounded-lg text-xs">
-					<p className="text-stamp-red">{error}</p>
-					{isRateLimited && !isSignedIn && (
-						<div className="mt-2 pt-2 border-t border-stamp-red/10 flex items-center justify-between">
-							<p className="text-stone-600">
-								Sign in for 100 free stamps per day
-							</p>
-							<SignInButton mode="modal">
-								<button
-									type="button"
-									className="px-3 py-1 bg-stamp-navy text-white rounded text-xs font-medium hover:bg-stone-800 transition"
-								>
-									Sign in
-								</button>
-							</SignInButton>
-						</div>
-					)}
-				</div>
-			)}
+				{/* Error — inside card */}
+				{error && (
+					<div className="mt-5 p-4 bg-stamp-red/5 border border-stamp-red/10 rounded-xl text-xs">
+						<p className="text-stamp-red">{error}</p>
+						{isRateLimited && !isSignedIn && (
+							<div className="mt-2 pt-2 border-t border-stamp-red/10 flex items-center justify-between">
+								<p className="text-stone-600">
+									Sign in for 100 free stamps per day
+								</p>
+								<SignInButton mode="modal">
+									<button
+										type="button"
+										className="px-3 py-1 bg-stamp-navy text-white rounded text-xs font-medium hover:bg-stone-800 transition"
+									>
+										Sign in
+									</button>
+								</SignInButton>
+							</div>
+						)}
+					</div>
+				)}
+			</div>
 
-			{/* Results — newest first, shown as a grid */}
+			{/* Results — outside card, newest first, shown as a grid */}
 			{results.length > 0 && (
-				<div className="mt-8">
+				<div className="mt-10">
 					{/* Controls for latest stamp */}
 					<div className="text-center mb-4 space-y-2">
 						<label className="inline-flex items-center gap-2 cursor-pointer group">
@@ -376,7 +395,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							</div>
 							<span className="text-xs text-stone-500">Public collection</span>
 						</label>
-						<p className="text-[10px] text-stone-400">
+						<p className="text-xs text-stone-400">
 							{latestResult?.remaining} remaining today
 							{latestResult?.generationTimeMs && (
 								<span className="ml-1">
