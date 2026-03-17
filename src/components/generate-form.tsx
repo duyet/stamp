@@ -245,7 +245,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							<div
 								className={`w-12 h-12 transition-all duration-200 ${
 									style === key
-										? "ring-1 ring-stone-900 ring-offset-1 p-2"
+										? "ring-1 ring-stone-900 ring-offset-1"
 										: "opacity-50 hover:opacity-80"
 								}`}
 							>
