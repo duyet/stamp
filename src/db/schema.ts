@@ -15,6 +15,7 @@ export const stamps = sqliteTable(
 		description: text("description"),
 		imageUrl: text("image_url").notNull(),
 		thumbnailUrl: text("thumbnail_url"),
+		referenceImageUrl: text("reference_image_url"),
 		style: text("style").default("vintage"),
 		isPublic: integer("is_public", { mode: "boolean" }).default(true),
 		userIp: text("user_ip"),
