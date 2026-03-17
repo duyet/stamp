@@ -104,22 +104,15 @@ Examples:
 }
 
 /**
- * Build multipart form data for Flux models that require it.
- * Returns the body stream and content-type with boundary.
+ * Build multipart form data for Flux 2 models that require it.
+ * Returns the FormData object directly (CF Workers AI expects FormData, not a stream).
  */
-function buildMultipartInput(params: Record<string, string>): {
-	body: ReadableStream;
-	contentType: string;
-} {
+function buildMultipartInput(params: Record<string, string>): FormData {
 	const form = new FormData();
 	for (const [key, value] of Object.entries(params)) {
 		form.append(key, value);
 	}
-	const response = new Response(form);
-	return {
-		body: response.body as ReadableStream,
-		contentType: response.headers.get("content-type") || "multipart/form-data",
-	};
+	return form;
 }
 
 /**
@@ -143,30 +136,28 @@ export async function generateStamp(
 	}
 
 	// Stage 2: Model selection based on HD flag
-	// Flux 2 models require multipart form data input
+	// Flux 2 models require multipart form data input (FormData passed directly)
+	// Flux 1 Schnell can use plain object input (simpler, no multipart needed)
 	let response: { image?: string };
 	if (hd) {
 		// Flux 2 Klein 9B — 1024x1024, fixed 4 steps
-		const { body, contentType } = buildMultipartInput({
+		// Uses multipart form data with FormData passed directly
+		const form = buildMultipartInput({
 			prompt: enhancedPrompt,
 			width: "1024",
 			height: "1024",
 		});
 		response = (await ai.run(
-			// @ts-expect-error — model name valid at runtime
+			// @ts-expect-error — model name valid at runtime, FormData works at runtime for multipart.body
 			"@cf/black-forest-labs/flux-2-klein-9b",
-			{ multipart: { body, contentType } },
+			{ multipart: { body: form as unknown as ReadableStream, contentType: "multipart/form-data" } },
 		)) as { image?: string };
 	} else {
 		// Flux 1 Schnell — default, fast, 8 steps
-		const { body, contentType } = buildMultipartInput({
-			prompt: enhancedPrompt,
-			steps: "8",
-		});
+		// Uses plain object input (simpler, no multipart needed)
 		response = (await ai.run(
 			"@cf/black-forest-labs/flux-1-schnell",
-			// @ts-expect-error — multipart input required, types lag behind runtime API
-			{ multipart: { body, contentType } },
+			{ prompt: enhancedPrompt, steps: 8 },
 		)) as { image?: string };
 	}
 
