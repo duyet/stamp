@@ -53,7 +53,8 @@ Rules:
  */
 function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
-	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers. The stamp fills the entire image with no outer padding or frame.`;
+	const subject = userPrompt.trim() || "a decorative design";
+	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers. The stamp fills the entire image with no outer padding or frame.`;
 }
 
 /**
