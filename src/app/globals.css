@@ -48,68 +48,97 @@ body {
 	width: 420px;
 	height: 280px;
 	margin: 0 auto;
+	animation: fan-float 6s ease-in-out infinite;
+}
+
+@keyframes fan-float {
+	0%, 100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-8px);
+	}
 }
 
 .stamp-fan-card {
 	position: absolute;
 	width: 170px;
 	height: 170px;
-	transition: all 0.4s ease-out;
+	transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 	transform-origin: bottom center;
 }
 
-/* Stacked state (default) */
+/* Stacked state (default) with subtle shimmer */
 .stamp-fan-far-left {
 	left: 45px;
 	top: 40px;
 	transform: rotate(-14deg);
 	z-index: 1;
+	animation: card-glow 4s ease-in-out infinite 0s;
 }
 .stamp-fan-left {
 	left: 75px;
 	top: 28px;
 	transform: rotate(-7deg);
 	z-index: 2;
+	animation: card-glow 4s ease-in-out infinite 0.3s;
 }
 .stamp-fan-center {
 	left: 125px;
 	top: 15px;
 	transform: rotate(0deg);
 	z-index: 5;
+	animation: card-glow 4s ease-in-out infinite 0.6s;
 }
 .stamp-fan-right {
 	left: 175px;
 	top: 28px;
 	transform: rotate(7deg);
 	z-index: 2;
+	animation: card-glow 4s ease-in-out infinite 0.9s;
 }
 .stamp-fan-far-right {
 	left: 200px;
 	top: 40px;
 	transform: rotate(14deg);
 	z-index: 1;
+	animation: card-glow 4s ease-in-out infinite 1.2s;
 }
 
-/* Expanded state (hover) — fan out like a card spread */
+@keyframes card-glow {
+	0%, 100% {
+		filter: brightness(1);
+	}
+	50% {
+		filter: brightness(1.03);
+	}
+}
+
+/* Expanded state (hover) — fan out like a card spread with staggered timing */
 .stamp-fan:hover .stamp-fan-far-left {
-	transform: rotate(-24deg) translateX(-70px) translateY(-10px);
+	transform: rotate(-28deg) translateX(-85px) translateY(-15px) scale(1.05);
+	transition-delay: 0s;
 }
 .stamp-fan:hover .stamp-fan-left {
-	transform: rotate(-12deg) translateX(-35px) translateY(-14px);
+	transform: rotate(-14deg) translateX(-42px) translateY(-18px) scale(1.08);
+	transition-delay: 0.05s;
 }
 .stamp-fan:hover .stamp-fan-center {
-	transform: rotate(0deg) translateY(-20px);
+	transform: rotate(0deg) translateY(-25px) scale(1.12);
+	transition-delay: 0.1s;
 }
 .stamp-fan:hover .stamp-fan-right {
-	transform: rotate(12deg) translateX(35px) translateY(-14px);
+	transform: rotate(14deg) translateX(42px) translateY(-18px) scale(1.08);
+	transition-delay: 0.15s;
 }
 .stamp-fan:hover .stamp-fan-far-right {
-	transform: rotate(24deg) translateX(70px) translateY(-10px);
+	transform: rotate(28deg) translateX(85px) translateY(-15px) scale(1.05);
+	transition-delay: 0.2s;
 }
 
-/* Subtle lift shadow on hover */
+/* Subtle lift shadow on hover with glow */
 .stamp-fan:hover .stamp-fan-card .stamp-border {
-	filter: drop-shadow(1px 3px 8px rgba(0, 0, 0, 0.12));
+	filter: drop-shadow(2px 8px 16px rgba(74, 111, 165, 0.25));
 }
 
 /* Modal stamp — large drop shadow */

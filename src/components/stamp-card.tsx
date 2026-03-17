@@ -46,7 +46,7 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 		return (
 			<button
 				type="button"
-				className="group relative text-left cursor-pointer rounded-xl overflow-hidden transition w-full"
+				className="group relative text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 w-full"
 				onClick={onClick}
 			>
 				{content}
@@ -55,7 +55,7 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 	}
 
 	return (
-		<div className="group relative rounded-xl overflow-hidden transition">
+		<div className="group relative rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
 			{content}
 		</div>
 	);

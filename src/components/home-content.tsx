@@ -48,8 +48,8 @@ export function HomeContent() {
 	return (
 		<div className="max-w-5xl mx-auto px-6">
 			{/* Hero — stamp fan + compact title */}
-			<section className="pt-6 pb-4 text-center">
-				<div className="flex justify-center mb-4">
+			<section className="pt-6 pb-6 text-center">
+				<div className="flex justify-center mb-5">
 					<StampFan
 						images={recentStamps.slice(0, 5).map((s) => s.imageUrl)}
 						onClickStamp={(idx) => {
@@ -59,13 +59,15 @@ export function HomeContent() {
 					/>
 				</div>
 				<h1
-					className="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight"
+					className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-2"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders
 				</h1>
-				<p className="text-sm text-stone-500 mt-1">
-					Describe anything and get a unique AI-generated postage stamp
+				<p className="text-base text-stone-600 max-w-md mx-auto leading-relaxed">
+					Describe anything and get a unique AI-generated postage stamp in
+					seconds.{" "}
+					<span className="text-stamp-blue font-medium">Free to create.</span>
 				</p>
 			</section>
 
@@ -78,12 +80,12 @@ export function HomeContent() {
 			{recentStamps.length > 0 && (
 				<section className="mb-12 relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6">
 					<div className="flex items-baseline justify-between mb-6 max-w-5xl mx-auto">
-						<h2 className="text-lg font-semibold text-stone-900">
+						<h2 className="text-xl font-semibold text-stone-900">
 							Latest stamps
 						</h2>
 						<Link
 							href="/collections"
-							className="text-sm text-stone-600 hover:text-stamp-navy transition-colors"
+							className="text-sm text-stone-600 hover:text-stamp-blue transition-colors font-medium"
 						>
 							View all &rarr;
 						</Link>
