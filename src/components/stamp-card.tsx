@@ -84,6 +84,7 @@ export const StampCardMemo = memo(StampCard, (prev, next) => {
 	return (
 		prev.stamp.id === next.stamp.id &&
 		prev.stamp.imageUrl === next.stamp.imageUrl &&
-		prev.stamp.isPublic === next.stamp.isPublic
+		prev.stamp.isPublic === next.stamp.isPublic &&
+		prev.onClick === next.onClick
 	);
 });

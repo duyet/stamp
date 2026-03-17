@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { FOCUSABLE_SELECTOR } from "@/constants/a11y";
 import type { Stamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
 import {
@@ -20,10 +21,19 @@ interface StampModalProps {
 export function StampModal({ stamp, onClose }: StampModalProps) {
 	const { copied, copy } = useCopy();
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
+	const modalRef = useRef<HTMLDivElement>(null);
+	const focusableElementsRef = useRef<HTMLElement[]>([]);
 
 	useEffect(() => {
 		// Focus close button when modal opens
 		closeButtonRef.current?.focus();
+
+		// Cache focusable elements once to avoid repeated DOM queries
+		if (modalRef.current) {
+			focusableElementsRef.current = Array.from(
+				modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+			);
+		}
 
 		// Prevent body scroll
 		document.body.style.overflow = "hidden";
@@ -35,14 +45,11 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 				return;
 			}
 
-			// Focus trap for Tab key
+			// Focus trap for Tab key (uses cached focusable elements)
 			if (e.key === "Tab") {
-				const modal = e.currentTarget as HTMLElement;
-				const focusableElements =
-					'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-				const focusable = Array.from(
-					modal.querySelectorAll<HTMLElement>(focusableElements),
-				);
+				const focusable = focusableElementsRef.current;
+				if (focusable.length === 0) return;
+
 				const firstFocusable = focusable[0];
 				const lastFocusable = focusable[focusable.length - 1];
 
@@ -78,6 +85,7 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 
 			{/* Content */}
 			<div
+				ref={modalRef}
 				className="relative max-w-md w-full animate-stamp-appear"
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => e.stopPropagation()}

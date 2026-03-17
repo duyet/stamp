@@ -14,12 +14,13 @@ export function useStamps(limit: number) {
 	useEffect(() => {
 		async function load() {
 			try {
-				setError(null);
 				const r = await fetch(`/api/stamps?limit=${limit}`);
 				const data = (await r.json()) as { stamps?: Stamp[]; error?: string };
 				if (!r.ok) {
 					throw new Error(data.error ?? "Failed to fetch stamps");
 				}
+				// Only clear error on success
+				setError(null);
 				setStamps(data.stamps ?? []);
 			} catch (err) {
 				console.error("Failed to fetch stamps:", err);
