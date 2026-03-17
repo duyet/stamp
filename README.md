@@ -9,13 +9,25 @@ AI-powered postage stamp generator. Create unique vintage folk art stamp illustr
 ## Features
 
 - Generate stamps from text prompts with AI
-- 5 style presets: Vintage, Folk Art, Modern, Botanical, Portrait
+- 10 style presets: Vintage, Folk Art, Modern, Botanical, Portrait, Watercolor, Woodcut, Engraved, Pixel, Risograph
 - Auto prompt enhancement via Llama 3.1 8B
-- Image generation via Flux Schnell (free, on Cloudflare Workers AI)
+- LLM-generated stamp descriptions
+- Standard generation via Flux 1 Schnell (free)
+- HD generation via Flux 2 Klein 9B (1024x1024)
 - Public collection gallery with stamp overlay modal
 - Download and share stamps
+- Clerk authentication with free tier (20/day guest, 100/day signed in)
 - Analytics dashboard (/dashboard)
-- 5 free generations per day, no account needed
+
+## AI Models
+
+All models run on Cloudflare Workers AI (free tier, no API keys needed).
+
+| Model | Purpose |
+|-------|---------|
+| `@cf/meta/llama-3.1-8b-instruct` | Prompt enhancement + description generation |
+| `@cf/black-forest-labs/flux-1-schnell` | Standard image generation (512x512, 8 steps) |
+| `@cf/black-forest-labs/flux-2-klein-9b` | HD image generation (1024x1024, 25 steps) |
 
 ## Tech Stack
 
@@ -23,10 +35,10 @@ AI-powered postage stamp generator. Create unique vintage folk art stamp illustr
 - **Adapter**: @opennextjs/cloudflare
 - **Database**: Cloudflare D1 (SQLite) + Drizzle ORM
 - **Storage**: Cloudflare R2 (stamp images)
-- **AI**: CF Workers AI (Flux Schnell + Llama 3.1 8B)
+- **Auth**: Clerk
 - **Styling**: Tailwind CSS v4 + Geist font
 - **Linting**: Biome
-- **Testing**: Vitest (101 tests)
+- **Testing**: Vitest (415 tests)
 - **CI**: GitHub Actions
 
 ## Getting Started
