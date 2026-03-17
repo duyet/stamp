@@ -31,7 +31,8 @@ Rules:
 - Use the specific style variation: ${preset.prompt}
 - Only include "dot eyes", "facial features", "pose", "expression", or "clothing" if the subject is a person or character
 - For non-figure subjects (flags, objects, landscapes, buildings, animals, symbols), describe shapes, patterns, colors, and composition instead
-- Add small background details appropriate to the subject
+- Do NOT add background elements the user did not ask for — follow the style preset faithfully
+- The stamp must fill the entire image — no padding, margin, or decorative frame outside the stamp edges
 - NEVER include any text, words, letters, numbers, or calligraphy
 - Keep the composition centered`;
 
@@ -52,7 +53,7 @@ Rules:
  */
 function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
-	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers.`;
+	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers. The stamp fills the entire image with no outer padding or frame.`;
 }
 
 /**

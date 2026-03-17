@@ -74,6 +74,12 @@ describe("STAMP_BASE_STYLE", () => {
 		expect(STAMP_BASE_STYLE).toContain("square format");
 	});
 
+	it("includes anti-padding and no-frame constraints", () => {
+		expect(STAMP_BASE_STYLE).toContain("fills the entire image");
+		expect(STAMP_BASE_STYLE).toContain("no padding outside stamp edges");
+		expect(STAMP_BASE_STYLE).toContain("no background frame");
+	});
+
 	it("does not force portrait-specific elements in base style", () => {
 		expect(STAMP_BASE_STYLE).not.toContain("portrait");
 		expect(STAMP_BASE_STYLE).not.toContain("dot eyes");
@@ -100,6 +106,11 @@ describe("buildStampPrompt", () => {
 	it("includes no-text instruction", () => {
 		const result = buildStampPrompt("test");
 		expect(result).toContain("No text");
+	});
+
+	it("includes no-padding constraint", () => {
+		const result = buildStampPrompt("test");
+		expect(result).toContain("no outer padding or frame");
 	});
 
 	it("works for all styles", () => {
