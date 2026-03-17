@@ -18,6 +18,7 @@ import {
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import {
+	getRandomPrompts,
 	PROMPT_GROUPS,
 	STAMP_STYLE_PRESETS,
 	type StampStyle,
@@ -71,17 +72,15 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	const latestResult = results[0] ?? null;
 
-	const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([
-		...PROMPT_GROUPS[activeGroupIndex].prompts,
-	]);
+	const [shuffledPrompts, setShuffledPrompts] = useState<string[]>(() => {
+		// Get fresh random prompts on initial mount
+		return getRandomPrompts(12);
+	});
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: activeGroupIndex used as trigger signal
 	useEffect(() => {
-		const arr = [...PROMPT_GROUPS[activeGroupIndex].prompts];
-		for (let i = arr.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[arr[i], arr[j]] = [arr[j], arr[i]];
-		}
-		setShuffledPrompts(arr);
+		// Refresh prompts when group changes
+		setShuffledPrompts(getRandomPrompts(8));
 	}, [activeGroupIndex]);
 
 	async function handleVisibilityChange(
