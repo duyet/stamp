@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { SignInButton, useAuth } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import type { StampStyle } from "@/lib/stamp-prompts";
@@ -48,7 +48,9 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		if (!isSignedIn) setHd(false);
 	}, [isSignedIn]);
 
-	async function handleVisibilityChange(e: React.ChangeEvent<HTMLInputElement>) {
+	async function handleVisibilityChange(
+		e: React.ChangeEvent<HTMLInputElement>,
+	) {
 		if (!results[0]) return;
 		const newValue = e.target.checked;
 		setIsPublic(newValue);
@@ -126,7 +128,11 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			setPrompt("");
 			setReference(null);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+			setError(
+				err instanceof Error
+					? err.message
+					: "Something went wrong. Please try again.",
+			);
 		} finally {
 			setLoading(false);
 		}
