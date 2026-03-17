@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { CloseIcon, UploadIcon } from "@/components/icons";
+import { IMAGE_CONSTANTS } from "@/lib/constants";
 
 export interface ReferenceData {
 	referenceImageData: string; // base64-encoded PNG
@@ -13,9 +14,7 @@ interface ImageUploadProps {
 	disabled?: boolean;
 }
 
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_DIMENSION = 512; // FLUX.2 requires ≤512x512
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
 export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 	const [preview, setPreview] = useState<string | null>(null);
@@ -26,11 +25,11 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 		return new Promise((resolve, reject) => {
 			const img = document.createElement("img");
 			img.onload = () => {
-				// Calculate scale to fit within MAX_DIMENSION
+				// Calculate scale to fit within max dimension
 				const scale = Math.min(
 					1,
-					MAX_DIMENSION / img.width,
-					MAX_DIMENSION / img.height,
+					IMAGE_CONSTANTS.FLUX_MAX_DIMENSION / img.width,
+					IMAGE_CONSTANTS.FLUX_MAX_DIMENSION / img.height,
 				);
 				const width = Math.floor(img.width * scale);
 				const height = Math.floor(img.height * scale);
@@ -65,11 +64,13 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 	}
 
 	async function handleFile(file: File) {
-		if (!ACCEPTED_TYPES.includes(file.type)) {
+		if (
+			!ACCEPTED_TYPES.includes(file.type as (typeof ACCEPTED_TYPES)[number])
+		) {
 			setErrorMsg("Please upload a JPG, PNG, or WebP image.");
 			return;
 		}
-		if (file.size > MAX_SIZE) {
+		if (file.size > IMAGE_CONSTANTS.MAX_UPLOAD_SIZE_BYTES) {
 			setErrorMsg("Image must be under 5MB.");
 			return;
 		}
@@ -78,7 +79,7 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 		setErrorMsg(null);
 
 		try {
-			// Resize image to ≤512x512 for FLUX.2
+			// Resize image to fit FLUX.2 constraints
 			const resizedBlob = await resizeImage(file);
 
 			// Convert to base64

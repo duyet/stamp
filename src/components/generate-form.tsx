@@ -105,8 +105,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		}
 	}
 
-	async function handleSubmit(e: React.FormEvent) {
-		e.preventDefault();
+	async function handleSubmit(e?: React.FormEvent<HTMLFormElement>) {
+		e?.preventDefault();
 		if (!prompt.trim() && !reference) return;
 
 		setLoading(true);
@@ -187,7 +187,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								!loading
 							) {
 								e.preventDefault();
-								handleSubmit(e);
+								handleSubmit();
 							}
 						}}
 						placeholder={

@@ -1,10 +1,9 @@
 import { eq } from "drizzle-orm";
 import type { Database } from "@/db";
 import { rateLimits } from "@/db/schema";
-import { ANONYMOUS_DAILY_LIMIT } from "@/lib/credits";
+import { DAILY_CREDIT_LIMITS, RATE_LIMIT_WINDOW_MS } from "./constants";
 
-const MAX_GENERATIONS_PER_DAY = ANONYMOUS_DAILY_LIMIT;
-const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+const MAX_GENERATIONS_PER_DAY = DAILY_CREDIT_LIMITS.ANONYMOUS;
 
 export async function checkRateLimit(
 	db: Database,
@@ -26,7 +25,7 @@ export async function checkRateLimit(
 	}
 
 	const windowExpired =
-		now.getTime() - existing.windowStart.getTime() > WINDOW_MS;
+		now.getTime() - existing.windowStart.getTime() > RATE_LIMIT_WINDOW_MS;
 
 	if (windowExpired) {
 		await db

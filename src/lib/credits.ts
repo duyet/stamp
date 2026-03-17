@@ -2,12 +2,17 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { Database } from "@/db";
 import { creditTransactions, userCredits } from "@/db/schema";
+import {
+	CREDIT_COSTS,
+	DAILY_CREDIT_LIMITS,
+	RATE_LIMIT_WINDOW_MS,
+} from "./constants";
 
-export const DEFAULT_DAILY_LIMIT = 100;
-export const ANONYMOUS_DAILY_LIMIT = 20;
-export const STANDARD_CREDIT_COST = 1;
-export const HD_CREDIT_COST = 5;
-const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+// Re-export for backward compatibility
+export const DEFAULT_DAILY_LIMIT = DAILY_CREDIT_LIMITS.AUTHENTICATED;
+export const ANONYMOUS_DAILY_LIMIT = DAILY_CREDIT_LIMITS.ANONYMOUS;
+export const STANDARD_CREDIT_COST = CREDIT_COSTS.STANDARD;
+export const HD_CREDIT_COST = CREDIT_COSTS.HD;
 
 /**
  * Get or create a user's credit record.
@@ -24,7 +29,7 @@ export async function getUserCredits(db: Database, userId: string) {
 			userId,
 			dailyLimit: DEFAULT_DAILY_LIMIT,
 			dailyUsed: 0,
-			dailyResetAt: now + WINDOW_MS,
+			dailyResetAt: now + RATE_LIMIT_WINDOW_MS,
 			purchasedCredits: 0,
 			createdAt: now,
 			updatedAt: now,
@@ -37,7 +42,7 @@ export async function getUserCredits(db: Database, userId: string) {
 	if (now >= existing.dailyResetAt) {
 		const resetFields = {
 			dailyUsed: 0,
-			dailyResetAt: now + WINDOW_MS,
+			dailyResetAt: now + RATE_LIMIT_WINDOW_MS,
 			updatedAt: now,
 		};
 		await db

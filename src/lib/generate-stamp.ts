@@ -1,3 +1,4 @@
+import { uint8ArrayToDataUrl } from "./base64-utils";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "./stamp-prompts";
 
 interface GenerateStampResult {
@@ -114,12 +115,8 @@ async function buildMultipartInput(
 	}
 	// Add reference image if provided (for img2img with FLUX.2)
 	if (referenceImageData) {
-		// Convert Uint8Array to base64 string (avoid spread for large arrays)
-		const binaryString = Array.from(referenceImageData, (byte) =>
-			String.fromCharCode(byte),
-		).join("");
-		const base64 = btoa(binaryString);
-		const dataUrl = `data:image/png;base64,${base64}`;
+		// Convert Uint8Array to data URL
+		const dataUrl = uint8ArrayToDataUrl(referenceImageData, "image/png");
 		// Fetch as Blob to get proper BlobPart type
 		const response = await fetch(dataUrl);
 		const blob = await response.blob();
