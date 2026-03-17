@@ -64,6 +64,13 @@ describe("STAMP_STYLE_PRESETS", () => {
 			expect(preset.prompt).toContain("perforated");
 		}
 	});
+
+	it("all styles include no-padding constraint", () => {
+		for (const [, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
+			expect(preset.prompt).toContain("no padding outside stamp edges");
+			expect(preset.prompt).toContain("no background frame");
+		}
+	});
 });
 
 describe("STAMP_BASE_STYLE", () => {
