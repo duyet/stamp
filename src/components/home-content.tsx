@@ -31,6 +31,13 @@ export function HomeContent() {
 			isPublic: true,
 			userIp: null,
 			userId: null,
+			locationCity: null,
+			locationCountry: null,
+			locationLat: null,
+			locationLng: null,
+			userTimezone: null,
+			userAgent: null,
+			referrer: null,
 			createdAt: new Date(),
 		};
 		setRecentStamps((prev) => [newStamp, ...prev].slice(0, 12));
