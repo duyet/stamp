@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import type { StampStyle } from "@/lib/stamp-prompts";
-import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 import { GenerationOptions } from "./generate/generation-options";
 import { GenerationResults } from "./generate/generation-results";
 import { PromptInput } from "./generate/prompt-input";

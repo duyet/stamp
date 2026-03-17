@@ -77,7 +77,6 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 			<div className="absolute inset-0 bg-white/92 backdrop-blur-xl animate-modal-fade" />
 
 			{/* Content */}
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: modal content area needs click stop */}
 			<div
 				className="relative max-w-md w-full animate-stamp-appear"
 				onClick={(e) => e.stopPropagation()}

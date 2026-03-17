@@ -23,9 +23,7 @@ export function useStamps(limit: number) {
 				setStamps(data.stamps ?? []);
 			} catch (err) {
 				console.error("Failed to fetch stamps:", err);
-				setError(
-					err instanceof Error ? err.message : "Failed to load stamps",
-				);
+				setError(err instanceof Error ? err.message : "Failed to load stamps");
 			} finally {
 				setLoading(false);
 			}
