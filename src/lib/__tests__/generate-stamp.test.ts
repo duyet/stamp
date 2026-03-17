@@ -101,3 +101,64 @@ describe("generateStamp", () => {
 		}
 	});
 });
+
+describe("reference-based generation", () => {
+	it("passes referenceDescription to enhancePrompt", async () => {
+		const mockAi = createMockAi(
+			"A stamp based on the reference",
+			btoa("fake-image-data"),
+		);
+		const result = await generateStamp(
+			mockAi,
+			"",
+			"vintage",
+			false,
+			"A cat sitting on a chair",
+		);
+		expect(result.enhancedPrompt).toBeDefined();
+		// Verify the LLM was called with reference description
+		const calls = vi.mocked(mockAi.run).mock.calls;
+		const qwenCall = calls.find(
+			(c) => typeof c[0] === "string" && c[0].includes("qwen"),
+		);
+		expect(qwenCall).toBeDefined();
+		const messages = (qwenCall?.[1] as Record<string, unknown>)
+			?.messages as Array<{ role: string; content: string }>;
+		const userMsg = messages?.find((m) => m.role === "user");
+		expect(userMsg?.content).toContain("Reference image description");
+		expect(userMsg?.content).toContain("A cat sitting on a chair");
+	});
+
+	it("uses fallback prompt with reference when LLM fails", async () => {
+		const mockAi = {
+			run: vi.fn().mockImplementation((model: string) => {
+				if (model.includes("qwen"))
+					return Promise.reject(new Error("LLM fail"));
+				if (model.includes("flux"))
+					return Promise.resolve({ image: btoa("img") });
+			}),
+		} as unknown as Ai;
+
+		const result = await generateStamp(
+			mockAi,
+			"",
+			"vintage",
+			false,
+			"A sunset over mountains",
+		);
+		expect(result.enhancedPrompt).toContain("Based on reference");
+		expect(result.enhancedPrompt).toContain("A sunset over mountains");
+	});
+
+	it("works with both reference and user prompt", async () => {
+		const mockAi = createMockAi("Combined stamp prompt", btoa("img"));
+		const result = await generateStamp(
+			mockAi,
+			"make it blue",
+			"modern",
+			false,
+			"A cat on a chair",
+		);
+		expect(result.enhancedPrompt).toBeDefined();
+	});
+});
