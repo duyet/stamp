@@ -8,7 +8,7 @@ import {
 	useClerk,
 } from "@clerk/nextjs";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
 import { useCopy } from "@/hooks/use-copy";
 import {
@@ -64,13 +64,17 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	const latestResult = results[0] ?? null;
 
-	const shuffledPrompts = useMemo(() => {
+	const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([
+		...PROMPT_GROUPS[activeGroupIndex].prompts,
+	]);
+
+	useEffect(() => {
 		const arr = [...PROMPT_GROUPS[activeGroupIndex].prompts];
 		for (let i = arr.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
 			[arr[i], arr[j]] = [arr[j], arr[i]];
 		}
-		return arr;
+		setShuffledPrompts(arr);
 	}, [activeGroupIndex]);
 
 	async function handleVisibilityChange(
