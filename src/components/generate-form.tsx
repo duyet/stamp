@@ -1,28 +1,15 @@
 "use client";
 
-import {
-	Show,
-	SignInButton,
-	UserButton,
-	useAuth,
-	useClerk,
-} from "@clerk/nextjs";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import {
-	AvatarIcon,
-	CheckIcon,
-	ClipboardIcon,
-	DownloadIcon,
-} from "@/components/icons";
+import { useEffect, useState } from "react";
+import { SignInButton, useAuth } from "@clerk/nextjs";
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
-import {
-	getRandomPrompts,
-	PROMPT_GROUPS,
-	STAMP_STYLE_PRESETS,
-	type StampStyle,
-} from "@/lib/stamp-prompts";
+import type { StampStyle } from "@/lib/stamp-prompts";
+import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
+import { GenerationOptions } from "./generate/generation-options";
+import { GenerationResults } from "./generate/generation-results";
+import { PromptInput } from "./generate/prompt-input";
+import { StyleSelector } from "./generate/style-selector";
 
 interface GeneratedStamp {
 	id: string;
@@ -43,54 +30,30 @@ interface GenerateFormProps {
 	}) => void;
 }
 
-function autoResize(el: HTMLTextAreaElement) {
-	el.style.height = "auto";
-	el.style.height = `${Math.max(56, el.scrollHeight)}px`;
-}
-
 export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [prompt, setPrompt] = useState("");
 	const [style, setStyle] = useState<StampStyle>("vintage");
-	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [isPublic, setIsPublic] = useState(true);
-	const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 	const { copied, copy } = useCopy();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isRateLimited, setIsRateLimited] = useState(false);
 	const { isSignedIn } = useAuth();
-	const clerk = useClerk();
 	const [hd, setHd] = useState(false);
-	const [reference, setReference] = useState<string | null>(null); // base64 image data
+	const [reference, setReference] = useState<string | null>(null);
+	const [results, setResults] = useState<GeneratedStamp[]>([]);
 
 	// Reset HD when user signs out
 	useEffect(() => {
 		if (!isSignedIn) setHd(false);
 	}, [isSignedIn]);
 
-	const [results, setResults] = useState<GeneratedStamp[]>([]);
-
-	const latestResult = results[0] ?? null;
-
-	const [shuffledPrompts, setShuffledPrompts] = useState<string[]>(() => {
-		// Get fresh random prompts on initial mount
-		return getRandomPrompts(12);
-	});
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: activeGroupIndex used as trigger signal
-	useEffect(() => {
-		// Refresh prompts when group changes
-		setShuffledPrompts(getRandomPrompts(8));
-	}, [activeGroupIndex]);
-
-	async function handleVisibilityChange(
-		e: React.ChangeEvent<HTMLInputElement>,
-	) {
-		if (!latestResult) return;
+	async function handleVisibilityChange(e: React.ChangeEvent<HTMLInputElement>) {
+		if (!results[0]) return;
 		const newValue = e.target.checked;
 		setIsPublic(newValue);
 		try {
-			const res = await fetch(`/api/stamps/${latestResult.id}/visibility`, {
+			const res = await fetch(`/api/stamps/${results[0].id}/visibility`, {
 				method: "PATCH",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ isPublic: newValue }),
@@ -105,10 +68,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		}
 	}
 
-	async function handleSubmit(e?: React.FormEvent<HTMLFormElement>) {
-		e?.preventDefault();
-		if (!prompt.trim() && !reference) return;
-
+	async function handleSubmit() {
 		setLoading(true);
 		setError(null);
 		setIsRateLimited(false);
@@ -130,25 +90,43 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			});
 
 			const data = (await res.json()) as {
-				id: string;
-				imageUrl: string;
-				prompt: string;
-				enhancedPrompt?: string;
-				remaining: number;
-				generationTimeMs?: number;
+				id?: string;
+				imageUrl?: string;
 				error?: string;
+				remaining?: number;
+				generationTimeMs?: number;
 			};
 
 			if (!res.ok) {
-				setIsRateLimited(res.status === 429);
-				setError(data.error || "Generation failed");
-				return;
+				if (res.status === 429) setIsRateLimited(true);
+				throw new Error(data.error ?? "Generation failed");
 			}
 
-			setResults((prev) => [data, ...prev]);
-			onGenerated?.({ ...data, style });
-		} catch {
-			setError("Something went wrong. Please try again.");
+			if (!data.id || !data.imageUrl) {
+				throw new Error("Invalid response from server");
+			}
+
+			const newStamp: GeneratedStamp = {
+				id: data.id,
+				imageUrl: data.imageUrl,
+				prompt,
+				remaining: data.remaining ?? 0,
+				generationTimeMs: data.generationTimeMs,
+			};
+
+			setResults([newStamp, ...results]);
+			onGenerated?.({
+				id: data.id,
+				imageUrl: data.imageUrl,
+				prompt,
+				style,
+			});
+
+			// Clear prompt after successful generation
+			setPrompt("");
+			setReference(null);
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
 		} finally {
 			setLoading(false);
 		}
@@ -156,7 +134,13 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	return (
 		<div className="max-w-2xl mx-auto">
-			<form onSubmit={handleSubmit} className="space-y-4">
+			<form
+				onSubmit={(e) => {
+					e.preventDefault();
+					handleSubmit();
+				}}
+				className="space-y-4"
+			>
 				{/* Reference image upload */}
 				<ImageUpload
 					onSelected={(data) => {
@@ -169,211 +153,29 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					disabled={loading}
 				/>
 
-				{/* Prompt + auth row */}
-				<div className="relative">
-					<textarea
-						ref={textareaRef}
-						id="prompt"
-						value={prompt}
-						onChange={(e) => {
-							setPrompt(e.target.value);
-							autoResize(e.target);
-						}}
-						onKeyDown={(e) => {
-							if (
-								e.key === "Enter" &&
-								e.shiftKey &&
-								(prompt.trim() || reference) &&
-								!loading
-							) {
-								e.preventDefault();
-								handleSubmit();
-							}
-						}}
-						placeholder={
-							reference
-								? "Add extra instructions (optional)..."
-								: "Describe your stamp..."
-						}
-						maxLength={500}
-						rows={1}
-						className="w-full pl-4 pr-14 py-3 rounded-lg border border-stone-300 bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-400 focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 outline-none transition-all duration-200 resize-none overflow-hidden"
-					/>
-					{/* Auth button inside textarea row */}
-					<div className="absolute right-3 top-3">
-						<Show when="signed-out">
-							<SignInButton mode="modal">
-								<button
-									type="button"
-									className="text-stone-300 hover:text-stone-500 transition-colors"
-									aria-label="Sign in"
-								>
-									<AvatarIcon />
-								</button>
-							</SignInButton>
-						</Show>
-						<Show when="signed-in">
-							<UserButton appearance={{ elements: { avatarBox: "w-6 h-6" } }} />
-						</Show>
-					</div>
-				</div>
-
-				{/* Prompt suggestions */}
-				<div>
-					{PROMPT_GROUPS.length > 1 && (
-						<div className="flex items-center gap-1 mb-1.5">
-							{PROMPT_GROUPS.map((group, groupIndex) => (
-								<button
-									key={group.label ?? "default"}
-									type="button"
-									onClick={() => setActiveGroupIndex(groupIndex)}
-									className={`rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition ${
-										activeGroupIndex === groupIndex
-											? "bg-stone-900 text-white"
-											: "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
-									}`}
-								>
-									{group.label ?? "Ideas"}
-								</button>
-							))}
-						</div>
-					)}
-					<div className="flex flex-wrap gap-1.5">
-						{shuffledPrompts.map((example) => (
-							<button
-								key={example}
-								type="button"
-								onClick={() => {
-									setPrompt((prev) =>
-										prev
-											? `${prev.trimEnd()}, ${example.toLowerCase()}`
-											: example,
-									);
-									requestAnimationFrame(() => {
-										if (textareaRef.current) autoResize(textareaRef.current);
-									});
-									const { style: groupStyle } = PROMPT_GROUPS[activeGroupIndex];
-									if (groupStyle) setStyle(groupStyle);
-								}}
-								className="shrink-0 rounded-full px-3 py-1 text-xs text-stone-600 border border-stone-200 hover:text-stone-900 hover:border-stone-400 hover:bg-stone-50 cursor-pointer transition-colors duration-150"
-							>
-								{example}
-							</button>
-						))}
-					</div>
-				</div>
+				{/* Prompt input with suggestions */}
+				<PromptInput
+					value={prompt}
+					onChange={setPrompt}
+					onStyleChange={setStyle}
+					disabled={loading}
+					loading={loading}
+					referenceImage={!!reference}
+				/>
 
 				{/* Style selector */}
-				<div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 p-2">
-					{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
-						<button
-							key={key}
-							type="button"
-							onClick={() => setStyle(key as StampStyle)}
-							className="shrink-0 cursor-pointer transition"
-						>
-							<div
-								className={`w-12 h-12 rounded transition-all duration-200 ${
-									style === key
-										? "ring-2 ring-stone-900 ring-offset-1"
-										: "opacity-50 hover:opacity-80"
-								}`}
-							>
-								<Image
-									src={preset.thumbnail}
-									alt={preset.name}
-									width={48}
-									height={48}
-									className="object-cover w-full h-full"
-									unoptimized
-								/>
-							</div>
-							<p
-								className={`text-[10px] mt-0.5 text-center transition-colors ${
-									style === key
-										? "text-stone-900 font-medium"
-										: "text-stone-400"
-								}`}
-							>
-								{preset.name}
-							</p>
-						</button>
-					))}
-				</div>
+				<StyleSelector currentStyle={style} onStyleChange={setStyle} />
 
 				{/* Actions row */}
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<label className="flex items-center gap-1.5 cursor-pointer group">
-							<input
-								type="checkbox"
-								checked={isPublic}
-								onChange={(e) => setIsPublic(e.target.checked)}
-								className="w-3.5 h-3.5 rounded border-stone-300 text-stone-900 focus:ring-stone-900/20"
-							/>
-							<span className="text-xs text-stone-500 group-hover:text-stone-700 transition-colors">
-								Public
-							</span>
-						</label>
-						<label className="flex items-center gap-1.5 cursor-pointer group">
-							<input
-								type="checkbox"
-								checked={hd}
-								onChange={(e) => {
-									if (!isSignedIn) {
-										e.preventDefault();
-										clerk.openSignIn();
-										return;
-									}
-									setHd(e.target.checked);
-								}}
-								className="w-3.5 h-3.5 rounded border-stone-300 text-stone-900 focus:ring-stone-900/20"
-							/>
-							<span className="text-xs text-stone-500 group-hover:text-stone-700 transition-colors">
-								HD
-							</span>
-						</label>
-					</div>
-					<button
-						type="submit"
-						disabled={loading || (!prompt.trim() && !reference)}
-						className="px-6 py-2 bg-stone-900 text-white rounded-lg text-sm font-medium hover:bg-stone-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
-					>
-						{loading ? (
-							<span className="flex items-center gap-1.5">
-								<svg
-									className="animate-spin h-3.5 w-3.5"
-									viewBox="0 0 24 24"
-									fill="none"
-									role="img"
-									aria-label="Loading"
-								>
-									<title>Loading</title>
-									<circle
-										className="opacity-25"
-										cx="12"
-										cy="12"
-										r="10"
-										stroke="currentColor"
-										strokeWidth="4"
-									/>
-									<path
-										className="opacity-75"
-										fill="currentColor"
-										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-									/>
-								</svg>
-								Creating...
-							</span>
-						) : reference && !prompt.trim() ? (
-							"Generate from photo"
-						) : hd ? (
-							"Generate HD (5 credits)"
-						) : (
-							"Generate"
-						)}
-					</button>
-				</div>
+				<GenerationOptions
+					isPublic={isPublic}
+					onPublicChange={setIsPublic}
+					hd={hd}
+					onHdChange={setHd}
+					loading={loading}
+					disabled={!prompt.trim() && !reference}
+					referenceImage={!!reference}
+				/>
 			</form>
 
 			{/* Error */}
@@ -398,84 +200,17 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				</div>
 			)}
 
-			{/* Results — outside card, newest first, shown as a grid */}
+			{/* Results */}
 			{results.length > 0 && (
-				<div className="mt-10">
-					{/* Controls for latest stamp */}
-					<div className="text-center mb-4 space-y-2">
-						<label className="inline-flex items-center gap-2 cursor-pointer group">
-							<div className="relative">
-								<input
-									type="checkbox"
-									checked={isPublic}
-									onChange={handleVisibilityChange}
-									className="peer sr-only"
-								/>
-								<div className="w-8 h-4 bg-stone-200 rounded-full peer-checked:bg-stone-800 transition-colors" />
-								<div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4" />
-							</div>
-							<span className="text-xs text-stone-500">Public collection</span>
-						</label>
-						<p className="text-xs text-stone-400">
-							{latestResult?.remaining} remaining today
-							{latestResult?.generationTimeMs && (
-								<span className="ml-1">
-									· {(latestResult.generationTimeMs / 1000).toFixed(1)}s
-								</span>
-							)}
-						</p>
-					</div>
-
-					{/* Stamp grid — newest first */}
-					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-						{results.map((r, idx) => (
-							<div
-								key={r.id}
-								className={`text-center ${idx === 0 ? "animate-stamp-appear" : ""}`}
-							>
-								<div className="stamp-border stamp-modal-shadow inline-block">
-									<Image
-										src={r.imageUrl}
-										alt={r.prompt}
-										width={256}
-										height={256}
-										className="object-cover"
-										unoptimized
-									/>
-								</div>
-								<div className="mt-2 flex justify-center gap-1.5">
-									<a
-										href={r.imageUrl}
-										download={`stamp-${r.id}.png`}
-										className="inline-flex items-center gap-1 px-3 py-1 bg-stamp-navy text-white rounded-full text-[10px] hover:bg-stone-800 transition"
-									>
-										<DownloadIcon />
-										Download
-									</a>
-									<button
-										type="button"
-										onClick={() =>
-											copy(`${window.location.origin}/api/stamps/${r.id}/image`)
-										}
-										className="inline-flex items-center gap-1 px-3 py-1 text-stone-600 bg-white border border-stone-200 rounded-full text-[10px] hover:bg-stone-50 transition"
-									>
-										{copied ? (
-											<>
-												<CheckIcon />
-												Copied
-											</>
-										) : (
-											<>
-												<ClipboardIcon />
-												Copy
-											</>
-										)}
-									</button>
-								</div>
-							</div>
-						))}
-					</div>
-				</div>
+				<GenerationResults
+					results={results}
+					remaining={results[0]?.remaining}
+					generationTimeMs={results[0]?.generationTimeMs}
+					copied={copied}
+					onCopy={copy}
+					onVisibilityChange={handleVisibilityChange}
+					isPublic={isPublic}
+				/>
 			)}
 		</div>
 	);
