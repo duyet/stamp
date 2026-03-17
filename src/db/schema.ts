@@ -1,4 +1,10 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+	index,
+	integer,
+	real,
+	sqliteTable,
+	text,
+} from "drizzle-orm/sqlite-core";
 
 export const stamps = sqliteTable(
 	"stamps",
@@ -13,6 +19,13 @@ export const stamps = sqliteTable(
 		isPublic: integer("is_public", { mode: "boolean" }).default(true),
 		userIp: text("user_ip"),
 		userId: text("user_id"),
+		locationCity: text("location_city"),
+		locationCountry: text("location_country"),
+		locationLat: real("location_lat"),
+		locationLng: real("location_lng"),
+		userTimezone: text("user_timezone"),
+		userAgent: text("user_agent"),
+		referrer: text("referrer"),
 		createdAt: integer("created_at", { mode: "timestamp" })
 			.$defaultFn(() => new Date())
 			.notNull(),
