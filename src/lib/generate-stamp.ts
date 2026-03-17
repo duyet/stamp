@@ -169,13 +169,15 @@ export async function generateStamp(
 			},
 			referenceImageData,
 		);
+		// FormData must be wrapped in Response to get body stream and content-type
+		const formResponse = new Response(form);
 		response = (await ai.run(
-			// @ts-expect-error — model name valid at runtime, FormData works at runtime for multipart.body
+			// @ts-expect-error — model name valid at runtime
 			"@cf/black-forest-labs/flux-2-klein-9b",
 			{
 				multipart: {
-					body: form as unknown as ReadableStream,
-					contentType: "multipart/form-data",
+					body: formResponse.body,
+					contentType: formResponse.headers.get('content-type') ?? 'multipart/form-data',
 				},
 			},
 		)) as { image?: string };
