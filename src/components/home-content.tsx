@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
+import { StampFan } from "@/components/stamp-fan";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
@@ -45,8 +46,17 @@ export function HomeContent() {
 
 	return (
 		<div className="max-w-5xl mx-auto px-6">
-			{/* Hero — compact to keep form above the fold */}
+			{/* Hero — stamp fan + compact title */}
 			<section className="pt-6 pb-4 text-center">
+				<div className="flex justify-center mb-4">
+					<StampFan
+						images={recentStamps.slice(0, 5).map((s) => s.imageUrl)}
+						onClickStamp={(idx) => {
+							const stamp = recentStamps[idx];
+							if (stamp) setSelectedStamp(stamp);
+						}}
+					/>
+				</div>
 				<h1 className="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">
 					Create your stamp
 				</h1>
@@ -74,7 +84,7 @@ export function HomeContent() {
 							View all &rarr;
 						</Link>
 					</div>
-					<div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
 						{recentStamps.map((stamp) => (
 							<button
 								key={stamp.id}
