@@ -29,12 +29,12 @@ vi.mock("nanoid", () => ({
 	nanoid: vi.fn(() => "abc123def456"),
 }));
 
-vi.mock("@clerk/nextjs/server", () => ({
-	auth: vi.fn(),
+vi.mock("@/lib/clerk", () => ({
+	getAuthUserId: vi.fn(),
 }));
 
-import { auth } from "@clerk/nextjs/server";
 import { getDb } from "@/db";
+import { getAuthUserId } from "@/lib/clerk";
 import { checkAndDeductCredit } from "@/lib/credits";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
@@ -60,7 +60,7 @@ describe("POST /api/generate", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		// Default: anonymous user (no userId)
-		vi.mocked(auth).mockResolvedValue({ userId: null } as never);
+		vi.mocked(getAuthUserId).mockResolvedValue({ userId: null });
 		vi.mocked(getDb).mockReturnValue(mockDb as never);
 		vi.mocked(getEnv).mockReturnValue({
 			AI: { run: vi.fn() },
@@ -130,7 +130,7 @@ describe("POST /api/generate", () => {
 
 	describe("authenticated user (credits-based)", () => {
 		beforeEach(() => {
-			vi.mocked(auth).mockResolvedValue({
+			vi.mocked(getAuthUserId).mockResolvedValue({
 				userId: "user_abc123",
 			} as never);
 		});
@@ -336,7 +336,7 @@ describe("POST /api/generate", () => {
 		});
 
 		it("accepts request with reference image and empty prompt when HD is true", async () => {
-			vi.mocked(auth).mockResolvedValue({
+			vi.mocked(getAuthUserId).mockResolvedValue({
 				userId: "user_abc123",
 			} as never);
 
@@ -351,7 +351,7 @@ describe("POST /api/generate", () => {
 		});
 
 		it("passes reference image data to generateStamp", async () => {
-			vi.mocked(auth).mockResolvedValue({
+			vi.mocked(getAuthUserId).mockResolvedValue({
 				userId: "user_abc123",
 			} as never);
 			const base64Image = btoa("fake-image-data");
@@ -389,7 +389,7 @@ describe("POST /api/generate", () => {
 		});
 
 		it("passes hd=true to generateStamp for authenticated users", async () => {
-			vi.mocked(auth).mockResolvedValue({
+			vi.mocked(getAuthUserId).mockResolvedValue({
 				userId: "user_abc123",
 			} as never);
 
@@ -405,7 +405,7 @@ describe("POST /api/generate", () => {
 		});
 
 		it("deducts HD credit cost for authenticated HD requests", async () => {
-			vi.mocked(auth).mockResolvedValue({
+			vi.mocked(getAuthUserId).mockResolvedValue({
 				userId: "user_abc123",
 			} as never);
 
@@ -419,7 +419,7 @@ describe("POST /api/generate", () => {
 		});
 
 		it("deducts standard credit cost for non-HD requests", async () => {
-			vi.mocked(auth).mockResolvedValue({
+			vi.mocked(getAuthUserId).mockResolvedValue({
 				userId: "user_abc123",
 			} as never);
 
@@ -433,7 +433,7 @@ describe("POST /api/generate", () => {
 		});
 
 		it("includes hd flag in response", async () => {
-			vi.mocked(auth).mockResolvedValue({
+			vi.mocked(getAuthUserId).mockResolvedValue({
 				userId: "user_abc123",
 			} as never);
 

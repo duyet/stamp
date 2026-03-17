@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { listConversations, searchConversations } from "@/lib/agentstate";
+import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 
-export async function GET(request: Request) {
-	const { userId } = await auth();
+export async function GET(request: NextRequest) {
+	const { userId } = await getAuthUserId(request.headers);
 	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}

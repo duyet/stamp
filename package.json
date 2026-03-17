@@ -24,6 +24,7 @@
 		"test:watch": "vitest"
 	},
 	"dependencies": {
+		"@clerk/backend": "^3.2.0",
 		"@clerk/nextjs": "^7.0.4",
 		"@opennextjs/cloudflare": "^1.17.1",
 		"drizzle-orm": "^0.45.1",

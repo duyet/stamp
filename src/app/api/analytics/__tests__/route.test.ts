@@ -1,28 +1,30 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createSelectChain } from "@/test-utils";
+import { createGetRequest, createSelectChain } from "@/test-utils";
 
-vi.mock("@clerk/nextjs/server", () => ({
-	auth: vi.fn(),
+vi.mock("@/lib/clerk", () => ({
+	getAuthUserId: vi.fn(),
 }));
 
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
 }));
 
-import { auth } from "@clerk/nextjs/server";
 import { getDb } from "@/db";
+import { getAuthUserId } from "@/lib/clerk";
 import { GET } from "../route";
 
 describe("GET /api/analytics", () => {
+	const request = createGetRequest("http://localhost/api/analytics");
+
 	beforeEach(() => {
 		vi.clearAllMocks();
-		vi.mocked(auth).mockResolvedValue({ userId: "user_admin" } as never);
+		vi.mocked(getAuthUserId).mockResolvedValue({ userId: "user_admin" });
 	});
 
 	it("returns 401 when not authenticated", async () => {
-		vi.mocked(auth).mockResolvedValue({ userId: null } as never);
+		vi.mocked(getAuthUserId).mockResolvedValue({ userId: null });
 
-		const res = await GET();
+		const res = await GET(request);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(401);
@@ -68,7 +70,7 @@ describe("GET /api/analytics", () => {
 			select: mockSelect,
 		} as never);
 
-		const res = await GET();
+		const res = await GET(request);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -102,7 +104,7 @@ describe("GET /api/analytics", () => {
 			select: mockSelect,
 		} as never);
 
-		const res = await GET();
+		const res = await GET(request);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
@@ -127,7 +129,7 @@ describe("GET /api/analytics", () => {
 			select: mockSelect,
 		} as never);
 
-		const res = await GET();
+		const res = await GET(request);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(500);
@@ -161,7 +163,7 @@ describe("GET /api/analytics", () => {
 			select: mockSelect,
 		} as never);
 
-		const res = await GET();
+		const res = await GET(request);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);

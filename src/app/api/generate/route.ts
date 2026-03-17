@@ -1,9 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { addTags, createConversation } from "@/lib/agentstate";
+import { getAuthUserId } from "@/lib/clerk";
 import {
 	checkAndDeductCredit,
 	HD_CREDIT_COST,
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 		const env = getEnv();
 		const db = getDb();
 
-		const { userId } = await auth();
+		const { userId } = await getAuthUserId(request.headers);
 		const userIp = getClientIp(request.headers);
 
 		// Extract location data from Cloudflare headers
