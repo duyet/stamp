@@ -79,6 +79,7 @@ describe("POST /api/generate", () => {
 			imageData: new Uint8Array([1, 2, 3]),
 			mimeType: "image/jpeg",
 			enhancedPrompt: "enhanced prompt text",
+			description: "A folk art cat on a stamp",
 		});
 
 		// Make insert().values() chainable and also support fire-and-forget .catch()
@@ -274,6 +275,7 @@ describe("POST /api/generate", () => {
 				imageData: new Uint8Array([1, 2, 3]),
 				mimeType: "image/png",
 				enhancedPrompt: "enhanced",
+				description: "A folk art cat on a stamp",
 			});
 
 			await POST(req({ prompt: "a cat" }));

@@ -92,12 +92,8 @@ export async function POST(request: NextRequest) {
 		// Time the generation (LLM enhancement + image generation)
 		const genStart = Date.now();
 
-		const { imageData, mimeType, enhancedPrompt } = await generateStamp(
-			ai,
-			prompt,
-			style,
-			hd,
-		);
+		const { imageData, mimeType, enhancedPrompt, description } =
+			await generateStamp(ai, prompt, style, hd);
 
 		const generationTimeMs = Date.now() - genStart;
 
@@ -116,6 +112,7 @@ export async function POST(request: NextRequest) {
 			id: stampId,
 			prompt,
 			enhancedPrompt,
+			description,
 			imageUrl,
 			style,
 			isPublic,
@@ -147,6 +144,7 @@ export async function POST(request: NextRequest) {
 			imageUrl,
 			prompt,
 			enhancedPrompt,
+			description,
 			style,
 			hd,
 			remaining,

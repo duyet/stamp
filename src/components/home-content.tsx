@@ -18,11 +18,13 @@ export function HomeContent() {
 		imageUrl: string;
 		prompt: string;
 		enhancedPrompt?: string;
+		description?: string;
 	}) {
 		const newStamp: Stamp = {
 			id: stamp.id,
 			prompt: stamp.prompt,
 			enhancedPrompt: stamp.enhancedPrompt ?? null,
+			description: stamp.description ?? null,
 			imageUrl: stamp.imageUrl,
 			thumbnailUrl: null,
 			style: "vintage",
@@ -96,7 +98,7 @@ export function HomeContent() {
 									/>
 								</div>
 								<p className="px-3 py-2.5 text-xs text-stone-600 truncate">
-									{stamp.prompt}
+									{stamp.description || stamp.prompt}
 								</p>
 							</button>
 						))}

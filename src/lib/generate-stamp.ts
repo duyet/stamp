@@ -4,6 +4,7 @@ interface GenerateStampResult {
 	imageData: Uint8Array;
 	mimeType: string;
 	enhancedPrompt: string;
+	description: string;
 }
 
 /**
@@ -54,6 +55,52 @@ Rules:
 function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
 	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers.`;
+}
+
+/**
+ * Generate a short human-friendly description of what a stamp depicts.
+ * Uses CF Workers AI Llama 3.1 8B (free) with low temperature for consistency.
+ */
+export async function generateDescription(
+	ai: Ai,
+	userPrompt: string,
+	enhancedPrompt: string,
+): Promise<string> {
+	const systemPrompt = `You generate short 1-sentence descriptions (max 10-15 words) of what a stamp illustration depicts.
+The description should be human-friendly display text, not a generation prompt.
+Output ONLY the description, no quotes, no explanation.
+
+Examples:
+- "Folk art cat lounging on a sunny windowsill"
+- "Vintage botanical rose garden illustration"
+- "Whimsical owl perched on a moonlit branch"`;
+
+	try {
+		const response = (await ai.run(
+			// @ts-expect-error — model name valid at runtime, types may lag
+			"@cf/meta/llama-3.1-8b-instruct",
+			{
+				messages: [
+					{ role: "system", content: systemPrompt },
+					{ role: "user", content: enhancedPrompt },
+				],
+				max_tokens: 50,
+				temperature: 0.3,
+			},
+		)) as { response?: string };
+
+		const result = response.response?.trim();
+		if (result && result.length > 0) {
+			// Strip surrounding quotes if the model added them
+			return result.replace(/^["']|["']$/g, "");
+		}
+	} catch {
+		// Fall through to fallback
+	}
+
+	// Fallback: capitalize and trim the user prompt
+	const trimmed = userPrompt.trim();
+	return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
 /**
@@ -110,9 +157,13 @@ export async function generateStamp(
 		c.charCodeAt(0),
 	);
 
+	// Stage 3: Generate human-friendly description
+	const description = await generateDescription(ai, userPrompt, enhancedPrompt);
+
 	return {
 		imageData: imageBytes,
 		mimeType: "image/jpeg",
 		enhancedPrompt,
+		description,
 	};
 }
