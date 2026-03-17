@@ -4,6 +4,13 @@ import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { getAuthUserId } from "@/lib/clerk";
 
+interface StampCountsResult {
+	total_stamps: number;
+	stamps_today: number;
+	stamps_week: number;
+	stamps_month: number;
+}
+
 export async function GET(request: NextRequest) {
 	const { userId } = await getAuthUserId(request.headers);
 	if (!userId) {
@@ -21,11 +28,19 @@ export async function GET(request: NextRequest) {
 		const monthStart = todayStart - 29 * daySec;
 		const thirtyDaysAgo = nowSec - 30 * daySec;
 
+		// Consolidated stamp count query (4 aggregations → 1 query)
+		const [stampCountsResult] = (await db.all(
+			sql`
+				SELECT
+					count(*) as total_stamps,
+					count(CASE WHEN created_at >= ${todayStart} THEN 1 END) as stamps_today,
+					count(CASE WHEN created_at >= ${weekStart} THEN 1 END) as stamps_week,
+					count(CASE WHEN created_at >= ${monthStart} THEN 1 END) as stamps_month
+				FROM stamps
+			`,
+		)) as [StampCountsResult];
+
 		const [
-			totalStampsResult,
-			stampsTodayResult,
-			stampsWeekResult,
-			stampsMonthResult,
 			popularStylesResult,
 			dailyTrendResult,
 			totalPageViewsResult,
@@ -39,23 +54,6 @@ export async function GET(request: NextRequest) {
 			timezoneResult,
 			mapDataResult,
 		] = await Promise.all([
-			db.select({ count: sql<number>`count(*)` }).from(stamps),
-
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(stamps)
-				.where(sql`${stamps.createdAt} >= ${todayStart}`),
-
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(stamps)
-				.where(sql`${stamps.createdAt} >= ${weekStart}`),
-
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(stamps)
-				.where(sql`${stamps.createdAt} >= ${monthStart}`),
-
 			db
 				.select({
 					style: stamps.style,
@@ -266,10 +264,10 @@ export async function GET(request: NextRequest) {
 		}));
 
 		return NextResponse.json({
-			totalStamps: totalStampsResult[0]?.count ?? 0,
-			stampsToday: stampsTodayResult[0]?.count ?? 0,
-			stampsThisWeek: stampsWeekResult[0]?.count ?? 0,
-			stampsThisMonth: stampsMonthResult[0]?.count ?? 0,
+			totalStamps: (stampCountsResult?.total_stamps as number) ?? 0,
+			stampsToday: (stampCountsResult?.stamps_today as number) ?? 0,
+			stampsThisWeek: (stampCountsResult?.stamps_week as number) ?? 0,
+			stampsThisMonth: (stampCountsResult?.stamps_month as number) ?? 0,
 			popularStyles: popularStylesResult.map((r) => ({
 				style: r.style ?? "vintage",
 				count: r.count,

@@ -34,10 +34,14 @@ describe("GET /api/analytics", () => {
 	it("returns analytics data with correct shape", async () => {
 		let callCount = 0;
 		const selectResults = [
-			[{ count: 100 }], // total stamps
-			[{ count: 5 }], // stamps today
-			[{ count: 25 }], // stamps this week
-			[{ count: 80 }], // stamps this month
+			[
+				{
+					total_stamps: 100,
+					stamps_today: 5,
+					stamps_week: 25,
+					stamps_month: 80,
+				},
+			], // consolidated stamp counts
 			[
 				{ style: "vintage", count: 50 },
 				{ style: "modern", count: 30 },
@@ -66,8 +70,19 @@ describe("GET /api/analytics", () => {
 			return createSelectChain(result);
 		});
 
+		// Mock db.all() for consolidated query
+		const mockAll = vi.fn().mockResolvedValue([
+			{
+				total_stamps: 100,
+				stamps_today: 5,
+				stamps_week: 25,
+				stamps_month: 80,
+			},
+		]);
+
 		vi.mocked(getDb).mockReturnValue({
 			select: mockSelect,
+			all: mockAll,
 		} as never);
 
 		const res = await GET(request);
@@ -99,9 +114,18 @@ describe("GET /api/analytics", () => {
 
 	it("returns defaults when queries return empty results", async () => {
 		const mockSelect = vi.fn().mockImplementation(() => createSelectChain([]));
+		const mockAll = vi.fn().mockResolvedValue([
+			{
+				total_stamps: 0,
+				stamps_today: 0,
+				stamps_week: 0,
+				stamps_month: 0,
+			},
+		]);
 
 		vi.mocked(getDb).mockReturnValue({
 			select: mockSelect,
+			all: mockAll,
 		} as never);
 
 		const res = await GET(request);
@@ -139,10 +163,14 @@ describe("GET /api/analytics", () => {
 	it("handles null style in popular styles gracefully", async () => {
 		let callCount = 0;
 		const selectResults = [
-			[{ count: 10 }],
-			[{ count: 1 }],
-			[{ count: 5 }],
-			[{ count: 8 }],
+			[
+				{
+					total_stamps: 10,
+					stamps_today: 1,
+					stamps_week: 5,
+					stamps_month: 8,
+				},
+			],
 			[{ style: null, count: 3 }], // null style
 			[],
 			[{ count: 20 }],
@@ -159,8 +187,18 @@ describe("GET /api/analytics", () => {
 			return createSelectChain(result);
 		});
 
+		const mockAll = vi.fn().mockResolvedValue([
+			{
+				total_stamps: 10,
+				stamps_today: 1,
+				stamps_week: 5,
+				stamps_month: 8,
+			},
+		]);
+
 		vi.mocked(getDb).mockReturnValue({
 			select: mockSelect,
+			all: mockAll,
 		} as never);
 
 		const res = await GET(request);

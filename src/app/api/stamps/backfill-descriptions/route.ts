@@ -4,7 +4,6 @@ import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
-import { generateDescription } from "@/lib/generate-stamp";
 
 // List of admin userIds who can trigger backfill (in production, use a proper role system)
 const ADMIN_USER_IDS: string[] = process.env.ADMIN_USER_IDS
@@ -55,11 +54,11 @@ export async function POST(request: NextRequest) {
 			await Promise.all(
 				batch.map(async (stamp) => {
 					try {
-						const description = await generateDescription(
-							ai,
-							stamp.prompt,
-							stamp.enhancedPrompt || stamp.prompt,
-						);
+						// Simple description from prompt (no AI call needed)
+						const trimmed = stamp.prompt.trim();
+						const description = trimmed
+							? trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
+							: "Custom stamp";
 
 						await db
 							.update(stamps)

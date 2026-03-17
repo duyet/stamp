@@ -59,7 +59,7 @@ export function HomeContent() {
 					/>
 				</div>
 				<h1
-					className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-2"
+					className="text-5xl md:text-7xl font-bold tracking-tight mb-2 hero-gradient"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders
@@ -95,7 +95,7 @@ export function HomeContent() {
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer rounded-xl overflow-hidden transition"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">
@@ -107,6 +107,7 @@ export function HomeContent() {
 										className="object-cover"
 										loading="lazy"
 									/>
+									<div className="absolute inset-0 bg-stamp-navy/0 group-hover:bg-stamp-navy/10 transition-colors duration-200" />
 								</div>
 								<p className="px-3 py-2.5 text-xs text-stone-600 truncate">
 									{stamp.description || stamp.prompt}
