@@ -1,5 +1,6 @@
 import { uint8ArrayToDataUrl } from "./base64-utils";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "./stamp-prompts";
+import { capitalize } from "./text-utils";
 
 interface GenerateStampResult {
 	imageData: Uint8Array;
@@ -156,10 +157,7 @@ export async function generateStamp(
 	})();
 
 	// Simple description from user prompt (no additional AI call)
-	const trimmed = userPrompt.trim();
-	const description = trimmed
-		? trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
-		: "Custom stamp";
+	const description = capitalize(userPrompt) || "Custom stamp";
 
 	return {
 		imageData: imageResult,

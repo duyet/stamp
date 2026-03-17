@@ -1,18 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { StampCardMemo } from "@/components/stamp-card";
 import { useStamps } from "@/hooks/use-stamps";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
+const ALL_STYLES = "all" as const;
+type StyleFilter = StampStyle | typeof ALL_STYLES;
+
 export default function CollectionsPage() {
-	const [selectedStyle, setSelectedStyle] = useState<StampStyle | "all">("all");
+	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
 	const { stamps, loading } = useStamps(100);
 
-	const filteredStamps =
-		selectedStyle === "all"
-			? stamps
-			: stamps.filter((s) => s.style === selectedStyle);
+	// Memoized filter to avoid re-computation on every render
+	const filteredStamps = useMemo(
+		() =>
+			selectedStyle === ALL_STYLES
+				? stamps
+				: stamps.filter((s) => s.style === selectedStyle),
+		[stamps, selectedStyle],
+	);
 
 	return (
 		<div className="max-w-5xl mx-auto px-6 py-20">
@@ -30,9 +37,9 @@ export default function CollectionsPage() {
 			<div className="flex flex-wrap justify-center gap-2 mb-8">
 				<button
 					type="button"
-					onClick={() => setSelectedStyle("all")}
+					onClick={() => setSelectedStyle(ALL_STYLES)}
 					className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-						selectedStyle === "all"
+						selectedStyle === ALL_STYLES
 							? "bg-stone-900 text-white"
 							: "bg-stone-100 text-stone-700 hover:bg-stone-200"
 					}`}
@@ -58,9 +65,10 @@ export default function CollectionsPage() {
 			{/* Stamps grid */}
 			{loading ? (
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-					{Array.from({ length: 8 }).map(() => (
+					{Array.from({ length: 8 }, (_, i) => (
 						<div
-							key={crypto.randomUUID()}
+							// biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton placeholders never change order
+							key={`skeleton-${i}`}
 							className="aspect-square rounded-xl bg-stone-100 animate-pulse"
 						/>
 					))}

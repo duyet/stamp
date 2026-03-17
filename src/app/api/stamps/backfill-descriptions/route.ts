@@ -4,6 +4,7 @@ import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
+import { capitalize } from "@/lib/text-utils";
 
 // List of admin userIds who can trigger backfill (in production, use a proper role system)
 const ADMIN_USER_IDS: string[] = process.env.ADMIN_USER_IDS
@@ -55,10 +56,7 @@ export async function POST(request: NextRequest) {
 				batch.map(async (stamp) => {
 					try {
 						// Simple description from prompt (no AI call needed)
-						const trimmed = stamp.prompt.trim();
-						const description = trimmed
-							? trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
-							: "Custom stamp";
+						const description = capitalize(stamp.prompt) || "Custom stamp";
 
 						await db
 							.update(stamps)
