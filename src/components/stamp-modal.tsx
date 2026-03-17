@@ -78,14 +78,19 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 
 				{/* Info */}
 				<div className="mt-5 space-y-3">
-					{/* Prompt + style badge */}
+					{/* Description + style badge */}
 					<div className="text-center space-y-2 px-2">
 						<p
 							className="text-stone-800 text-[15px] leading-relaxed"
 							style={{ fontFamily: "var(--font-stamp)" }}
 						>
-							{stamp.prompt}
+							{stamp.description || stamp.prompt}
 						</p>
+						{stamp.description && stamp.description !== stamp.prompt && (
+							<p className="text-[11px] text-stone-400">
+								Prompt: {stamp.prompt}
+							</p>
+						)}
 						{stamp.style && (
 							<span className="inline-block text-[11px] tracking-wider uppercase text-stone-500 bg-stone-100/80 rounded-full px-3 py-0.5">
 								{stamp.style}

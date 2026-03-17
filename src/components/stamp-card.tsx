@@ -21,7 +21,9 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 				/>
 			</div>
 			<div className="p-3">
-				<p className="text-sm text-stone-700 truncate">{stamp.prompt}</p>
+				<p className="text-sm text-stone-700 truncate">
+					{stamp.description || stamp.prompt}
+				</p>
 				<div className="mt-2 flex items-center justify-between">
 					<span className="text-xs text-stone-500 capitalize">
 						{stamp.style}

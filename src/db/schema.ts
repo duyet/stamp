@@ -6,6 +6,7 @@ export const stamps = sqliteTable(
 		id: text("id").primaryKey(),
 		prompt: text("prompt").notNull(),
 		enhancedPrompt: text("enhanced_prompt"),
+		description: text("description"),
 		imageUrl: text("image_url").notNull(),
 		thumbnailUrl: text("thumbnail_url"),
 		style: text("style").default("vintage"),
