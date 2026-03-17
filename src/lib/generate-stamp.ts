@@ -15,6 +15,7 @@ async function enhancePrompt(
 	ai: Ai,
 	userPrompt: string,
 	style: StampStyle,
+	referenceDescription?: string,
 ): Promise<string> {
 	const preset = STAMP_STYLE_PRESETS[style];
 
@@ -34,26 +35,42 @@ Rules:
 - Do NOT add background elements the user did not ask for — follow the style preset faithfully
 - The stamp must fill the entire image — no padding, margin, or decorative frame outside the stamp edges
 - NEVER include any text, words, letters, numbers, or calligraphy
-- Keep the composition centered`;
+- Keep the composition centered
+- If a reference image description is provided, use it as the primary subject and composition guide, then apply the user's additional instructions on top
+- PRESERVE key visual elements from the reference (subject, colors, composition, mood)`;
+
+	const userMessage = referenceDescription
+		? `Reference image description: ${referenceDescription}\n\nUser's additional instructions: ${userPrompt || "Generate a stamp based on this reference image."}`
+		: userPrompt;
 
 	const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
 		messages: [
 			{ role: "system", content: systemPrompt },
-			{ role: "user", content: userPrompt },
+			{ role: "user", content: userMessage },
 		],
 		max_tokens: 300,
 		temperature: 0.7,
 	})) as { response?: string };
 
-	return response.response?.trim() || buildFallbackPrompt(userPrompt, style);
+	return (
+		response.response?.trim() ||
+		buildFallbackPrompt(userPrompt, style, referenceDescription)
+	);
 }
 
 /**
  * Fallback prompt builder if LLM enhancement fails.
  */
-function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
+function buildFallbackPrompt(
+	userPrompt: string,
+	style: StampStyle,
+	referenceDescription?: string,
+): string {
 	const preset = STAMP_STYLE_PRESETS[style];
-	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers. The stamp fills the entire image with no outer padding or frame.`;
+	const subject = referenceDescription
+		? `Based on reference: ${referenceDescription}.${userPrompt ? ` Additional: ${userPrompt}` : ""}`
+		: `Subject: ${userPrompt}`;
+	return `${preset.prompt}. ${subject}. No text, no words, no letters, no numbers. The stamp fills the entire image with no outer padding or frame.`;
 }
 
 /**
@@ -121,13 +138,23 @@ export async function generateStamp(
 	userPrompt: string,
 	style: StampStyle = "vintage",
 	hd = false,
+	referenceDescription?: string,
 ): Promise<GenerateStampResult> {
 	// Stage 1: Auto-enhance prompt with LLM
 	let enhancedPrompt: string;
 	try {
-		enhancedPrompt = await enhancePrompt(ai, userPrompt, style);
+		enhancedPrompt = await enhancePrompt(
+			ai,
+			userPrompt,
+			style,
+			referenceDescription,
+		);
 	} catch {
-		enhancedPrompt = buildFallbackPrompt(userPrompt, style);
+		enhancedPrompt = buildFallbackPrompt(
+			userPrompt,
+			style,
+			referenceDescription,
+		);
 	}
 
 	// Stage 2: Model selection based on HD flag

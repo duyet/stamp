@@ -28,6 +28,7 @@ export function HomeContent() {
 			description: stamp.description ?? null,
 			imageUrl: stamp.imageUrl,
 			thumbnailUrl: null,
+			referenceImageUrl: null,
 			style: stamp.style ?? "vintage",
 			isPublic: true,
 			userIp: null,

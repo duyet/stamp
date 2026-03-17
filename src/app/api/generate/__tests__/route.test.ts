@@ -307,6 +307,7 @@ describe("POST /api/generate", () => {
 				"a cat",
 				"vintage",
 				false,
+				undefined,
 			);
 		});
 
@@ -318,6 +319,59 @@ describe("POST /api/generate", () => {
 
 			expect(res.status).toBe(500);
 			expect(data.error).toContain("Failed to generate stamp");
+		});
+	});
+
+	describe("reference-based generation", () => {
+		it("accepts request with referenceDescription and empty prompt", async () => {
+			const res = await POST(
+				req({
+					prompt: "",
+					referenceDescription: "A cat sitting on a chair",
+					referenceImageUrl: "/api/stamps/ref_abc123/image",
+				}),
+			);
+			expect(res.status).toBe(200);
+		});
+
+		it("passes referenceDescription to generateStamp", async () => {
+			await POST(
+				req({
+					prompt: "make it vintage",
+					referenceDescription: "A mountain landscape",
+				}),
+			);
+			expect(generateStamp).toHaveBeenCalledWith(
+				expect.anything(),
+				"make it vintage",
+				"vintage",
+				false,
+				"A mountain landscape",
+			);
+		});
+
+		it("allows empty prompt when referenceDescription is provided", async () => {
+			const res = await POST(
+				req({
+					referenceDescription: "A golden retriever on a beach",
+				}),
+			);
+			expect(res.status).toBe(200);
+		});
+
+		it("still requires prompt when no referenceDescription", async () => {
+			const res = await POST(req({ prompt: "" }));
+			expect(res.status).toBe(400);
+		});
+
+		it("validates prompt length even with reference", async () => {
+			const res = await POST(
+				req({
+					prompt: "x".repeat(501),
+					referenceDescription: "A cat",
+				}),
+			);
+			expect(res.status).toBe(400);
 		});
 	});
 
@@ -342,6 +396,7 @@ describe("POST /api/generate", () => {
 				"a cat",
 				"vintage",
 				true,
+				undefined,
 			);
 		});
 

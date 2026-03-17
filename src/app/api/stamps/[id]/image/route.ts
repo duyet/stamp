@@ -10,13 +10,23 @@ export async function GET(
 		const env = getEnv();
 		const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
 
+		// Support reference images stored under references/ prefix
+		const isReference = id.startsWith("ref_");
+		const prefix = isReference ? "references" : "stamps";
+		const cleanId = isReference ? id.slice(4) : id;
+
 		// Try both png and jpg
-		let object = await bucket.get(`stamps/${id}.png`);
+		let object = await bucket.get(`${prefix}/${cleanId}.png`);
 		let contentType = "image/png";
 
 		if (!object) {
-			object = await bucket.get(`stamps/${id}.jpg`);
+			object = await bucket.get(`${prefix}/${cleanId}.jpg`);
 			contentType = "image/jpeg";
+		}
+
+		if (!object && isReference) {
+			object = await bucket.get(`${prefix}/${cleanId}.webp`);
+			contentType = "image/webp";
 		}
 
 		if (!object) {

@@ -40,23 +40,41 @@ export async function POST(request: NextRequest) {
 			isPublic = true,
 			hd = false,
 			timezone,
+			referenceDescription,
+			referenceImageUrl,
 		} = body as {
 			prompt: string;
 			style?: StampStyle;
 			isPublic?: boolean;
 			hd?: boolean;
 			timezone?: string;
+			referenceDescription?: string;
+			referenceImageUrl?: string;
 		};
 
 		// Validate input before deducting credits
+		const hasReference =
+			referenceDescription &&
+			typeof referenceDescription === "string" &&
+			referenceDescription.trim().length > 0;
+
 		if (
-			!prompt ||
-			typeof prompt !== "string" ||
-			prompt.trim().length === 0 ||
-			prompt.length > 500
+			!hasReference &&
+			(!prompt ||
+				typeof prompt !== "string" ||
+				prompt.trim().length === 0 ||
+				prompt.length > 500)
 		) {
 			return NextResponse.json(
 				{ error: "Prompt is required and must be under 500 characters." },
+				{ status: 400 },
+			);
+		}
+
+		// Still validate prompt length if provided even with reference
+		if (prompt && typeof prompt === "string" && prompt.length > 500) {
+			return NextResponse.json(
+				{ error: "Prompt must be under 500 characters." },
 				{ status: 400 },
 			);
 		}
@@ -106,7 +124,13 @@ export async function POST(request: NextRequest) {
 		const genStart = Date.now();
 
 		const { imageData, mimeType, enhancedPrompt, description } =
-			await generateStamp(ai, prompt, style, hd);
+			await generateStamp(
+				ai,
+				prompt || "",
+				style,
+				hd,
+				referenceDescription?.trim(),
+			);
 
 		const generationTimeMs = Date.now() - genStart;
 
@@ -138,6 +162,7 @@ export async function POST(request: NextRequest) {
 			userTimezone: timezone,
 			userAgent: request.headers.get("user-agent") ?? undefined,
 			referrer: request.headers.get("referer") ?? undefined,
+			referenceImageUrl: referenceImageUrl ?? null,
 		});
 
 		// Fire-and-forget event tracking
@@ -148,9 +173,10 @@ export async function POST(request: NextRequest) {
 				metadata: JSON.stringify({
 					style,
 					hd,
-					prompt_length: prompt.length,
+					prompt_length: prompt?.length ?? 0,
 					stamp_id: stampId,
 					generation_time_ms: generationTimeMs,
+					has_reference: !!referenceDescription,
 				}),
 				userIp,
 				createdAt: Date.now(),

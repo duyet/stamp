@@ -81,9 +81,20 @@ export function createMockRateLimitDb(
 export function createMockAi(
 	llmResponse: string,
 	imageBase64: string | null,
+	visionResponse?: string,
 ): Ai {
 	return {
 		run: vi.fn().mockImplementation((model: string) => {
+			if (model.includes("llama") && model.includes("vision")) {
+				return Promise.resolve({
+					response: visionResponse ?? "A described image",
+				});
+			}
+			if (model.includes("llava")) {
+				return Promise.resolve({
+					description: visionResponse ?? "A described image",
+				});
+			}
 			if (model.includes("qwen")) {
 				return Promise.resolve({ response: llmResponse });
 			}
