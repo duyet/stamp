@@ -1,9 +1,15 @@
+import { auth } from "@clerk/nextjs/server";
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 
 export async function GET() {
+	const { userId } = await auth();
+	if (!userId) {
+		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+
 	try {
 		const db = getDb();
 
@@ -23,29 +29,28 @@ export async function GET() {
 			dailyTrendResult,
 			totalPageViewsResult,
 			uniqueVisitorsResult,
+			totalDownloadsResult,
+			totalSharesResult,
+			eventBreakdownResult,
+			pageViewBreakdownResult,
 		] = await Promise.all([
-			// Total stamps generated
 			db.select({ count: sql<number>`count(*)` }).from(stamps),
 
-			// Stamps today
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(stamps)
 				.where(sql`${stamps.createdAt} >= ${new Date(todayStart)}`),
 
-			// Stamps this week
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(stamps)
 				.where(sql`${stamps.createdAt} >= ${new Date(weekStart)}`),
 
-			// Stamps this month
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(stamps)
 				.where(sql`${stamps.createdAt} >= ${new Date(monthStart)}`),
 
-			// Popular styles
 			db
 				.select({
 					style: stamps.style,
@@ -55,7 +60,6 @@ export async function GET() {
 				.groupBy(stamps.style)
 				.orderBy(sql`count(*) desc`),
 
-			// Generations per day (last 30 days) using unix timestamp math
 			db
 				.select({
 					day: sql<number>`(${stamps.createdAt} / 86400000) * 86400000`,
@@ -66,17 +70,48 @@ export async function GET() {
 				.groupBy(sql`(${stamps.createdAt} / 86400000) * 86400000`)
 				.orderBy(sql`(${stamps.createdAt} / 86400000) * 86400000`),
 
-			// Total page views
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(events)
 				.where(sql`${events.event} = 'page_view'`),
 
-			// Unique visitors (distinct IPs across all events)
 			db
 				.select({ count: sql<number>`count(distinct ${events.userIp})` })
 				.from(events)
 				.where(sql`${events.userIp} is not null`),
+
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(events)
+				.where(sql`${events.event} = 'download'`),
+
+			db
+				.select({ count: sql<number>`count(*)` })
+				.from(events)
+				.where(sql`${events.event} = 'copy_link' or ${events.event} = 'share'`),
+
+			db
+				.select({
+					event: events.event,
+					count: sql<number>`count(*) as count`,
+				})
+				.from(events)
+				.groupBy(events.event)
+				.orderBy(sql`count(*) desc`)
+				.limit(50),
+
+			db
+				.select({
+					path: sql<string>`json_extract(${events.metadata}, '$.path')`,
+					count: sql<number>`count(*) as count`,
+				})
+				.from(events)
+				.where(
+					sql`${events.event} = 'page_view' and json_extract(${events.metadata}, '$.path') is not null`,
+				)
+				.groupBy(sql`json_extract(${events.metadata}, '$.path')`)
+				.orderBy(sql`count(*) desc`)
+				.limit(50),
 		]);
 
 		return NextResponse.json({
@@ -94,6 +129,16 @@ export async function GET() {
 			})),
 			totalPageViews: totalPageViewsResult[0]?.count ?? 0,
 			uniqueVisitors: uniqueVisitorsResult[0]?.count ?? 0,
+			totalDownloads: totalDownloadsResult[0]?.count ?? 0,
+			totalShares: totalSharesResult[0]?.count ?? 0,
+			eventBreakdown: eventBreakdownResult.map((r) => ({
+				event: r.event,
+				count: r.count,
+			})),
+			pageViewBreakdown: pageViewBreakdownResult.map((r) => ({
+				path: r.path,
+				count: r.count,
+			})),
 		});
 	} catch (error) {
 		console.error("Analytics query failed:", error);

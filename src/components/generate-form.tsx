@@ -332,6 +332,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							width={256}
 							height={256}
 							className="object-cover"
+							unoptimized
 						/>
 					</div>
 

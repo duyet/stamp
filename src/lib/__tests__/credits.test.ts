@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockCreditsDb } from "@/test-utils";
 import {
-	HD_CREDIT_COST,
-	STANDARD_CREDIT_COST,
 	addCredits,
 	checkAndDeductCredit,
 	DEFAULT_DAILY_LIMIT,
 	getCreditsInfo,
 	getUserCredits,
+	HD_CREDIT_COST,
+	STANDARD_CREDIT_COST,
 } from "../credits";
 
 vi.mock("nanoid", () => ({
@@ -190,11 +190,7 @@ describe("credits", () => {
 				updatedAt: FIXED_NOW,
 			});
 
-			const result = await checkAndDeductCredit(
-				db,
-				"user_123",
-				HD_CREDIT_COST,
-			);
+			const result = await checkAndDeductCredit(db, "user_123", HD_CREDIT_COST);
 
 			expect(result.allowed).toBe(true);
 			expect(result.source).toBe("daily");
@@ -215,11 +211,7 @@ describe("credits", () => {
 				updatedAt: FIXED_NOW,
 			});
 
-			const result = await checkAndDeductCredit(
-				db,
-				"user_123",
-				HD_CREDIT_COST,
-			);
+			const result = await checkAndDeductCredit(db, "user_123", HD_CREDIT_COST);
 
 			expect(result.allowed).toBe(false);
 			expect(result.remaining).toBe(0);
@@ -236,11 +228,7 @@ describe("credits", () => {
 				updatedAt: FIXED_NOW,
 			});
 
-			const result = await checkAndDeductCredit(
-				db,
-				"user_123",
-				HD_CREDIT_COST,
-			);
+			const result = await checkAndDeductCredit(db, "user_123", HD_CREDIT_COST);
 
 			expect(result.allowed).toBe(true);
 			expect(result.source).toBe("purchased");
@@ -258,11 +246,7 @@ describe("credits", () => {
 				updatedAt: FIXED_NOW,
 			});
 
-			const result = await checkAndDeductCredit(
-				db,
-				"user_123",
-				HD_CREDIT_COST,
-			);
+			const result = await checkAndDeductCredit(db, "user_123", HD_CREDIT_COST);
 
 			expect(result.allowed).toBe(false);
 			expect(result.remaining).toBe(0);

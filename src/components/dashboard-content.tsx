@@ -12,6 +12,16 @@ interface DayCount {
 	count: number;
 }
 
+interface EventCount {
+	event: string;
+	count: number;
+}
+
+interface PageViewCount {
+	path: string;
+	count: number;
+}
+
 interface Analytics {
 	totalStamps: number;
 	stampsToday: number;
@@ -21,6 +31,10 @@ interface Analytics {
 	dailyTrend: DayCount[];
 	totalPageViews: number;
 	uniqueVisitors: number;
+	totalDownloads: number;
+	totalShares: number;
+	eventBreakdown: EventCount[];
+	pageViewBreakdown: PageViewCount[];
 }
 
 function formatDate(ts: number): string {
@@ -43,17 +57,31 @@ function StatCard({ label, value }: { label: string; value: number }) {
 
 export function DashboardContent() {
 	const [data, setData] = useState<Analytics | null>(null);
+	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		async function load() {
 			try {
 				const r = await fetch("/api/analytics");
+				if (!r.ok) {
+					setError("Failed to load analytics");
+					return;
+				}
 				const d = (await r.json()) as Analytics;
 				setData(d);
-			} catch {}
+			} catch (err) {
+				console.error("Failed to fetch analytics:", err);
+				setError("Failed to load analytics");
+			}
 		}
 		load();
 	}, []);
+
+	if (error) {
+		return (
+			<div className="text-center text-stone-600 py-16 text-sm">{error}</div>
+		);
+	}
 
 	if (!data) {
 		return (
@@ -70,6 +98,11 @@ export function DashboardContent() {
 
 	const maxStyleCount = Math.max(...data.popularStyles.map((s) => s.count), 1);
 	const maxDayCount = Math.max(...data.dailyTrend.map((d) => d.count), 1);
+	const maxEventCount = Math.max(...data.eventBreakdown.map((e) => e.count), 1);
+	const maxPageViewCount = Math.max(
+		...data.pageViewBreakdown.map((p) => p.count),
+		1,
+	);
 
 	return (
 		<>
@@ -80,9 +113,14 @@ export function DashboardContent() {
 				<StatCard label="This month" value={data.stampsThisMonth} />
 			</div>
 
-			<div className="grid grid-cols-2 gap-4 mb-10">
+			<div className="grid grid-cols-2 gap-4 mb-8">
 				<StatCard label="Page views" value={data.totalPageViews} />
 				<StatCard label="Unique visitors" value={data.uniqueVisitors} />
+			</div>
+
+			<div className="grid grid-cols-2 gap-4 mb-10">
+				<StatCard label="Downloads" value={data.totalDownloads} />
+				<StatCard label="Shares & copies" value={data.totalShares} />
 			</div>
 
 			{data.popularStyles.length > 0 && (
@@ -106,6 +144,62 @@ export function DashboardContent() {
 								</div>
 								<span className="w-10 text-sm text-stone-600 text-right shrink-0">
 									{s.count}
+								</span>
+							</div>
+						))}
+					</div>
+				</section>
+			)}
+
+			{data.eventBreakdown.length > 0 && (
+				<section className="mb-8">
+					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
+						Event breakdown
+					</h2>
+					<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
+						{data.eventBreakdown.map((e) => (
+							<div key={e.event} className="flex items-center gap-3">
+								<span className="w-24 text-sm text-stone-700 shrink-0">
+									{e.event.replace(/_/g, " ")}
+								</span>
+								<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
+									<div
+										className="h-full bg-stone-800 rounded-full transition-all"
+										style={{
+											width: `${Math.round((e.count / maxEventCount) * 100)}%`,
+										}}
+									/>
+								</div>
+								<span className="w-10 text-sm text-stone-600 text-right shrink-0">
+									{e.count}
+								</span>
+							</div>
+						))}
+					</div>
+				</section>
+			)}
+
+			{data.pageViewBreakdown.length > 0 && (
+				<section className="mb-8">
+					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
+						Top pages
+					</h2>
+					<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
+						{data.pageViewBreakdown.map((p) => (
+							<div key={p.path} className="flex items-center gap-3">
+								<span className="w-32 text-sm text-stone-700 truncate shrink-0">
+									{p.path}
+								</span>
+								<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
+									<div
+										className="h-full bg-stone-800 rounded-full transition-all"
+										style={{
+											width: `${Math.round((p.count / maxPageViewCount) * 100)}%`,
+										}}
+									/>
+								</div>
+								<span className="w-10 text-sm text-stone-600 text-right shrink-0">
+									{p.count}
 								</span>
 							</div>
 						))}

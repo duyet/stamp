@@ -71,6 +71,7 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 							sizes="(max-width: 768px) 90vw, 448px"
 							className="object-cover"
 							priority
+							unoptimized
 						/>
 					</div>
 				</div>

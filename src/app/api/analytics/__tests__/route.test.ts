@@ -1,16 +1,32 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createSelectChain } from "@/test-utils";
 
+vi.mock("@clerk/nextjs/server", () => ({
+	auth: vi.fn(),
+}));
+
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
 }));
 
+import { auth } from "@clerk/nextjs/server";
 import { getDb } from "@/db";
 import { GET } from "../route";
 
 describe("GET /api/analytics", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		vi.mocked(auth).mockResolvedValue({ userId: "user_admin" } as never);
+	});
+
+	it("returns 401 when not authenticated", async () => {
+		vi.mocked(auth).mockResolvedValue({ userId: null } as never);
+
+		const res = await GET();
+		const data = (await res.json()) as Record<string, unknown>;
+
+		expect(res.status).toBe(401);
+		expect(data.error).toBe("Unauthorized");
 	});
 
 	it("returns analytics data with correct shape", async () => {
@@ -30,6 +46,16 @@ describe("GET /api/analytics", () => {
 			], // daily trend
 			[{ count: 500 }], // total page views
 			[{ count: 42 }], // unique visitors
+			[{ count: 15 }], // total downloads
+			[{ count: 8 }], // total shares
+			[
+				{ event: "page_view", count: 500 },
+				{ event: "download", count: 15 },
+			], // event breakdown
+			[
+				{ path: "/", count: 300 },
+				{ path: "/generate", count: 150 },
+			], // page view breakdown
 		];
 
 		const mockSelect = vi.fn().mockImplementation(() => {
@@ -57,6 +83,16 @@ describe("GET /api/analytics", () => {
 		expect(data.dailyTrend).toHaveLength(2);
 		expect(data.totalPageViews).toBe(500);
 		expect(data.uniqueVisitors).toBe(42);
+		expect(data.totalDownloads).toBe(15);
+		expect(data.totalShares).toBe(8);
+		expect(data.eventBreakdown).toEqual([
+			{ event: "page_view", count: 500 },
+			{ event: "download", count: 15 },
+		]);
+		expect(data.pageViewBreakdown).toEqual([
+			{ path: "/", count: 300 },
+			{ path: "/generate", count: 150 },
+		]);
 	});
 
 	it("returns defaults when queries return empty results", async () => {
@@ -76,6 +112,10 @@ describe("GET /api/analytics", () => {
 		expect(data.dailyTrend).toEqual([]);
 		expect(data.totalPageViews).toBe(0);
 		expect(data.uniqueVisitors).toBe(0);
+		expect(data.totalDownloads).toBe(0);
+		expect(data.totalShares).toBe(0);
+		expect(data.eventBreakdown).toEqual([]);
+		expect(data.pageViewBreakdown).toEqual([]);
 	});
 
 	it("returns 500 on database error", async () => {
@@ -105,6 +145,10 @@ describe("GET /api/analytics", () => {
 			[],
 			[{ count: 20 }],
 			[{ count: 5 }],
+			[{ count: 0 }], // downloads
+			[{ count: 0 }], // shares
+			[], // event breakdown
+			[], // page view breakdown
 		];
 
 		const mockSelect = vi.fn().mockImplementation(() => {
@@ -121,7 +165,6 @@ describe("GET /api/analytics", () => {
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
-		// null style should default to "vintage"
 		const styles = data.popularStyles as Array<{
 			style: string;
 			count: number;
