@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { HeartIcon } from "@/components/icons";
 import type { Stamp } from "@/db/schema";
+import { useFavorites } from "@/hooks/use-favorites";
 
 interface StampCardProps {
 	stamp: Stamp;
@@ -9,9 +11,24 @@ interface StampCardProps {
 }
 
 export function StampCard({ stamp, onClick }: StampCardProps) {
+	const { isFavorite, toggleFavorite } = useFavorites();
+
 	const content = (
 		<>
 			<div className="relative aspect-square">
+				<button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation();
+						toggleFavorite(stamp.id);
+					}}
+					className="absolute top-2 right-2 z-10 p-1.5 bg-white/90 backdrop-blur rounded-full shadow-sm hover:bg-white transition-colors"
+					aria-label={
+						isFavorite(stamp.id) ? "Remove from favorites" : "Add to favorites"
+					}
+				>
+					<HeartIcon filled={isFavorite(stamp.id)} />
+				</button>
 				<Image
 					src={stamp.imageUrl}
 					alt={stamp.prompt}

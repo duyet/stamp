@@ -84,3 +84,15 @@ export function AvatarIcon() {
 		</svg>
 	);
 }
+
+export function HeartIcon({ filled }: { filled?: boolean }) {
+	return (
+		<svg
+			{...iconProps}
+			fill={filled ? "currentColor" : "none"}
+			aria-hidden="true"
+		>
+			<path d="M7 1.5C5 0 2 0.5 1 2.5c-1 2 0 4 1 5l5 5 5-5c1-1 2-3 1-5-1-2-4-2.5-6-1z" />
+		</svg>
+	);
+}

@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
+import {
+	CheckIcon,
+	ClipboardIcon,
+	DownloadIcon,
+	HeartIcon,
+} from "@/components/icons";
+import { useFavorites } from "@/hooks/use-favorites";
 
 interface GeneratedStamp {
 	id: string;
@@ -28,6 +34,8 @@ export function GenerationResults({
 	onVisibilityChange,
 	isPublic,
 }: GenerationResultsProps) {
+	const { isFavorite, toggleFavorite } = useFavorites();
+
 	return (
 		<div className="mt-10">
 			{/* Controls for latest stamp */}
@@ -62,7 +70,19 @@ export function GenerationResults({
 						key={r.id}
 						className={`text-center ${idx === 0 ? "animate-stamp-appear" : ""}`}
 					>
-						<div className="stamp-border stamp-modal-shadow inline-block">
+						<div className="stamp-border stamp-modal-shadow inline-block relative">
+							<button
+								type="button"
+								onClick={() => toggleFavorite(r.id)}
+								className="absolute -top-3 -right-3 z-10 p-2 bg-white rounded-full shadow-md hover:bg-stone-50 transition-colors"
+								aria-label={
+									isFavorite(r.id)
+										? "Remove from favorites"
+										: "Add to favorites"
+								}
+							>
+								<HeartIcon filled={isFavorite(r.id)} />
+							</button>
 							<Image
 								src={r.imageUrl}
 								alt={r.prompt}
