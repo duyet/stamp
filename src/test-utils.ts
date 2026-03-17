@@ -84,7 +84,7 @@ export function createMockAi(
 ): Ai {
 	return {
 		run: vi.fn().mockImplementation((model: string) => {
-			if (model.includes("llama")) {
+			if (model.includes("qwen")) {
 				return Promise.resolve({ response: llmResponse });
 			}
 			if (model.includes("flux")) {

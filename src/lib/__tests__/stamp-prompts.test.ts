@@ -33,15 +33,21 @@ describe("STAMP_STYLE_PRESETS", () => {
 		}
 	});
 
-	it("base styles include the base style keywords", () => {
+	it("base styles include universal stamp keywords", () => {
 		const baseStyles = ["vintage", "folk", "modern", "botanical", "portrait"];
 		for (const key of baseStyles) {
 			const preset =
 				STAMP_STYLE_PRESETS[key as keyof typeof STAMP_STYLE_PRESETS];
 			expect(preset.prompt).toContain("naive folk art");
-			expect(preset.prompt).toContain("dot eyes");
 			expect(preset.prompt).toContain("bold black outlines");
+			expect(preset.prompt).toContain("perforated");
 		}
+	});
+
+	it("portrait style includes figure-specific elements", () => {
+		const portrait = STAMP_STYLE_PRESETS.portrait;
+		expect(portrait.prompt).toContain("dot eyes");
+		expect(portrait.prompt).toContain("face portrait");
 	});
 
 	it("custom styles include perforated in their prompt", () => {
@@ -64,8 +70,14 @@ describe("STAMP_BASE_STYLE", () => {
 	it("includes key style elements", () => {
 		expect(STAMP_BASE_STYLE).toContain("stippled");
 		expect(STAMP_BASE_STYLE).toContain("bold black outlines");
-		expect(STAMP_BASE_STYLE).toContain("dot eyes");
 		expect(STAMP_BASE_STYLE).toContain("perforated");
+		expect(STAMP_BASE_STYLE).toContain("square format");
+	});
+
+	it("does not force portrait-specific elements in base style", () => {
+		expect(STAMP_BASE_STYLE).not.toContain("portrait");
+		expect(STAMP_BASE_STYLE).not.toContain("dot eyes");
+		expect(STAMP_BASE_STYLE).not.toContain("clothing");
 	});
 });
 

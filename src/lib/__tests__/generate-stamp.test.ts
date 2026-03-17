@@ -21,7 +21,7 @@ describe("generateStamp", () => {
 	it("uses fallback prompt when LLM fails", async () => {
 		const mockAi = {
 			run: vi.fn().mockImplementation((model: string) => {
-				if (model.includes("llama")) {
+				if (model.includes("qwen")) {
 					return Promise.reject(new Error("LLM unavailable"));
 				}
 				if (model.includes("flux")) {

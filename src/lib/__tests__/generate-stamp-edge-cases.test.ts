@@ -49,7 +49,7 @@ describe("generateStamp edge cases", () => {
 	it("uses fallback when LLM returns undefined response", async () => {
 		const mockAi = {
 			run: vi.fn().mockImplementation((model: string) => {
-				if (model.includes("llama")) {
+				if (model.includes("qwen")) {
 					return Promise.resolve({}); // no response field
 				}
 				if (model.includes("flux")) {

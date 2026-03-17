@@ -9,7 +9,7 @@ interface GenerateStampResult {
 
 /**
  * Enhance a user's rough prompt into a detailed stamp illustration prompt.
- * Uses CF Workers AI Llama 3.1 8B (free) to auto-tune the prompt.
+ * Uses CF Workers AI Qwen3 30B-A3B (free) to auto-tune the prompt.
  */
 async function enhancePrompt(
 	ai: Ai,
@@ -18,33 +18,31 @@ async function enhancePrompt(
 ): Promise<string> {
 	const preset = STAMP_STYLE_PRESETS[style];
 
-	const systemPrompt = `You are a prompt engineer for an AI image generator that creates postage stamp illustrations in a naive folk art style.
-Your job: take the user's rough idea and output a single, detailed image generation prompt.
+	const systemPrompt = `You are a prompt engineer for an AI image generator that creates postage stamp illustrations.
+Your job: take the user's rough idea and output a single, detailed image generation prompt that faithfully represents what the user asked for.
 
-The style is: naive folk art portrait on a postage stamp with bold black outlines, stippled/dotted shading, simple minimalist faces with dot eyes, cream paper background, perforated stamp edges, limited 2-3 color palette (blue-grey, mustard yellow, cream, black), cross-hatched clothing textures, small decorative floral elements.
+Base aesthetic: naive folk art illustration on a postage stamp, bold black outlines, stippled/dotted shading, cream paper background, perforated stamp edges, limited 2-3 color palette (blue-grey, mustard yellow, cream, black), hand-drawn feel.
 
 Rules:
 - Output ONLY the prompt text, no explanation
 - Keep it under 150 words
-- Always include these style keywords: "naive folk art", "postage stamp", "stippled shading", "bold black outlines", "perforated edges", "dot eyes"
+- PRESERVE the user's intent — if they ask for a flag, generate a flag; if they ask for a landscape, generate a landscape; if they ask for a person, generate a person
+- Always include these style keywords: "naive folk art", "postage stamp", "stippled shading", "bold black outlines", "perforated edges"
 - Use the specific style variation: ${preset.prompt}
-- Describe the subject's pose, expression, clothing in simple terms
-- Add small background details (flowers, landscapes, patterns)
+- Only include "dot eyes", "facial features", "pose", "expression", or "clothing" if the subject is a person or character
+- For non-figure subjects (flags, objects, landscapes, buildings, animals, symbols), describe shapes, patterns, colors, and composition instead
+- Add small background details appropriate to the subject
 - NEVER include any text, words, letters, numbers, or calligraphy
-- Keep the composition centered, portrait-oriented`;
+- Keep the composition centered`;
 
-	const response = (await ai.run(
-		// @ts-expect-error — model name valid at runtime, types may lag
-		"@cf/meta/llama-3.1-8b-instruct",
-		{
-			messages: [
-				{ role: "system", content: systemPrompt },
-				{ role: "user", content: userPrompt },
-			],
-			max_tokens: 300,
-			temperature: 0.7,
-		},
-	)) as { response?: string };
+	const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
+		messages: [
+			{ role: "system", content: systemPrompt },
+			{ role: "user", content: userPrompt },
+		],
+		max_tokens: 300,
+		temperature: 0.7,
+	})) as { response?: string };
 
 	return response.response?.trim() || buildFallbackPrompt(userPrompt, style);
 }
@@ -59,7 +57,7 @@ function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 
 /**
  * Generate a short human-friendly description of what a stamp depicts.
- * Uses CF Workers AI Llama 3.1 8B (free) with low temperature for consistency.
+ * Uses CF Workers AI Qwen3 30B-A3B (free) with low temperature for consistency.
  */
 export async function generateDescription(
 	ai: Ai,
@@ -76,18 +74,14 @@ Examples:
 - "Whimsical owl perched on a moonlit branch"`;
 
 	try {
-		const response = (await ai.run(
-			// @ts-expect-error — model name valid at runtime, types may lag
-			"@cf/meta/llama-3.1-8b-instruct",
-			{
-				messages: [
-					{ role: "system", content: systemPrompt },
-					{ role: "user", content: enhancedPrompt },
-				],
-				max_tokens: 50,
-				temperature: 0.3,
-			},
-		)) as { response?: string };
+		const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
+			messages: [
+				{ role: "system", content: systemPrompt },
+				{ role: "user", content: enhancedPrompt },
+			],
+			max_tokens: 50,
+			temperature: 0.3,
+		})) as { response?: string };
 
 		const result = response.response?.trim();
 		if (result && result.length > 0) {

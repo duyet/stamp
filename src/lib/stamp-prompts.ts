@@ -1,12 +1,12 @@
 /**
  * Prompt templates for generating postage stamps with AI.
  *
- * Style reference: naive folk art portrait stamps with stippled shading,
+ * Style reference: naive folk art stamps with stippled shading,
  * bold black outlines, simple dot eyes, limited 2-3 color palette,
  * cross-hatched textures, perforated edges, cream paper texture.
  */
 
-export const STAMP_BASE_STYLE = `naive folk art portrait illustration on a postage stamp, bold black outlines, stippled dotted shading technique, simple minimalist face with dot eyes and thin line nose, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, cross-hatched clothing patterns, small decorative elements, square format`;
+export const STAMP_BASE_STYLE = `naive folk art illustration on a postage stamp, bold black outlines, stippled dotted shading technique, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, small decorative elements, square format`;
 
 export const STAMP_STYLE_PRESETS = {
 	vintage: {
@@ -31,7 +31,7 @@ export const STAMP_STYLE_PRESETS = {
 	},
 	portrait: {
 		name: "Portrait",
-		prompt: `${STAMP_BASE_STYLE}, close-up face portrait, stippled shading on skin, expressive simple eyes, blue-grey background with subtle texture`,
+		prompt: `${STAMP_BASE_STYLE}, close-up face portrait, simple minimalist face with dot eyes, stippled shading on skin, expressive simple eyes, cross-hatched clothing textures, blue-grey background with subtle texture`,
 		thumbnail: "/styles/portrait.jpg",
 	},
 	watercolor: {
