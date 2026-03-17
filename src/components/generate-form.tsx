@@ -125,6 +125,17 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							setPrompt(e.target.value);
 							autoResize(e.target);
 						}}
+						onKeyDown={(e) => {
+							if (
+								e.key === "Enter" &&
+								e.shiftKey &&
+								prompt.trim() &&
+								!loading
+							) {
+								e.preventDefault();
+								handleSubmit(e);
+							}
+						}}
 						placeholder="Describe your stamp..."
 						maxLength={500}
 						rows={1}
