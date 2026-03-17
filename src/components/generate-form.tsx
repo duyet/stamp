@@ -1,6 +1,12 @@
 "use client";
 
-import { Show, SignInButton, UserButton, useAuth } from "@clerk/nextjs";
+import {
+	Show,
+	SignInButton,
+	UserButton,
+	useAuth,
+	useClerk,
+} from "@clerk/nextjs";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
@@ -35,6 +41,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [error, setError] = useState<string | null>(null);
 	const [isRateLimited, setIsRateLimited] = useState(false);
 	const { isSignedIn } = useAuth();
+	const clerk = useClerk();
 	const [hd, setHd] = useState(false);
 
 	// Reset HD when user signs out
@@ -145,7 +152,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					{/* Auth button inside textarea row */}
 					<div className="absolute right-3 top-3">
 						<Show when="signed-out">
-							<SignInButton>
+							<SignInButton mode="modal">
 								<button
 									type="button"
 									className="text-xs text-stone-400 hover:text-stamp-navy transition-colors"
@@ -258,17 +265,22 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							/>
 							<span className="text-[10px] text-stone-500">Public</span>
 						</label>
-						{isSignedIn && (
-							<label className="flex items-center gap-1.5 cursor-pointer">
-								<input
-									type="checkbox"
-									checked={hd}
-									onChange={(e) => setHd(e.target.checked)}
-									className="w-3 h-3 rounded border-stone-300 text-stamp-navy focus:ring-stamp-navy/20"
-								/>
-								<span className="text-[10px] text-stone-500">HD</span>
-							</label>
-						)}
+						<label className="flex items-center gap-1.5 cursor-pointer">
+							<input
+								type="checkbox"
+								checked={hd}
+								onChange={(e) => {
+									if (!isSignedIn) {
+										e.preventDefault();
+										clerk.openSignIn();
+										return;
+									}
+									setHd(e.target.checked);
+								}}
+								className="w-3 h-3 rounded border-stone-300 text-stamp-navy focus:ring-stamp-navy/20"
+							/>
+							<span className="text-[10px] text-stone-500">HD</span>
+						</label>
 						<button
 							type="submit"
 							disabled={loading || !prompt.trim()}
@@ -320,7 +332,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							<p className="text-stone-600">
 								Sign in for 100 free stamps per day
 							</p>
-							<SignInButton>
+							<SignInButton mode="modal">
 								<button
 									type="button"
 									className="px-3 py-1 bg-stamp-navy text-white rounded text-xs font-medium hover:bg-stone-800 transition"

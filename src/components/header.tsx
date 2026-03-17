@@ -36,7 +36,7 @@ export function Header() {
 						Collections
 					</Link>
 					<Show when="signed-out">
-						<SignInButton>
+						<SignInButton mode="modal">
 							<button
 								type="button"
 								className="text-stone-600 hover:text-stone-900 transition-colors"

@@ -104,10 +104,28 @@ Examples:
 }
 
 /**
+ * Build multipart form data for Flux models that require it.
+ * Returns the body stream and content-type with boundary.
+ */
+function buildMultipartInput(
+	params: Record<string, string>,
+): { body: ReadableStream; contentType: string } {
+	const form = new FormData();
+	for (const [key, value] of Object.entries(params)) {
+		form.append(key, value);
+	}
+	const response = new Response(form);
+	return {
+		body: response.body as ReadableStream,
+		contentType: response.headers.get("content-type") || "multipart/form-data",
+	};
+}
+
+/**
  * Generate a stamp using CF Workers AI (free).
  * Two-stage: LLM enhances prompt → image model generates image.
  *
- * @param hd - Use Flux 2 Klein 9B (1024x1024, 25 steps) instead of Flux 1 Schnell.
+ * @param hd - Use Flux 2 Klein 9B (1024x1024, 4 steps) instead of Flux 1 Schnell.
  */
 export async function generateStamp(
 	ai: Ai,
@@ -124,25 +142,31 @@ export async function generateStamp(
 	}
 
 	// Stage 2: Model selection based on HD flag
+	// Flux 2 models require multipart form data input
 	let response: { image?: string };
 	if (hd) {
-		// Flux 2 Klein 9B — 1024x1024, 25 steps, higher quality
+		// Flux 2 Klein 9B — 1024x1024, fixed 4 steps
+		const { body, contentType } = buildMultipartInput({
+			prompt: enhancedPrompt,
+			width: "1024",
+			height: "1024",
+		});
 		response = (await ai.run(
 			// @ts-expect-error — model name valid at runtime
 			"@cf/black-forest-labs/flux-2-klein-9b",
-			{
-				prompt: enhancedPrompt,
-				width: 1024,
-				height: 1024,
-				steps: 25,
-			},
+			{ multipart: { body, contentType } },
 		)) as { image?: string };
 	} else {
 		// Flux 1 Schnell — default, fast, 8 steps
-		response = (await ai.run("@cf/black-forest-labs/flux-1-schnell", {
+		const { body, contentType } = buildMultipartInput({
 			prompt: enhancedPrompt,
-			steps: 8,
-		})) as { image?: string };
+			steps: "8",
+		});
+		response = (await ai.run(
+			"@cf/black-forest-labs/flux-1-schnell",
+			// @ts-expect-error — multipart input required, types lag behind runtime API
+			{ multipart: { body, contentType } },
+		)) as { image?: string };
 	}
 
 	if (!response.image) {

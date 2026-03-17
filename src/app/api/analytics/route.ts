@@ -13,12 +13,13 @@ export async function GET() {
 	try {
 		const db = getDb();
 
-		const now = Date.now();
-		const dayMs = 86_400_000;
-		const todayStart = now - (now % dayMs);
-		const weekStart = todayStart - 6 * dayMs;
-		const monthStart = todayStart - 29 * dayMs;
-		const thirtyDaysAgo = now - 30 * dayMs;
+		// Timestamps in seconds (matching integer "created_at" column with mode: "timestamp")
+		const nowSec = Math.floor(Date.now() / 1000);
+		const daySec = 86_400;
+		const todayStart = nowSec - (nowSec % daySec);
+		const weekStart = todayStart - 6 * daySec;
+		const monthStart = todayStart - 29 * daySec;
+		const thirtyDaysAgo = nowSec - 30 * daySec;
 
 		const [
 			totalStampsResult,
@@ -39,17 +40,17 @@ export async function GET() {
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(stamps)
-				.where(sql`${stamps.createdAt} >= ${new Date(todayStart)}`),
+				.where(sql`${stamps.createdAt} >= ${todayStart}`),
 
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(stamps)
-				.where(sql`${stamps.createdAt} >= ${new Date(weekStart)}`),
+				.where(sql`${stamps.createdAt} >= ${weekStart}`),
 
 			db
 				.select({ count: sql<number>`count(*)` })
 				.from(stamps)
-				.where(sql`${stamps.createdAt} >= ${new Date(monthStart)}`),
+				.where(sql`${stamps.createdAt} >= ${monthStart}`),
 
 			db
 				.select({
@@ -62,13 +63,13 @@ export async function GET() {
 
 			db
 				.select({
-					day: sql<number>`(${stamps.createdAt} / 86400000) * 86400000`,
+					day: sql<number>`(${stamps.createdAt} / 86400) * 86400`,
 					count: sql<number>`count(*)`,
 				})
 				.from(stamps)
-				.where(sql`${stamps.createdAt} >= ${new Date(thirtyDaysAgo)}`)
-				.groupBy(sql`(${stamps.createdAt} / 86400000) * 86400000`)
-				.orderBy(sql`(${stamps.createdAt} / 86400000) * 86400000`),
+				.where(sql`${stamps.createdAt} >= ${thirtyDaysAgo}`)
+				.groupBy(sql`(${stamps.createdAt} / 86400) * 86400`)
+				.orderBy(sql`(${stamps.createdAt} / 86400) * 86400`),
 
 			db
 				.select({ count: sql<number>`count(*)` })
