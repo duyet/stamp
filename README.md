@@ -1,5 +1,7 @@
 # stamp.builders
 
+![stamp.builders](public/stamp.png)
+
 AI-powered postage stamp generator. Create unique vintage folk art stamp illustrations from text prompts.
 
 **Live**: [stamp.builders](https://stamp.builders)
