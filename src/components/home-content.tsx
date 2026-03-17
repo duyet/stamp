@@ -17,6 +17,7 @@ export function HomeContent() {
 		id: string;
 		imageUrl: string;
 		prompt: string;
+		style?: string;
 		enhancedPrompt?: string;
 		description?: string;
 	}) {
@@ -27,7 +28,7 @@ export function HomeContent() {
 			description: stamp.description ?? null,
 			imageUrl: stamp.imageUrl,
 			thumbnailUrl: null,
-			style: "vintage",
+			style: stamp.style ?? "vintage",
 			isPublic: true,
 			userIp: null,
 			userId: null,
@@ -40,7 +41,7 @@ export function HomeContent() {
 			referrer: null,
 			createdAt: new Date(),
 		};
-		setRecentStamps((prev) => [newStamp, ...prev].slice(0, 12));
+		setRecentStamps((prev) => [newStamp, ...prev]);
 	}
 
 	return (
@@ -58,7 +59,7 @@ export function HomeContent() {
 				</div>
 
 				<h1
-					className="text-5xl md:text-7xl font-bold text-stamp-navy tracking-tight"
+					className="text-4xl md:text-5xl font-bold text-stamp-navy tracking-tight"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders

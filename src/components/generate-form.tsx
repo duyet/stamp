@@ -17,11 +17,22 @@ import {
 	type StampStyle,
 } from "@/lib/stamp-prompts";
 
+interface GeneratedStamp {
+	id: string;
+	imageUrl: string;
+	prompt: string;
+	remaining: number;
+	generationTimeMs?: number;
+}
+
 interface GenerateFormProps {
 	onGenerated?: (stamp: {
 		id: string;
 		imageUrl: string;
 		prompt: string;
+		style?: string;
+		enhancedPrompt?: string;
+		description?: string;
 	}) => void;
 }
 
@@ -49,21 +60,18 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		if (!isSignedIn) setHd(false);
 	}, [isSignedIn]);
 
-	const [result, setResult] = useState<{
-		id: string;
-		imageUrl: string;
-		remaining: number;
-		generationTimeMs?: number;
-	} | null>(null);
+	const [results, setResults] = useState<GeneratedStamp[]>([]);
+
+	const latestResult = results[0] ?? null;
 
 	async function handleVisibilityChange(
 		e: React.ChangeEvent<HTMLInputElement>,
 	) {
-		if (!result) return;
+		if (!latestResult) return;
 		const newValue = e.target.checked;
 		setIsPublic(newValue);
 		try {
-			const res = await fetch(`/api/stamps/${result.id}/visibility`, {
+			const res = await fetch(`/api/stamps/${latestResult.id}/visibility`, {
 				method: "PATCH",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ isPublic: newValue }),
@@ -84,7 +92,6 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 		setLoading(true);
 		setError(null);
-		setResult(null);
 		setIsRateLimited(false);
 
 		try {
@@ -116,8 +123,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				return;
 			}
 
-			setResult(data);
-			onGenerated?.(data);
+			setResults((prev) => [data, ...prev]);
+			onGenerated?.({ ...data, style });
 		} catch {
 			setError("Something went wrong. Please try again.");
 		} finally {
@@ -351,22 +358,11 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				</div>
 			)}
 
-			{/* Result */}
-			{result && (
-				<div className="mt-8 text-center animate-stamp-appear">
-					<div className="stamp-border stamp-modal-shadow inline-block">
-						<Image
-							src={result.imageUrl}
-							alt={prompt}
-							width={256}
-							height={256}
-							className="object-cover"
-							unoptimized
-						/>
-					</div>
-
-					<div className="mt-4 space-y-2">
-						{/* Public toggle */}
+			{/* Results — newest first, shown as a grid */}
+			{results.length > 0 && (
+				<div className="mt-8">
+					{/* Controls for latest stamp */}
+					<div className="text-center mb-4 space-y-2">
 						<label className="inline-flex items-center gap-2 cursor-pointer group">
 							<div className="relative">
 								<input
@@ -380,49 +376,64 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							</div>
 							<span className="text-xs text-stone-500">Public collection</span>
 						</label>
-
-						{/* Actions */}
-						<div className="flex justify-center gap-2">
-							<a
-								href={result.imageUrl}
-								download={`stamp-${result.id}.png`}
-								className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-stamp-navy text-white rounded-full text-xs hover:bg-stone-800 transition"
-							>
-								<DownloadIcon />
-								Download
-							</a>
-							<button
-								type="button"
-								onClick={() =>
-									copy(
-										`${window.location.origin}/api/stamps/${result.id}/image`,
-									)
-								}
-								className="inline-flex items-center gap-1.5 px-4 py-1.5 text-stone-600 bg-white border border-stone-200 rounded-full text-xs hover:bg-stone-50 transition"
-							>
-								{copied ? (
-									<>
-										<CheckIcon />
-										Copied!
-									</>
-								) : (
-									<>
-										<ClipboardIcon />
-										Copy Link
-									</>
-								)}
-							</button>
-						</div>
-
-						{/* Meta */}
 						<p className="text-[10px] text-stone-400">
-							{result.remaining} remaining today
-							{result.generationTimeMs && (
+							{latestResult?.remaining} remaining today
+							{latestResult?.generationTimeMs && (
 								<span className="ml-1">
-									· {(result.generationTimeMs / 1000).toFixed(1)}s
+									· {(latestResult.generationTimeMs / 1000).toFixed(1)}s
 								</span>
 							)}
 						</p>
+					</div>
+
+					{/* Stamp grid — newest first */}
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+						{results.map((r, idx) => (
+							<div
+								key={r.id}
+								className={`text-center ${idx === 0 ? "animate-stamp-appear" : ""}`}
+							>
+								<div className="stamp-border stamp-modal-shadow inline-block">
+									<Image
+										src={r.imageUrl}
+										alt={r.prompt}
+										width={256}
+										height={256}
+										className="object-cover"
+										unoptimized
+									/>
+								</div>
+								<div className="mt-2 flex justify-center gap-1.5">
+									<a
+										href={r.imageUrl}
+										download={`stamp-${r.id}.png`}
+										className="inline-flex items-center gap-1 px-3 py-1 bg-stamp-navy text-white rounded-full text-[10px] hover:bg-stone-800 transition"
+									>
+										<DownloadIcon />
+										Download
+									</a>
+									<button
+										type="button"
+										onClick={() =>
+											copy(`${window.location.origin}/api/stamps/${r.id}/image`)
+										}
+										className="inline-flex items-center gap-1 px-3 py-1 text-stone-600 bg-white border border-stone-200 rounded-full text-[10px] hover:bg-stone-50 transition"
+									>
+										{copied ? (
+											<>
+												<CheckIcon />
+												Copied
+											</>
+										) : (
+											<>
+												<ClipboardIcon />
+												Copy
+											</>
+										)}
+									</button>
+								</div>
+							</div>
+						))}
 					</div>
 				</div>
 			)}
