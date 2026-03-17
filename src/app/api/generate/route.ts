@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
 
 		await db.insert(stamps).values({
 			id: stampId,
-			prompt,
+			prompt: prompt?.trim() || "Generated from reference image",
 			enhancedPrompt,
 			description,
 			imageUrl,

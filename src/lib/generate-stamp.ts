@@ -177,7 +177,8 @@ export async function generateStamp(
 			{
 				multipart: {
 					body: formResponse.body,
-					contentType: formResponse.headers.get('content-type') ?? 'multipart/form-data',
+					contentType:
+						formResponse.headers.get("content-type") ?? "multipart/form-data",
 				},
 			},
 		)) as { image?: string };
