@@ -162,6 +162,7 @@ export async function POST(request: NextRequest) {
 		// Fire-and-forget AgentState conversation logging
 		const agentStateKey = env.AGENTSTATE_API_KEY;
 		if (agentStateKey) {
+			const agentStateStart = Date.now();
 			createConversation(agentStateKey, {
 				external_id: `stamp-${stampId}`,
 				title: prompt.slice(0, 100),
@@ -172,6 +173,9 @@ export async function POST(request: NextRequest) {
 					user_id: userId ?? null,
 					user_ip: userIp,
 					generation_time_ms: generationTimeMs,
+					location_country: locationCountry ?? null,
+					location_city: locationCity ?? null,
+					timezone: timezone ?? null,
 				},
 				messages: [
 					{
@@ -181,7 +185,7 @@ export async function POST(request: NextRequest) {
 					},
 					{
 						role: "assistant",
-						content: description,
+						content: description ?? enhancedPrompt ?? prompt,
 						metadata: {
 							enhanced_prompt: enhancedPrompt,
 							image_url: imageUrl,
@@ -194,11 +198,22 @@ export async function POST(request: NextRequest) {
 					const tags = ["stamp"];
 					if (userId) tags.push(`user:${userId}`);
 					if (style) tags.push(`style:${style}`);
-					return addTags(agentStateKey, conv.id, tags);
+					if (locationCountry) tags.push(`country:${locationCountry}`);
+					return addTags(agentStateKey, conv.id, tags).then(() => {
+						console.log(
+							`[AgentState] logged stamp=${stampId} conv=${conv.id} tags=${tags.join(",")} ${Date.now() - agentStateStart}ms`,
+						);
+					});
 				})
 				.catch((err: unknown) => {
-					console.error("AgentState log failed:", err);
+					console.error(
+						`[AgentState] FAILED stamp=${stampId} error=${err instanceof Error ? err.message : String(err)}`,
+					);
 				});
+		} else {
+			console.warn(
+				"[AgentState] AGENTSTATE_API_KEY not set, skipping conversation log",
+			);
 		}
 
 		return NextResponse.json({

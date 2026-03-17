@@ -31,6 +31,28 @@ export interface AgentStateSearchResult {
 	message_count: number;
 }
 
+async function agentStateFetch(
+	url: string,
+	apiKey: string,
+	init?: RequestInit,
+): Promise<Response> {
+	const res = await fetch(url, {
+		...init,
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${apiKey}`,
+			...init?.headers,
+		},
+	});
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		throw new Error(
+			`AgentState ${init?.method ?? "GET"} ${url} → ${res.status}: ${body.slice(0, 200)}`,
+		);
+	}
+	return res;
+}
+
 export async function createConversation(
 	apiKey: string,
 	params: {
@@ -40,15 +62,10 @@ export async function createConversation(
 		messages: AgentStateMessage[];
 	},
 ): Promise<AgentStateConversation> {
-	const res = await fetch(`${BASE_URL}/conversations`, {
+	const res = await agentStateFetch(`${BASE_URL}/conversations`, apiKey, {
 		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${apiKey}`,
-		},
 		body: JSON.stringify(params),
 	});
-	if (!res.ok) throw new Error(`AgentState error: ${res.status}`);
 	return res.json() as Promise<AgentStateConversation>;
 }
 
@@ -57,18 +74,14 @@ export async function appendMessages(
 	conversationId: string,
 	messages: AgentStateMessage[],
 ): Promise<void> {
-	const res = await fetch(
+	await agentStateFetch(
 		`${BASE_URL}/conversations/${conversationId}/messages`,
+		apiKey,
 		{
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${apiKey}`,
-			},
 			body: JSON.stringify({ messages }),
 		},
 	);
-	if (!res.ok) throw new Error(`AgentState error: ${res.status}`);
 }
 
 export async function listConversations(
@@ -82,10 +95,7 @@ export async function listConversations(
 	if (params?.limit) url.searchParams.set("limit", String(params.limit));
 	if (params?.cursor) url.searchParams.set("cursor", params.cursor);
 	if (params?.tag) url.searchParams.set("tag", params.tag);
-	const res = await fetch(url.toString(), {
-		headers: { Authorization: `Bearer ${apiKey}` },
-	});
-	if (!res.ok) throw new Error(`AgentState error: ${res.status}`);
+	const res = await agentStateFetch(url.toString(), apiKey);
 	return res.json() as Promise<{
 		data: AgentStateConversation[];
 		pagination: { next_cursor: string | null };
@@ -96,10 +106,7 @@ export async function getConversation(
 	apiKey: string,
 	id: string,
 ): Promise<AgentStateConversation> {
-	const res = await fetch(`${BASE_URL}/conversations/${id}`, {
-		headers: { Authorization: `Bearer ${apiKey}` },
-	});
-	if (!res.ok) throw new Error(`AgentState error: ${res.status}`);
+	const res = await agentStateFetch(`${BASE_URL}/conversations/${id}`, apiKey);
 	return res.json() as Promise<AgentStateConversation>;
 }
 
@@ -111,10 +118,7 @@ export async function searchConversations(
 	const url = new URL(`${BASE_URL}/conversations/search`);
 	url.searchParams.set("q", query);
 	url.searchParams.set("limit", String(limit));
-	const res = await fetch(url.toString(), {
-		headers: { Authorization: `Bearer ${apiKey}` },
-	});
-	if (!res.ok) throw new Error(`AgentState error: ${res.status}`);
+	const res = await agentStateFetch(url.toString(), apiKey);
 	return res.json() as Promise<{ data: AgentStateSearchResult[] }>;
 }
 
@@ -123,13 +127,12 @@ export async function addTags(
 	conversationId: string,
 	tags: string[],
 ): Promise<void> {
-	const res = await fetch(`${BASE_URL}/conversations/${conversationId}/tags`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${apiKey}`,
+	await agentStateFetch(
+		`${BASE_URL}/conversations/${conversationId}/tags`,
+		apiKey,
+		{
+			method: "POST",
+			body: JSON.stringify({ tags }),
 		},
-		body: JSON.stringify({ tags }),
-	});
-	if (!res.ok) throw new Error(`AgentState error: ${res.status}`);
+	);
 }
