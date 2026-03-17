@@ -1,10 +1,10 @@
-# stamp.builders
+# stamp.duyet.net
 
-![stamp.builders](public/stamp.png)
+![stamp.duyet.net](public/stamp.png)
 
 AI-powered postage stamp generator. Create unique vintage folk art stamp illustrations from text prompts.
 
-**Live**: [stamp.builders](https://stamp.builders)
+**Live**: [stamp.duyet.net](https://stamp.duyet.net) | [stamp.duyet.workers.dev](https://stamp.duyet.workers.dev)
 
 ## Features
 

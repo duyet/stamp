@@ -26,7 +26,7 @@ export function Footer() {
 				</nav>
 				<div className="text-center">
 					<a
-						href="https://stamp.builders"
+						href="https://stamp.duyet.net"
 						className="text-sm text-stone-600 hover:text-stone-800 transition-colors"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					>

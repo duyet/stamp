@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-	const baseUrl = "https://stamp.builders";
+	const baseUrl = "https://stamp.duyet.net";
 
 	return [
 		{

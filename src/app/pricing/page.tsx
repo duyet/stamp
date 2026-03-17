@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 		title: "Pricing — stamp.builders",
 		description:
 			"Generate AI stamps for free. 100 credits per day with an account.",
-		url: "https://stamp.builders/pricing",
+		url: "https://stamp.duyet.net/pricing",
 	},
 };
 

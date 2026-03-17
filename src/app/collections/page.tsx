@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 	openGraph: {
 		title: "Stamp Collections — stamp.builders",
 		description: "Browse AI-generated postage stamps created by the community",
-		url: "https://stamp.builders/collections",
+		url: "https://stamp.duyet.net/collections",
 	},
 };
 

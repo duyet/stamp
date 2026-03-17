@@ -27,12 +27,12 @@ export const metadata: Metadata = {
 	},
 	description:
 		"Create unique vintage postage stamps with AI. Describe your vision and get beautiful folk art stamp illustrations. Free, no account needed.",
-	metadataBase: new URL("https://stamp.builders"),
+	metadataBase: new URL("https://stamp.duyet.net"),
 	openGraph: {
 		title: "stamp.builders — AI Stamp Generator",
 		description:
 			"Create unique vintage postage stamps with AI. Free, no account needed.",
-		url: "https://stamp.builders",
+		url: "https://stamp.duyet.net",
 		siteName: "stamp.builders",
 		type: "website",
 		locale: "en_US",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
 		follow: true,
 	},
 	alternates: {
-		canonical: "https://stamp.builders",
+		canonical: "https://stamp.duyet.net",
 	},
 };
 
