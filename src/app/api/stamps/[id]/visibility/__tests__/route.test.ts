@@ -5,7 +5,12 @@ vi.mock("@/db", () => ({
 	getDb: vi.fn(),
 }));
 
+vi.mock("@/lib/clerk", () => ({
+	getAuthUserId: vi.fn(),
+}));
+
 import { getDb } from "@/db";
+import { getAuthUserId } from "@/lib/clerk";
 import { PATCH } from "../route";
 
 const URL = "http://localhost/api/stamps/abc123def456/visibility";
@@ -30,11 +35,14 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		// Mock unauthenticated by default
+		vi.mocked(getAuthUserId).mockResolvedValue({ userId: null });
 		vi.mocked(getDb).mockReturnValue(mockDb as never);
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			id: "abc123def456",
 			prompt: "a cat",
 			userIp: "1.2.3.4",
+			userId: null,
 			isPublic: true,
 		});
 		mockUpdate.mockReturnValue({
@@ -103,10 +111,11 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 		expect(data.error).toContain("Stamp not found");
 	});
 
-	it("returns 403 when IP does not match creator", async () => {
+	it("returns 403 when IP does not match creator (anonymous user)", async () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			id: "abc123def456",
 			userIp: "1.2.3.4",
+			userId: null,
 		});
 
 		const res = await PATCH(
@@ -119,7 +128,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 		expect(data.error).toContain("Not authorized");
 	});
 
-	it("allows toggle when IP matches creator", async () => {
+	it("allows toggle when IP matches creator (anonymous user)", async () => {
 		const res = await PATCH(
 			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
 			createRouteParams({ id: "abc123def456" }),
@@ -130,45 +139,76 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 		expect(data.ok).toBe(true);
 	});
 
-	it("allows toggle when stamp has no userIp", async () => {
+	it("allows toggle when userId matches creator (authenticated user)", async () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			id: "abc123def456",
-			userIp: null,
+			userIp: "1.2.3.4",
+			userId: "user_abc123",
+		});
+
+		vi.mocked(getAuthUserId).mockResolvedValue({
+			userId: "user_abc123",
+		});
+
+		const res = await PATCH(
+			req({ isPublic: false }, { "cf-connecting-ip": "9.9.9.9" }),
+			createRouteParams({ id: "abc123def456" }),
+		);
+		const data = (await res.json()) as Record<string, unknown>;
+
+		expect(res.status).toBe(200);
+		expect(data.ok).toBe(true);
+	});
+
+	it("returns 403 when userId does not match creator", async () => {
+		mockDb.query.stamps.findFirst.mockResolvedValue({
+			id: "abc123def456",
+			userIp: "1.2.3.4",
+			userId: "user_xyz",
+		});
+
+		vi.mocked(getAuthUserId).mockResolvedValue({
+			userId: "user_abc123",
+		});
+
+		const res = await PATCH(
+			req({ isPublic: false }, { "cf-connecting-ip": "9.9.9.9" }),
+			createRouteParams({ id: "abc123def456" }),
+		);
+		const data = (await res.json()) as Record<string, unknown>;
+
+		expect(res.status).toBe(403);
+		expect(data.error).toContain("Not authorized");
+	});
+
+	it("returns 403 when stamp has userIp but requester has neither userId nor matching IP", async () => {
+		mockDb.query.stamps.findFirst.mockResolvedValue({
+			id: "abc123def456",
+			userIp: "1.2.3.4",
+			userId: null,
 		});
 
 		const res = await PATCH(
 			req({ isPublic: true }, { "cf-connecting-ip": "9.9.9.9" }),
 			createRouteParams({ id: "abc123def456" }),
 		);
-		const data = (await res.json()) as Record<string, unknown>;
 
-		expect(res.status).toBe(200);
-		expect(data.ok).toBe(true);
+		expect(res.status).toBe(403);
 	});
 
-	it("allows toggle when requester has no IP", async () => {
+	it("returns 403 when requester has no IP and no userId", async () => {
+		mockDb.query.stamps.findFirst.mockResolvedValue({
+			id: "abc123def456",
+			userIp: "1.2.3.4",
+			userId: null,
+		});
+
 		const res = await PATCH(
 			req({ isPublic: true }),
 			createRouteParams({ id: "abc123def456" }),
 		);
-		const data = (await res.json()) as Record<string, unknown>;
 
-		expect(res.status).toBe(200);
-		expect(data.ok).toBe(true);
-	});
-
-	it("uses x-forwarded-for as fallback IP", async () => {
-		mockDb.query.stamps.findFirst.mockResolvedValue({
-			id: "abc123def456",
-			userIp: "5.6.7.8",
-		});
-
-		const res = await PATCH(
-			req({ isPublic: false }, { "x-forwarded-for": "5.6.7.8" }),
-			createRouteParams({ id: "abc123def456" }),
-		);
-
-		expect(res.status).toBe(200);
+		expect(res.status).toBe(403);
 	});
 
 	it("returns 500 on database error", async () => {

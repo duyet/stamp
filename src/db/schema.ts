@@ -31,17 +31,25 @@ export const stamps = sqliteTable(
 			.$defaultFn(() => new Date())
 			.notNull(),
 	},
-	(table) => [index("idx_stamps_user").on(table.userId)],
+	(table) => [
+		index("idx_stamps_user").on(table.userId),
+		index("idx_stamps_public_created").on(table.isPublic, table.createdAt),
+		index("idx_stamps_created").on(table.createdAt),
+	],
 );
 
-export const rateLimits = sqliteTable("rate_limits", {
-	id: text("id").primaryKey(),
-	userIp: text("user_ip").notNull(),
-	generationsCount: integer("generations_count").default(0).notNull(),
-	windowStart: integer("window_start", { mode: "timestamp" })
-		.$defaultFn(() => new Date())
-		.notNull(),
-});
+export const rateLimits = sqliteTable(
+	"rate_limits",
+	{
+		id: text("id").primaryKey(),
+		userIp: text("user_ip").notNull(),
+		generationsCount: integer("generations_count").default(0).notNull(),
+		windowStart: integer("window_start", { mode: "timestamp" })
+			.$defaultFn(() => new Date())
+			.notNull(),
+	},
+	(table) => [index("idx_rate_limits_ip").on(table.userIp)],
+);
 
 export type Stamp = typeof stamps.$inferSelect;
 export type NewStamp = typeof stamps.$inferInsert;

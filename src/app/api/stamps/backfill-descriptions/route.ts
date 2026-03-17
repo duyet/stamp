@@ -1,12 +1,29 @@
 import { eq, isNull } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
+import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { generateDescription } from "@/lib/generate-stamp";
 
-export async function POST() {
+// List of admin userIds who can trigger backfill (in production, use a proper role system)
+const ADMIN_USER_IDS: string[] = process.env.ADMIN_USER_IDS
+	? process.env.ADMIN_USER_IDS.split(",")
+	: [];
+
+export async function POST(request: NextRequest) {
 	try {
+		// Require authentication
+		const { userId } = await getAuthUserId(request.headers);
+		if (!userId) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		// Check if user is admin (in production, use Clerk roles/permissions)
+		if (!ADMIN_USER_IDS.includes(userId)) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+		}
+
 		const env = getEnv();
 		const db = getDb();
 
@@ -30,27 +47,34 @@ export async function POST() {
 		const total = stampsWithoutDescription.length;
 		let updated = 0;
 
-		// Process sequentially to avoid overwhelming the AI binding
-		for (const stamp of stampsWithoutDescription) {
-			try {
-				const description = await generateDescription(
-					ai,
-					stamp.prompt,
-					stamp.enhancedPrompt || stamp.prompt,
-				);
+		// Process in batches to avoid timeout
+		const BATCH_SIZE = 10;
+		for (let i = 0; i < stampsWithoutDescription.length; i += BATCH_SIZE) {
+			const batch = stampsWithoutDescription.slice(i, i + BATCH_SIZE);
 
-				await db
-					.update(stamps)
-					.set({ description })
-					.where(eq(stamps.id, stamp.id));
+			await Promise.all(
+				batch.map(async (stamp) => {
+					try {
+						const description = await generateDescription(
+							ai,
+							stamp.prompt,
+							stamp.enhancedPrompt || stamp.prompt,
+						);
 
-				updated++;
-			} catch (err) {
-				console.error(
-					`Failed to generate description for stamp ${stamp.id}:`,
-					err,
-				);
-			}
+						await db
+							.update(stamps)
+							.set({ description })
+							.where(eq(stamps.id, stamp.id));
+
+						updated++;
+					} catch (err) {
+						console.error(
+							`Failed to generate description for stamp ${stamp.id}:`,
+							err,
+						);
+					}
+				}),
+			);
 		}
 
 		return NextResponse.json({ updated, total });

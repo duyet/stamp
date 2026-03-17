@@ -24,7 +24,7 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 	];
 
 	return (
-		<div className="stamp-fan group cursor-pointer select-none" aria-hidden>
+		<div className="stamp-fan group cursor-pointer select-none">
 			{positions.map((pos, idx) => (
 				<div key={pos} className={`stamp-fan-card ${pos}`}>
 					{images[idx] && onClickStamp ? (
@@ -32,17 +32,18 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 							type="button"
 							className="stamp-border w-full h-full"
 							onClick={() => onClickStamp(idx)}
+							aria-label={`View stamp ${idx + 1}`}
 						>
 							<Image
 								src={images[idx]}
-								alt=""
+								alt={`Stamp preview ${idx + 1}`}
 								width={130}
 								height={130}
 								className="w-full h-full object-cover"
 							/>
 						</button>
 					) : (
-						<div className="stamp-border">
+						<div className="stamp-border" aria-hidden="true">
 							{images[idx] ? (
 								<Image
 									src={images[idx]}

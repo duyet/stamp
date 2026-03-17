@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
+import { getAuthUserId } from "@/lib/clerk";
 import { getClientIp } from "@/lib/get-client-ip";
 
 export async function PATCH(
@@ -26,7 +27,8 @@ export async function PATCH(
 			);
 		}
 
-		// Verify the stamp exists and the requester is the creator (by IP)
+		// Get auth state (userId for logged-in users, IP for anonymous)
+		const { userId } = await getAuthUserId(request.headers);
 		const userIp = getClientIp(request.headers, null);
 
 		const stamp = await db.query.stamps.findFirst({
@@ -37,8 +39,15 @@ export async function PATCH(
 			return NextResponse.json({ error: "Stamp not found" }, { status: 404 });
 		}
 
-		// Only the creator (same IP) can toggle visibility
-		if (stamp.userIp && userIp && stamp.userIp !== userIp) {
+		// Authorization: Only the creator can toggle visibility
+		// Priority: userId match (most secure) > IP match (fallback for anonymous)
+		const isAuthorized =
+			// Authenticated user: check userId
+			(userId && stamp.userId && stamp.userId === userId) ||
+			// Anonymous: check IP (less secure, but necessary for anonymous users)
+			(!userId && stamp.userIp && userIp && stamp.userIp === userIp);
+
+		if (!isAuthorized) {
 			return NextResponse.json({ error: "Not authorized" }, { status: 403 });
 		}
 

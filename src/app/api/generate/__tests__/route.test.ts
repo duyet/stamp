@@ -117,12 +117,7 @@ describe("POST /api/generate", () => {
 			expect(checkRateLimit).toHaveBeenCalledWith(expect.anything(), "1.2.3.4");
 		});
 
-		it("falls back to x-forwarded-for header", async () => {
-			await POST(req({ prompt: "a cat" }, { "x-forwarded-for": "5.6.7.8" }));
-			expect(checkRateLimit).toHaveBeenCalledWith(expect.anything(), "5.6.7.8");
-		});
-
-		it("uses 'unknown' when no IP headers present", async () => {
+		it("uses 'unknown' when cf-connecting-ip header missing", async () => {
 			await POST(req({ prompt: "a cat" }));
 			expect(checkRateLimit).toHaveBeenCalledWith(expect.anything(), "unknown");
 		});

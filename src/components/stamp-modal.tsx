@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { Stamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
 import {
@@ -19,13 +19,45 @@ interface StampModalProps {
 
 export function StampModal({ stamp, onClose }: StampModalProps) {
 	const { copied, copy } = useCopy();
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
 
 	useEffect(() => {
-		function handleKey(e: KeyboardEvent) {
-			if (e.key === "Escape") onClose();
-		}
-		document.addEventListener("keydown", handleKey);
+		// Focus close button when modal opens
+		closeButtonRef.current?.focus();
+
+		// Prevent body scroll
 		document.body.style.overflow = "hidden";
+
+		// Handle Escape key and Tab key for focus trap
+		const handleKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				onClose();
+				return;
+			}
+
+			// Focus trap for Tab key
+			if (e.key === "Tab") {
+				const modal = e.currentTarget as HTMLElement;
+				const focusableElements =
+					'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+				const focusable = Array.from(
+					modal.querySelectorAll<HTMLElement>(focusableElements),
+				);
+				const firstFocusable = focusable[0];
+				const lastFocusable = focusable[focusable.length - 1];
+
+				if (e.target === firstFocusable && e.shiftKey) {
+					e.preventDefault();
+					lastFocusable?.focus();
+				} else if (e.target === lastFocusable && !e.shiftKey) {
+					e.preventDefault();
+					firstFocusable?.focus();
+				}
+			}
+		};
+
+		document.addEventListener("keydown", handleKey);
+
 		return () => {
 			document.removeEventListener("keydown", handleKey);
 			document.body.style.overflow = "";
@@ -50,13 +82,15 @@ export function StampModal({ stamp, onClose }: StampModalProps) {
 				className="relative max-w-md w-full animate-stamp-appear"
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => e.stopPropagation()}
+				role="document"
 			>
 				{/* Close */}
 				<button
+					ref={closeButtonRef}
 					type="button"
 					onClick={onClose}
 					className="absolute -top-2 -right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-700 transition-all duration-200"
-					aria-label="Close"
+					aria-label="Close modal"
 				>
 					<CloseIcon />
 				</button>
