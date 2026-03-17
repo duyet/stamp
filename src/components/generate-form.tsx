@@ -243,9 +243,9 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							className="shrink-0 cursor-pointer transition"
 						>
 							<div
-								className={`w-12 h-12 transition-all duration-200 ${
+								className={`w-12 h-12 rounded transition-all duration-200 ${
 									style === key
-										? "ring-1 ring-stone-900 ring-offset-1"
+										? "ring-2 ring-stone-900 ring-offset-1"
 										: "opacity-50 hover:opacity-80"
 								}`}
 							>
