@@ -113,8 +113,11 @@ async function buildMultipartInput(
 	}
 	// Add reference image if provided (for img2img with FLUX.2)
 	if (referenceImageData) {
-		// Convert Uint8Array to base64 string, then to Blob
-		const base64 = btoa(String.fromCharCode(...referenceImageData));
+		// Convert Uint8Array to base64 string (avoid spread for large arrays)
+		const binaryString = Array.from(referenceImageData, (byte) =>
+			String.fromCharCode(byte),
+		).join("");
+		const base64 = btoa(binaryString);
 		const dataUrl = `data:image/png;base64,${base64}`;
 		// Fetch as Blob to get proper BlobPart type
 		const response = await fetch(dataUrl);
