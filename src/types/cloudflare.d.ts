@@ -5,6 +5,7 @@ declare global {
 		DB: D1Database;
 		STAMPS_BUCKET: R2Bucket;
 		AI: Ai;
+		AGENTSTATE_API_KEY?: string;
 	}
 }
 

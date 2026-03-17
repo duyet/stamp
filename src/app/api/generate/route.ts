@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
+import { addTags, createConversation } from "@/lib/agentstate";
 import {
 	checkAndDeductCredit,
 	HD_CREDIT_COST,
@@ -138,6 +139,48 @@ export async function POST(request: NextRequest) {
 			.catch((err: unknown) => {
 				console.error("Failed to track generation event:", err);
 			});
+
+		// Fire-and-forget AgentState conversation logging
+		const agentStateKey = env.AGENTSTATE_API_KEY;
+		if (agentStateKey) {
+			createConversation(agentStateKey, {
+				external_id: `stamp-${stampId}`,
+				title: prompt.slice(0, 100),
+				metadata: {
+					stamp_id: stampId,
+					style,
+					hd: !!hd,
+					user_id: userId ?? null,
+					user_ip: userIp,
+					generation_time_ms: generationTimeMs,
+				},
+				messages: [
+					{
+						role: "user",
+						content: prompt,
+						metadata: { style, hd: !!hd },
+					},
+					{
+						role: "assistant",
+						content: description,
+						metadata: {
+							enhanced_prompt: enhancedPrompt,
+							image_url: imageUrl,
+							stamp_id: stampId,
+						},
+					},
+				],
+			})
+				.then((conv) => {
+					const tags = ["stamp"];
+					if (userId) tags.push(`user:${userId}`);
+					if (style) tags.push(`style:${style}`);
+					return addTags(agentStateKey, conv.id, tags);
+				})
+				.catch((err: unknown) => {
+					console.error("AgentState log failed:", err);
+				});
+		}
 
 		return NextResponse.json({
 			id: stampId,
