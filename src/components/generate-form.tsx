@@ -10,6 +10,7 @@ import {
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
+import { ImageUpload, type ReferenceData } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import {
 	PROMPT_GROUPS,
@@ -54,6 +55,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const { isSignedIn } = useAuth();
 	const clerk = useClerk();
 	const [hd, setHd] = useState(false);
+	const [reference, setReference] = useState<ReferenceData | null>(null);
 
 	// Reset HD when user signs out
 	useEffect(() => {
@@ -101,7 +103,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
-		if (!prompt.trim()) return;
+		if (!prompt.trim() && !reference) return;
 
 		setLoading(true);
 		setError(null);
@@ -117,6 +119,10 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					isPublic,
 					hd,
 					timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+					...(reference && {
+						referenceDescription: reference.referenceDescription,
+						referenceImageUrl: reference.referenceImageUrl,
+					}),
 				}),
 			});
 
@@ -148,6 +154,13 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	return (
 		<div className="max-w-2xl mx-auto">
 			<form onSubmit={handleSubmit} className="space-y-4">
+				{/* Reference image upload */}
+				<ImageUpload
+					onDescribed={(data) => setReference(data)}
+					onClear={() => setReference(null)}
+					disabled={loading}
+				/>
+
 				{/* Prompt + auth row */}
 				<div className="relative">
 					<textarea
@@ -162,14 +175,18 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							if (
 								e.key === "Enter" &&
 								e.shiftKey &&
-								prompt.trim() &&
+								(prompt.trim() || reference) &&
 								!loading
 							) {
 								e.preventDefault();
 								handleSubmit(e);
 							}
 						}}
-						placeholder="Describe your stamp..."
+						placeholder={
+							reference
+								? "Add extra instructions (optional)..."
+								: "Describe your stamp..."
+						}
 						maxLength={500}
 						rows={1}
 						className="w-full pl-4 pr-14 py-3 rounded-lg border border-stone-300 bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-400 focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 outline-none transition-all duration-200 resize-none overflow-hidden"
@@ -310,7 +327,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					</div>
 					<button
 						type="submit"
-						disabled={loading || !prompt.trim()}
+						disabled={loading || (!prompt.trim() && !reference)}
 						className="px-6 py-2 bg-stone-900 text-white rounded-lg text-sm font-medium hover:bg-stone-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
 					>
 						{loading ? (
@@ -339,6 +356,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 								</svg>
 								Creating...
 							</span>
+						) : reference && !prompt.trim() ? (
+							"Generate from photo"
 						) : hd ? (
 							"Generate HD (5 credits)"
 						) : (

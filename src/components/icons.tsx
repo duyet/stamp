@@ -57,3 +57,22 @@ export function ChevronIcon({ className }: { className?: string }) {
 		</svg>
 	);
 }
+
+export function UploadIcon() {
+	return (
+		<svg {...iconProps} aria-hidden="true">
+			<path d="M7 10V2M4 4.5L7 1.5 10 4.5" />
+			<path d="M2.5 12h9" />
+		</svg>
+	);
+}
+
+export function ImageIcon() {
+	return (
+		<svg {...iconProps} aria-hidden="true">
+			<rect x="1.5" y="2.5" width="11" height="9" rx="1.5" />
+			<circle cx="4.5" cy="5.5" r="1" />
+			<path d="M1.5 9.5l3-3 2 2 3-3 3 3" />
+		</svg>
+	);
+}
