@@ -15,7 +15,6 @@ async function enhancePrompt(
 	ai: Ai,
 	userPrompt: string,
 	style: StampStyle,
-	referenceDescription?: string,
 ): Promise<string> {
 	const preset = STAMP_STYLE_PRESETS[style];
 
@@ -35,42 +34,26 @@ Rules:
 - Do NOT add background elements the user did not ask for — follow the style preset faithfully
 - The stamp must fill the entire image — no padding, margin, or decorative frame outside the stamp edges
 - NEVER include any text, words, letters, numbers, or calligraphy
-- Keep the composition centered
-- If a reference image description is provided, use it as the primary subject and composition guide, then apply the user's additional instructions on top
-- PRESERVE key visual elements from the reference (subject, colors, composition, mood)`;
-
-	const userMessage = referenceDescription
-		? `Reference image description: ${referenceDescription}\n\nUser's additional instructions: ${userPrompt || "Generate a stamp based on this reference image."}`
-		: userPrompt;
+- Keep the composition centered`;
 
 	const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
 		messages: [
 			{ role: "system", content: systemPrompt },
-			{ role: "user", content: userMessage },
+			{ role: "user", content: userPrompt },
 		],
 		max_tokens: 300,
 		temperature: 0.7,
 	})) as { response?: string };
 
-	return (
-		response.response?.trim() ||
-		buildFallbackPrompt(userPrompt, style, referenceDescription)
-	);
+	return response.response?.trim() || buildFallbackPrompt(userPrompt, style);
 }
 
 /**
  * Fallback prompt builder if LLM enhancement fails.
  */
-function buildFallbackPrompt(
-	userPrompt: string,
-	style: StampStyle,
-	referenceDescription?: string,
-): string {
+function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
-	const subject = referenceDescription
-		? `Based on reference: ${referenceDescription}.${userPrompt ? ` Additional: ${userPrompt}` : ""}`
-		: `Subject: ${userPrompt}`;
-	return `${preset.prompt}. ${subject}. No text, no words, no letters, no numbers. The stamp fills the entire image with no outer padding or frame.`;
+	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers. The stamp fills the entire image with no outer padding or frame.`;
 }
 
 /**
@@ -116,13 +99,27 @@ Examples:
 }
 
 /**
- * Build multipart form data for Flux 2 models that require it.
- * Returns the FormData object directly (CF Workers AI expects FormData, not a stream).
+ * Build multipart form data for Flux 2 models.
+ * Supports reference images via input_image_0, input_image_1, etc.
+ * All reference images must be ≤512x512 pixels.
  */
-function buildMultipartInput(params: Record<string, string>): FormData {
+async function buildMultipartInput(
+	params: Record<string, string>,
+	referenceImageData?: Uint8Array,
+): Promise<FormData> {
 	const form = new FormData();
 	for (const [key, value] of Object.entries(params)) {
 		form.append(key, value);
+	}
+	// Add reference image if provided (for img2img with FLUX.2)
+	if (referenceImageData) {
+		// Convert Uint8Array to base64 string, then to Blob
+		const base64 = btoa(String.fromCharCode(...referenceImageData));
+		const dataUrl = `data:image/png;base64,${base64}`;
+		// Fetch as Blob to get proper BlobPart type
+		const response = await fetch(dataUrl);
+		const blob = await response.blob();
+		form.append("input_image_0", blob as unknown as File);
 	}
 	return form;
 }
@@ -132,43 +129,43 @@ function buildMultipartInput(params: Record<string, string>): FormData {
  * Two-stage: LLM enhances prompt → image model generates image.
  *
  * @param hd - Use Flux 2 Klein 9B (1024x1024, 4 steps) instead of Flux 1 Schnell.
+ * @param referenceImageData - Reference image for img2img (requires hd=true, must be ≤512x512).
  */
 export async function generateStamp(
 	ai: Ai,
 	userPrompt: string,
 	style: StampStyle = "vintage",
 	hd = false,
-	referenceDescription?: string,
+	referenceImageData?: Uint8Array,
 ): Promise<GenerateStampResult> {
+	// Reference images only supported with FLUX.2 (HD mode)
+	if (referenceImageData && !hd) {
+		throw new Error("Reference images require HD generation (FLUX.2 model).");
+	}
+
 	// Stage 1: Auto-enhance prompt with LLM
 	let enhancedPrompt: string;
 	try {
-		enhancedPrompt = await enhancePrompt(
-			ai,
-			userPrompt,
-			style,
-			referenceDescription,
-		);
+		enhancedPrompt = await enhancePrompt(ai, userPrompt, style);
 	} catch {
-		enhancedPrompt = buildFallbackPrompt(
-			userPrompt,
-			style,
-			referenceDescription,
-		);
+		enhancedPrompt = buildFallbackPrompt(userPrompt, style);
 	}
 
 	// Stage 2: Model selection based on HD flag
 	// Flux 2 models require multipart form data input (FormData passed directly)
 	// Flux 1 Schnell can use plain object input (simpler, no multipart needed)
+	// Reference images (input_image_0) only work with Flux 2
 	let response: { image?: string };
 	if (hd) {
-		// Flux 2 Klein 9B — 1024x1024, fixed 4 steps
-		// Uses multipart form data with FormData passed directly
-		const form = buildMultipartInput({
-			prompt: enhancedPrompt,
-			width: "1024",
-			height: "1024",
-		});
+		// Flux 2 Klein 9B — 1024x1024, fixed 4 steps, supports reference images
+		const form = await buildMultipartInput(
+			{
+				prompt: enhancedPrompt,
+				width: "1024",
+				height: "1024",
+			},
+			referenceImageData,
+		);
 		response = (await ai.run(
 			// @ts-expect-error — model name valid at runtime, FormData works at runtime for multipart.body
 			"@cf/black-forest-labs/flux-2-klein-9b",
@@ -180,8 +177,7 @@ export async function generateStamp(
 			},
 		)) as { image?: string };
 	} else {
-		// Flux 1 Schnell — default, fast, 8 steps
-		// Uses plain object input (simpler, no multipart needed)
+		// Flux 1 Schnell — default, fast, 8 steps (no reference image support)
 		response = (await ai.run("@cf/black-forest-labs/flux-1-schnell", {
 			prompt: enhancedPrompt,
 			steps: 8,

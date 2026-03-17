@@ -323,54 +323,58 @@ describe("POST /api/generate", () => {
 	});
 
 	describe("reference-based generation", () => {
-		it("accepts request with referenceDescription and empty prompt", async () => {
+		it("requires HD mode when reference image is provided", async () => {
+			const res = await POST(
+				req({
+					prompt: "a cat",
+					referenceImageData: btoa("fake-image-data"),
+				}),
+			);
+			expect(res.status).toBe(400);
+			const data = (await res.json()) as Record<string, unknown>;
+			expect(data.error).toContain("Reference images require HD");
+		});
+
+		it("accepts request with reference image and empty prompt when HD is true", async () => {
+			vi.mocked(auth).mockResolvedValue({
+				userId: "user_abc123",
+			} as never);
+
 			const res = await POST(
 				req({
 					prompt: "",
-					referenceDescription: "A cat sitting on a chair",
-					referenceImageUrl: "/api/stamps/ref_abc123/image",
+					hd: true,
+					referenceImageData: btoa("fake-image-data"),
 				}),
 			);
 			expect(res.status).toBe(200);
 		});
 
-		it("passes referenceDescription to generateStamp", async () => {
+		it("passes reference image data to generateStamp", async () => {
+			vi.mocked(auth).mockResolvedValue({
+				userId: "user_abc123",
+			} as never);
+			const base64Image = btoa("fake-image-data");
+
 			await POST(
 				req({
 					prompt: "make it vintage",
-					referenceDescription: "A mountain landscape",
+					hd: true,
+					referenceImageData: base64Image,
 				}),
 			);
+
 			expect(generateStamp).toHaveBeenCalledWith(
 				expect.anything(),
 				"make it vintage",
 				"vintage",
-				false,
-				"A mountain landscape",
+				true,
+				expect.any(Uint8Array),
 			);
 		});
 
-		it("allows empty prompt when referenceDescription is provided", async () => {
-			const res = await POST(
-				req({
-					referenceDescription: "A golden retriever on a beach",
-				}),
-			);
-			expect(res.status).toBe(200);
-		});
-
-		it("still requires prompt when no referenceDescription", async () => {
+		it("still requires prompt when no reference image", async () => {
 			const res = await POST(req({ prompt: "" }));
-			expect(res.status).toBe(400);
-		});
-
-		it("validates prompt length even with reference", async () => {
-			const res = await POST(
-				req({
-					prompt: "x".repeat(501),
-					referenceDescription: "A cat",
-				}),
-			);
 			expect(res.status).toBe(400);
 		});
 	});

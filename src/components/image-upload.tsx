@@ -5,83 +5,106 @@ import { useRef, useState } from "react";
 import { CloseIcon, UploadIcon } from "@/components/icons";
 
 export interface ReferenceData {
-	referenceId: string;
-	referenceImageUrl: string;
-	referenceDescription: string;
+	referenceImageData: string; // base64-encoded PNG
 }
 
 interface ImageUploadProps {
-	onDescribed: (data: ReferenceData) => void;
-	onClear: () => void;
+	onSelected: (data: ReferenceData | null) => void;
 	disabled?: boolean;
 }
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_DIMENSION = 512; // FLUX.2 requires ≤512x512
 
-export function ImageUpload({
-	onDescribed,
-	onClear,
-	disabled,
-}: ImageUploadProps) {
-	const [status, setStatus] = useState<"idle" | "uploading" | "done" | "error">(
-		"idle",
-	);
+export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 	const [preview, setPreview] = useState<string | null>(null);
-	const [description, setDescription] = useState<string | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 
+	async function resizeImage(file: File): Promise<Blob> {
+		return new Promise((resolve, reject) => {
+			const img = document.createElement("img");
+			img.onload = () => {
+				// Calculate scale to fit within MAX_DIMENSION
+				const scale = Math.min(
+					1,
+					MAX_DIMENSION / img.width,
+					MAX_DIMENSION / img.height,
+				);
+				const width = Math.floor(img.width * scale);
+				const height = Math.floor(img.height * scale);
+
+				// Create canvas and resize
+				const canvas = document.createElement("canvas");
+				canvas.width = width;
+				canvas.height = height;
+				const ctx = canvas.getContext("2d");
+
+				if (!ctx) {
+					reject(new Error("Could not get canvas context"));
+					return;
+				}
+
+				// Draw resized image
+				ctx.drawImage(img, 0, 0, width, height);
+
+				// Convert to blob as PNG
+				canvas.toBlob(
+					(blob) => {
+						if (blob) resolve(blob);
+						else reject(new Error("Canvas to blob failed"));
+					},
+					"image/png",
+					0.9,
+				);
+			};
+			img.onerror = () => reject(new Error("Failed to load image"));
+			img.src = URL.createObjectURL(file);
+		});
+	}
+
 	async function handleFile(file: File) {
 		if (!ACCEPTED_TYPES.includes(file.type)) {
-			setStatus("error");
 			setErrorMsg("Please upload a JPG, PNG, or WebP image.");
 			return;
 		}
 		if (file.size > MAX_SIZE) {
-			setStatus("error");
 			setErrorMsg("Image must be under 5MB.");
 			return;
 		}
 
 		setPreview(URL.createObjectURL(file));
-		setStatus("uploading");
 		setErrorMsg(null);
 
 		try {
-			const formData = new FormData();
-			formData.append("image", file);
+			// Resize image to ≤512x512 for FLUX.2
+			const resizedBlob = await resizeImage(file);
 
-			const res = await fetch("/api/upload-reference", {
-				method: "POST",
-				body: formData,
+			// Convert to base64
+			const base64 = await new Promise<string>((resolve) => {
+				const reader = new FileReader();
+				reader.onload = () => {
+					const result = reader.result as string;
+					// Remove data URL prefix
+					resolve(result.split(",")[1]);
+				};
+				reader.readAsDataURL(resizedBlob);
 			});
 
-			const data = (await res.json()) as ReferenceData & { error?: string };
-
-			if (!res.ok) {
-				setStatus("error");
-				setErrorMsg(data.error || "Upload failed. Please try again.");
-				return;
-			}
-
-			setDescription(data.referenceDescription);
-			setStatus("done");
-			onDescribed(data);
-		} catch {
-			setStatus("error");
-			setErrorMsg("Upload failed. Please try again.");
+			onSelected({ referenceImageData: base64 });
+		} catch (err) {
+			setErrorMsg("Failed to process image. Please try another.");
+			console.error("Image resize error:", err);
 		}
 	}
 
 	function handleClear() {
 		if (preview) URL.revokeObjectURL(preview);
-		setStatus("idle");
 		setPreview(null);
-		setDescription(null);
 		setErrorMsg(null);
+		onSelected(null);
 		if (inputRef.current) inputRef.current.value = "";
-		onClear();
 	}
 
 	function handleDrop(e: React.DragEvent) {
@@ -94,9 +117,9 @@ export function ImageUpload({
 		e.preventDefault();
 	}
 
-	if (status === "idle" || status === "error") {
-		return (
-			<div>
+	return (
+		<div>
+			{!preview ? (
 				<button
 					type="button"
 					onDrop={handleDrop}
@@ -128,94 +151,43 @@ export function ImageUpload({
 						disabled={disabled}
 					/>
 				</button>
-				{status === "error" && errorMsg && (
-					<div className="mt-1.5 flex items-center justify-between">
-						<p className="text-xs text-red-600">{errorMsg}</p>
-						<button
-							type="button"
-							onClick={() => {
-								setStatus("idle");
-								setErrorMsg(null);
-							}}
-							className="text-xs text-stone-500 hover:text-stone-700 transition-colors"
-						>
-							Try again
-						</button>
-					</div>
-				)}
-			</div>
-		);
-	}
-
-	if (status === "uploading") {
-		return (
-			<div className="flex items-center gap-3 p-3 border border-stone-200 rounded-lg bg-stone-50">
-				{preview && (
-					<div className="w-12 h-12 rounded overflow-hidden shrink-0">
+			) : (
+				<div className="flex items-center gap-3 p-3 border border-stone-200 rounded-lg bg-stone-50">
+					<div className="w-16 h-16 rounded overflow-hidden shrink-0">
 						<Image
 							src={preview}
-							alt="Uploading reference"
-							width={48}
-							height={48}
+							alt="Reference photo"
+							width={64}
+							height={64}
 							className="object-cover w-full h-full"
 							unoptimized
 						/>
 					</div>
-				)}
-				<div className="flex items-center gap-2 text-xs text-stone-500">
-					<svg
-						className="animate-spin h-3.5 w-3.5"
-						viewBox="0 0 24 24"
-						fill="none"
-						aria-hidden="true"
+					<span className="text-xs text-stone-600">
+						Reference photo ready (HD required)
+					</span>
+					<button
+						type="button"
+						onClick={handleClear}
+						className="shrink-0 p-1 text-stone-400 hover:text-stone-600 transition-colors"
+						disabled={disabled}
 					>
-						<circle
-							className="opacity-25"
-							cx="12"
-							cy="12"
-							r="10"
-							stroke="currentColor"
-							strokeWidth="4"
-						/>
-						<path
-							className="opacity-75"
-							fill="currentColor"
-							d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-						/>
-					</svg>
-					Analyzing your photo...
-				</div>
-			</div>
-		);
-	}
-
-	return (
-		<div className="flex items-start gap-3 p-3 border border-stone-200 rounded-lg bg-stone-50">
-			{preview && (
-				<div className="w-16 h-16 rounded overflow-hidden shrink-0">
-					<Image
-						src={preview}
-						alt="Reference photo"
-						width={64}
-						height={64}
-						className="object-cover w-full h-full"
-						unoptimized
-					/>
+						<CloseIcon />
+					</button>
 				</div>
 			)}
-			<div className="flex-1 min-w-0">
-				<p className="text-xs text-stone-600 leading-relaxed line-clamp-3">
-					{description}
-				</p>
-			</div>
-			<button
-				type="button"
-				onClick={handleClear}
-				className="shrink-0 p-1 text-stone-400 hover:text-stone-600 transition-colors"
-				disabled={disabled}
-			>
-				<CloseIcon />
-			</button>
+			{errorMsg && (
+				<div className="mt-1.5 flex items-center justify-between">
+					<p className="text-xs text-red-600">{errorMsg}</p>
+					<button
+						type="button"
+						onClick={() => setErrorMsg(null)}
+						className="text-xs text-stone-500 hover:text-stone-700 transition-colors"
+					>
+						Try again
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }

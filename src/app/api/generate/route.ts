@@ -40,23 +40,29 @@ export async function POST(request: NextRequest) {
 			isPublic = true,
 			hd = false,
 			timezone,
-			referenceDescription,
-			referenceImageUrl,
+			referenceImageData, // base64 string from client
 		} = body as {
 			prompt: string;
 			style?: StampStyle;
 			isPublic?: boolean;
 			hd?: boolean;
 			timezone?: string;
-			referenceDescription?: string;
-			referenceImageUrl?: string;
+			referenceImageData?: string; // base64-encoded PNG
 		};
 
 		// Validate input before deducting credits
 		const hasReference =
-			referenceDescription &&
-			typeof referenceDescription === "string" &&
-			referenceDescription.trim().length > 0;
+			referenceImageData &&
+			typeof referenceImageData === "string" &&
+			referenceImageData.trim().length > 0;
+
+		// Reference images require HD mode (FLUX.2)
+		if (hasReference && !hd) {
+			return NextResponse.json(
+				{ error: "Reference images require HD generation." },
+				{ status: 400 },
+			);
+		}
 
 		if (
 			!hasReference &&
@@ -123,14 +129,22 @@ export async function POST(request: NextRequest) {
 		// Time the generation (LLM enhancement + image generation)
 		const genStart = Date.now();
 
+		// Convert base64 reference image to Uint8Array if provided
+		let referenceImageBytes: Uint8Array | undefined;
+		if (referenceImageData) {
+			// Remove data URL prefix if present
+			const base64Data = referenceImageData.includes(",")
+				? referenceImageData.split(",")[1]
+				: referenceImageData;
+			const binaryString = atob(base64Data);
+			referenceImageBytes = new Uint8Array(binaryString.length);
+			for (let i = 0; i < binaryString.length; i++) {
+				referenceImageBytes[i] = binaryString.charCodeAt(i);
+			}
+		}
+
 		const { imageData, mimeType, enhancedPrompt, description } =
-			await generateStamp(
-				ai,
-				prompt || "",
-				style,
-				hd,
-				referenceDescription?.trim(),
-			);
+			await generateStamp(ai, prompt || "", style, hd, referenceImageBytes);
 
 		const generationTimeMs = Date.now() - genStart;
 
@@ -162,7 +176,6 @@ export async function POST(request: NextRequest) {
 			userTimezone: timezone,
 			userAgent: request.headers.get("user-agent") ?? undefined,
 			referrer: request.headers.get("referer") ?? undefined,
-			referenceImageUrl: referenceImageUrl ?? null,
 		});
 
 		// Fire-and-forget event tracking
@@ -176,7 +189,7 @@ export async function POST(request: NextRequest) {
 					prompt_length: prompt?.length ?? 0,
 					stamp_id: stampId,
 					generation_time_ms: generationTimeMs,
-					has_reference: !!referenceDescription,
+					has_reference: !!referenceImageData,
 				}),
 				userIp,
 				createdAt: Date.now(),

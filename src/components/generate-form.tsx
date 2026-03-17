@@ -15,7 +15,7 @@ import {
 	ClipboardIcon,
 	DownloadIcon,
 } from "@/components/icons";
-import { ImageUpload, type ReferenceData } from "@/components/image-upload";
+import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import {
 	PROMPT_GROUPS,
@@ -60,7 +60,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const { isSignedIn } = useAuth();
 	const clerk = useClerk();
 	const [hd, setHd] = useState(false);
-	const [reference, setReference] = useState<ReferenceData | null>(null);
+	const [reference, setReference] = useState<string | null>(null); // base64 image data
 
 	// Reset HD when user signs out
 	useEffect(() => {
@@ -125,8 +125,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					hd,
 					timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 					...(reference && {
-						referenceDescription: reference.referenceDescription,
-						referenceImageUrl: reference.referenceImageUrl,
+						referenceImageData: reference,
 					}),
 				}),
 			});
@@ -161,8 +160,13 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			<form onSubmit={handleSubmit} className="space-y-4">
 				{/* Reference image upload */}
 				<ImageUpload
-					onDescribed={(data) => setReference(data)}
-					onClear={() => setReference(null)}
+					onSelected={(data) => {
+						setReference(data ? data.referenceImageData : null);
+						// Auto-enable HD when reference is selected
+						if (data && !hd) {
+							setHd(true);
+						}
+					}}
 					disabled={loading}
 				/>
 
