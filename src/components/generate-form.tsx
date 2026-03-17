@@ -91,7 +91,13 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			const res = await fetch("/api/generate", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ prompt: prompt.trim(), style, isPublic, hd }),
+				body: JSON.stringify({
+					prompt: prompt.trim(),
+					style,
+					isPublic,
+					hd,
+					timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+				}),
 			});
 
 			const data = (await res.json()) as {

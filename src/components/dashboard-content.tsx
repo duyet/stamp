@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { StampGrid } from "@/components/stamp-grid";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { DashboardLocations } from "@/components/dashboard-locations";
+import { DashboardMap } from "@/components/dashboard-map";
+import { StyleShowcase } from "@/components/dashboard-style-showcase";
+import { DashboardTimezoneTimeline } from "@/components/dashboard-timezone-timeline";
+import { StampGrid } from "@/components/stamp-grid";
+import type { LocationStats, MapData, TimezoneStats } from "@/types/analytics";
 
 interface StyleCount {
 	style: string;
@@ -24,6 +29,15 @@ interface PageViewCount {
 	count: number;
 }
 
+interface LocationCity {
+	city: string;
+	count: number;
+}
+
+interface LocationWithCities extends LocationStats {
+	topCities: LocationCity[];
+}
+
 interface Analytics {
 	totalStamps: number;
 	stampsToday: number;
@@ -37,6 +51,9 @@ interface Analytics {
 	totalShares: number;
 	eventBreakdown: EventCount[];
 	pageViewBreakdown: PageViewCount[];
+	locations: LocationWithCities[];
+	timezones: TimezoneStats[];
+	mapData: MapData[];
 }
 
 function formatDate(ts: number): string {
@@ -52,14 +69,77 @@ function StatCard({ label, value }: { label: string; value: number }) {
 			<p className="text-xs text-stone-600 uppercase tracking-wide mb-2">
 				{label}
 			</p>
-			<p className="text-3xl font-bold text-stone-900">{value}</p>
+			<p className="text-3xl font-bold text-stone-900">
+				{value.toLocaleString()}
+			</p>
 		</div>
+	);
+}
+
+function HorizontalBarChart({
+	title,
+	items,
+	labelWidth = "w-20",
+	formatLabel,
+}: {
+	title: string;
+	items: Array<{ label: string; count: number }>;
+	labelWidth?: string;
+	formatLabel?: (val: string) => string;
+}) {
+	if (items.length === 0) return null;
+	const maxCount = Math.max(...items.map((item) => item.count), 1);
+
+	return (
+		<section>
+			<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
+				{title}
+			</h2>
+			<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
+				{items.map((item) => {
+					const label = item.label;
+					const count = item.count;
+					return (
+						<div key={label} className="flex items-center gap-3">
+							<span
+								className={`${labelWidth} text-sm text-stone-700 capitalize shrink-0 truncate`}
+							>
+								{formatLabel ? formatLabel(label) : label}
+							</span>
+							<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
+								<div
+									className="h-full bg-stone-800 rounded-full transition-all"
+									style={{
+										width: `${Math.round((count / maxCount) * 100)}%`,
+									}}
+								/>
+							</div>
+							<span className="w-10 text-sm text-stone-600 text-right shrink-0">
+								{count}
+							</span>
+						</div>
+					);
+				})}
+			</div>
+		</section>
 	);
 }
 
 export function DashboardContent() {
 	const [data, setData] = useState<Analytics | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [styleStamps, setStyleStamps] = useState<
+		Array<{
+			style: string;
+			count: number;
+			featuredStamp?: {
+				id: string;
+				imageUrl: string;
+				prompt: string;
+				description: string | null;
+			};
+		}>
+	>([]);
 
 	useEffect(() => {
 		async function load() {
@@ -71,6 +151,36 @@ export function DashboardContent() {
 				}
 				const d = (await r.json()) as Analytics;
 				setData(d);
+
+				// Fetch one featured stamp per style for the showcase
+				if (d.popularStyles.length > 0) {
+					const styleData = await Promise.all(
+						d.popularStyles.slice(0, 6).map(async (s) => {
+							try {
+								const stampRes = await fetch(
+									`/api/stamps?style=${encodeURIComponent(s.style)}&limit=1`,
+								);
+								if (stampRes.ok) {
+									const stamps = (await stampRes.json()) as Array<{
+										id: string;
+										imageUrl: string;
+										prompt: string;
+										description: string | null;
+									}>;
+									return {
+										style: s.style,
+										count: s.count,
+										featuredStamp: stamps[0] ?? undefined,
+									};
+								}
+							} catch {
+								/* ignore */
+							}
+							return { style: s.style, count: s.count };
+						}),
+					);
+					setStyleStamps(styleData);
+				}
 			} catch (err) {
 				console.error("Failed to fetch analytics:", err);
 				setError("Failed to load analytics");
@@ -87,130 +197,80 @@ export function DashboardContent() {
 
 	if (!data) {
 		return (
-			<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-				{Array.from({ length: 4 }, (_, i) => `sk-${i}`).map((id) => (
-					<div
-						key={id}
-						className="h-24 rounded-xl bg-stone-100 animate-pulse"
-					/>
-				))}
+			<div className="space-y-8">
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+					{Array.from({ length: 4 }, (_, i) => `sk-${i}`).map((id) => (
+						<div
+							key={id}
+							className="h-24 rounded-xl bg-stone-100 animate-pulse"
+						/>
+					))}
+				</div>
+				<div className="h-64 rounded-xl bg-stone-100 animate-pulse" />
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div className="h-48 rounded-xl bg-stone-100 animate-pulse" />
+					<div className="h-48 rounded-xl bg-stone-100 animate-pulse" />
+				</div>
 			</div>
 		);
 	}
 
-	const maxStyleCount = Math.max(...data.popularStyles.map((s) => s.count), 1);
 	const maxDayCount = Math.max(...data.dailyTrend.map((d) => d.count), 1);
-	const maxEventCount = Math.max(...data.eventBreakdown.map((e) => e.count), 1);
-	const maxPageViewCount = Math.max(
-		...data.pageViewBreakdown.map((p) => p.count),
-		1,
-	);
 
 	return (
-		<>
-			<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-				<StatCard label="Total stamps" value={data.totalStamps} />
-				<StatCard label="Today" value={data.stampsToday} />
-				<StatCard label="This week" value={data.stampsThisWeek} />
-				<StatCard label="This month" value={data.stampsThisMonth} />
-			</div>
+		<div className="space-y-12">
+			{/* Overview Stats */}
+			<section>
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+					<StatCard label="Total stamps" value={data.totalStamps} />
+					<StatCard label="Today" value={data.stampsToday} />
+					<StatCard label="This week" value={data.stampsThisWeek} />
+					<StatCard label="This month" value={data.stampsThisMonth} />
+				</div>
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+					<StatCard label="Page views" value={data.totalPageViews} />
+					<StatCard label="Unique visitors" value={data.uniqueVisitors} />
+					<StatCard label="Downloads" value={data.totalDownloads} />
+					<StatCard label="Shares & copies" value={data.totalShares} />
+				</div>
+			</section>
 
-			<div className="grid grid-cols-2 gap-4 mb-8">
-				<StatCard label="Page views" value={data.totalPageViews} />
-				<StatCard label="Unique visitors" value={data.uniqueVisitors} />
-			</div>
-
-			<div className="grid grid-cols-2 gap-4 mb-10">
-				<StatCard label="Downloads" value={data.totalDownloads} />
-				<StatCard label="Shares & copies" value={data.totalShares} />
-			</div>
-
-			{data.popularStyles.length > 0 && (
-				<section className="mb-8">
-					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-						Popular styles
-					</h2>
-					<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
-						{data.popularStyles.map((s) => (
-							<div key={s.style} className="flex items-center gap-3">
-								<span className="w-20 text-sm text-stone-700 capitalize shrink-0">
-									{s.style}
-								</span>
-								<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
-									<div
-										className="h-full bg-stone-800 rounded-full transition-all"
-										style={{
-											width: `${Math.round((s.count / maxStyleCount) * 100)}%`,
-										}}
-									/>
-								</div>
-								<span className="w-10 text-sm text-stone-600 text-right shrink-0">
-									{s.count}
-								</span>
-							</div>
-						))}
-					</div>
+			{/* World Map */}
+			{data.mapData.length > 0 && (
+				<section>
+					<DashboardMap data={data.mapData} />
 				</section>
 			)}
 
-			{data.eventBreakdown.length > 0 && (
-				<section className="mb-8">
+			{/* Location & Timezone side by side */}
+			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				<div>
 					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-						Event breakdown
+						Top locations
 					</h2>
-					<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
-						{data.eventBreakdown.map((e) => (
-							<div key={e.event} className="flex items-center gap-3">
-								<span className="w-24 text-sm text-stone-700 shrink-0">
-									{e.event.replace(/_/g, " ")}
-								</span>
-								<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
-									<div
-										className="h-full bg-stone-800 rounded-full transition-all"
-										style={{
-											width: `${Math.round((e.count / maxEventCount) * 100)}%`,
-										}}
-									/>
-								</div>
-								<span className="w-10 text-sm text-stone-600 text-right shrink-0">
-									{e.count}
-								</span>
-							</div>
-						))}
-					</div>
+					<DashboardLocations data={data.locations} />
+				</div>
+				<div>
+					<DashboardTimezoneTimeline data={data.timezones} />
+				</div>
+			</section>
+
+			{/* Style Showcase */}
+			{styleStamps.length > 0 && (
+				<section>
+					<h2
+						className="text-2xl font-semibold text-stamp-navy mb-6"
+						style={{ fontFamily: "var(--font-stamp)" }}
+					>
+						Style Showcase
+					</h2>
+					<StyleShowcase styles={styleStamps} />
 				</section>
 			)}
 
-			{data.pageViewBreakdown.length > 0 && (
-				<section className="mb-8">
-					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-						Top pages
-					</h2>
-					<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
-						{data.pageViewBreakdown.map((p) => (
-							<div key={p.path} className="flex items-center gap-3">
-								<span className="w-32 text-sm text-stone-700 truncate shrink-0">
-									{p.path}
-								</span>
-								<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
-									<div
-										className="h-full bg-stone-800 rounded-full transition-all"
-										style={{
-											width: `${Math.round((p.count / maxPageViewCount) * 100)}%`,
-										}}
-									/>
-								</div>
-								<span className="w-10 text-sm text-stone-600 text-right shrink-0">
-									{p.count}
-								</span>
-							</div>
-						))}
-					</div>
-				</section>
-			)}
-
+			{/* Daily Trend Chart */}
 			{data.dailyTrend.length > 0 && (
-				<section className="mb-10">
+				<section>
 					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
 						Generations per day (last 30 days)
 					</h2>
@@ -247,12 +307,43 @@ export function DashboardContent() {
 				</section>
 			)}
 
+			{/* Detailed Charts Grid */}
+			<section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+				<HorizontalBarChart
+					title="Popular styles"
+					items={data.popularStyles.map((s) => ({
+						label: s.style,
+						count: s.count,
+					}))}
+				/>
+				<HorizontalBarChart
+					title="Event breakdown"
+					items={data.eventBreakdown.map((e) => ({
+						label: e.event,
+						count: e.count,
+					}))}
+					labelWidth="w-24"
+					formatLabel={(v) => v.replace(/_/g, " ")}
+				/>
+			</section>
+
+			{data.pageViewBreakdown.length > 0 && (
+				<HorizontalBarChart
+					title="Top pages"
+					items={data.pageViewBreakdown.map((p) => ({
+						label: p.path,
+						count: p.count,
+					}))}
+					labelWidth="w-32"
+				/>
+			)}
+
 			{data.popularStyles.length === 0 && data.dailyTrend.length === 0 && (
 				<div className="text-center text-stone-600 py-16 text-sm">
 					No data yet. Generate some stamps first.
 				</div>
 			)}
-		</>
+		</div>
 	);
 }
 

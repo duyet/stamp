@@ -23,17 +23,29 @@ export async function POST(request: NextRequest) {
 		const { userId } = await auth();
 		const userIp = getClientIp(request.headers);
 
+		// Extract location data from Cloudflare headers
+		const locationCountry = request.headers.get("cf-ipcountry") ?? undefined;
+		const locationCity = request.headers.get("cf-ipcity") ?? undefined;
+		const locationLat = request.headers.get("cf-iplatitude")
+			? Number(request.headers.get("cf-iplatitude"))
+			: undefined;
+		const locationLng = request.headers.get("cf-iplongitude")
+			? Number(request.headers.get("cf-iplongitude"))
+			: undefined;
+
 		const body = await request.json();
 		const {
 			prompt,
 			style = "vintage",
 			isPublic = true,
 			hd = false,
+			timezone,
 		} = body as {
 			prompt: string;
 			style?: StampStyle;
 			isPublic?: boolean;
 			hd?: boolean;
+			timezone?: string;
 		};
 
 		// Validate input before deducting credits
@@ -119,6 +131,13 @@ export async function POST(request: NextRequest) {
 			isPublic,
 			userIp,
 			userId: userId ?? null,
+			locationCity,
+			locationCountry,
+			locationLat,
+			locationLng,
+			userTimezone: timezone,
+			userAgent: request.headers.get("user-agent") ?? undefined,
+			referrer: request.headers.get("referer") ?? undefined,
 		});
 
 		// Fire-and-forget event tracking
