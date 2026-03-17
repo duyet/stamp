@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { memo } from "react";
 import { HeartIcon } from "@/components/icons";
 import type { Stamp } from "@/db/schema";
 import { useFavorites } from "@/hooks/use-favorites";
@@ -10,7 +11,7 @@ interface StampCardProps {
 	onClick?: () => void;
 }
 
-export function StampCard({ stamp, onClick }: StampCardProps) {
+function StampCard({ stamp, onClick }: StampCardProps) {
 	const { isFavorite, toggleFavorite } = useFavorites();
 
 	const content = (
@@ -77,3 +78,12 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 		</div>
 	);
 }
+
+// Memoize StampCard to prevent unnecessary re-renders when favorites change
+export const StampCardMemo = memo(StampCard, (prev, next) => {
+	return (
+		prev.stamp.id === next.stamp.id &&
+		prev.stamp.imageUrl === next.stamp.imageUrl &&
+		prev.stamp.isPublic === next.stamp.isPublic
+	);
+});
