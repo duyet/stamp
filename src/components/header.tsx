@@ -5,8 +5,8 @@ import Link from "next/link";
 
 export function Header() {
 	return (
-		<header className="bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-			<nav className="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+		<header className="bg-white/80 backdrop-blur-sm sticky top-0 z-50 border-b border-stone-100">
+			<nav className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
 				<Link
 					href="/"
 					className="text-base font-medium text-stone-900 shrink-0"

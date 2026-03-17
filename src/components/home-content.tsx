@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
-import { StampFan } from "@/components/stamp-fan";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
@@ -46,39 +45,26 @@ export function HomeContent() {
 
 	return (
 		<div className="max-w-5xl mx-auto px-6">
-			{/* Hero */}
-			<section className="pt-16 pb-20 text-center">
-				<div className="flex justify-center mb-10">
-					<StampFan
-						images={recentStamps.slice(0, 5).map((s) => s.imageUrl)}
-						onClickStamp={(idx) => {
-							const stamp = recentStamps[idx];
-							if (stamp) setSelectedStamp(stamp);
-						}}
-					/>
-				</div>
-
-				<h1
-					className="text-4xl md:text-5xl font-bold text-stamp-navy tracking-tight"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
-					Stamps, builders
+			{/* Hero — compact to keep form above the fold */}
+			<section className="pt-6 pb-4 text-center">
+				<h1 className="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">
+					Create your stamp
 				</h1>
+				<p className="text-sm text-stone-500 mt-1">
+					Describe anything and get a unique AI-generated postage stamp
+				</p>
 			</section>
 
 			{/* Generate form */}
-			<section id="generate" className="pb-16 scroll-mt-8">
+			<section id="generate" className="pb-10 scroll-mt-8">
 				<GenerateForm onGenerated={handleGenerated} />
 			</section>
 
 			{/* Latest stamps — full width breakout */}
 			{recentStamps.length > 0 && (
-				<section className="mb-16 relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6">
-					<div className="flex items-baseline justify-between mb-8 max-w-5xl mx-auto">
-						<h2
-							className="text-2xl font-semibold text-stamp-navy"
-							style={{ fontFamily: "var(--font-stamp)" }}
-						>
+				<section className="mb-12 relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6">
+					<div className="flex items-baseline justify-between mb-6 max-w-5xl mx-auto">
+						<h2 className="text-lg font-semibold text-stone-900">
 							Latest stamps
 						</h2>
 						<Link
@@ -115,11 +101,8 @@ export function HomeContent() {
 			)}
 
 			{/* Free tier note */}
-			<section className="py-16 text-center">
-				<p
-					className="text-sm text-stone-600"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
+			<section className="py-10 text-center">
+				<p className="text-xs text-stone-500">
 					20 free stamps per day. Sign in for 100.
 				</p>
 			</section>
