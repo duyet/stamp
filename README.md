@@ -27,7 +27,7 @@ All models run on Cloudflare Workers AI (free tier, no API keys needed).
 |-------|---------|
 | `@cf/meta/llama-3.1-8b-instruct` | Prompt enhancement + description generation |
 | `@cf/black-forest-labs/flux-1-schnell` | Standard image generation (512x512, 8 steps) |
-| `@cf/black-forest-labs/flux-2-klein-9b` | HD image generation (1024x1024, 25 steps) |
+| `@cf/black-forest-labs/flux-2-klein-9b` | HD image generation (1024x1024, 4 steps) |
 
 ## Tech Stack
 
@@ -36,6 +36,7 @@ All models run on Cloudflare Workers AI (free tier, no API keys needed).
 - **Database**: Cloudflare D1 (SQLite) + Drizzle ORM
 - **Storage**: Cloudflare R2 (stamp images)
 - **Auth**: Clerk
+- **Conversation History**: [AgentState](https://agentstate.app) — persistent AI conversation storage
 - **Styling**: Tailwind CSS v4 + Geist font
 - **Linting**: Biome
 - **Testing**: Vitest (415 tests)
