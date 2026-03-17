@@ -234,7 +234,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				</div>
 
 				{/* Style selector */}
-				<div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+				<div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 p-2">
 					{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
 						<button
 							key={key}
