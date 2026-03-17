@@ -57,8 +57,11 @@ export function HomeContent() {
 						}}
 					/>
 				</div>
-				<h1 className="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">
-					Create your stamp
+				<h1
+					className="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight"
+					style={{ fontFamily: "var(--font-stamp)" }}
+				>
+					Stamps, builders
 				</h1>
 				<p className="text-sm text-stone-500 mt-1">
 					Describe anything and get a unique AI-generated postage stamp
