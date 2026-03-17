@@ -33,6 +33,7 @@ export function GenerationOptions({
 						checked={isPublic}
 						onChange={(e) => onPublicChange(e.target.checked)}
 						className="w-3.5 h-3.5 rounded border-stone-300 text-stone-900 focus:ring-stone-900/20"
+						aria-label="Make stamp public"
 					/>
 					<span className="text-xs text-stone-500 group-hover:text-stone-700 transition-colors">
 						Public
@@ -51,6 +52,7 @@ export function GenerationOptions({
 							onHdChange(e.target.checked);
 						}}
 						className="w-3.5 h-3.5 rounded border-stone-300 text-stone-900 focus:ring-stone-900/20"
+						aria-label="Generate high definition stamp"
 					/>
 					<span className="text-xs text-stone-500 group-hover:text-stone-700 transition-colors">
 						HD

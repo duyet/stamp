@@ -63,6 +63,7 @@ export function PromptInput({
 					maxLength={500}
 					rows={1}
 					disabled={disabled}
+					aria-label="Describe your stamp"
 					className="w-full pl-4 pr-14 py-3 rounded-lg border border-stone-300 bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-400 focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50"
 				/>
 				<div className="absolute right-3 top-3">

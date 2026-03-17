@@ -103,6 +103,7 @@ export function HomeContent() {
 										fill
 										sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 16vw, 10vw"
 										className="object-cover"
+										loading="lazy"
 									/>
 								</div>
 								<p className="px-3 py-2.5 text-xs text-stone-600 truncate">

@@ -186,7 +186,11 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 			{/* Error */}
 			{error && (
-				<div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs">
+				<div
+					role="alert"
+					aria-live="polite"
+					className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-xs"
+				>
 					<p className="text-red-700 font-medium">{error}</p>
 					{isRateLimited && !isSignedIn && (
 						<div className="mt-2 pt-2 border-t border-red-100 flex items-center justify-between">

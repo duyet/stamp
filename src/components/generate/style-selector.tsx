@@ -21,6 +21,8 @@ export function StyleSelector({
 					type="button"
 					onClick={() => onStyleChange(key as StampStyle)}
 					className="shrink-0 cursor-pointer transition"
+					aria-label={`Select ${preset.name} style`}
+					aria-pressed={currentStyle === key}
 				>
 					<div
 						className={`w-12 h-12 rounded transition-all duration-200 ${
