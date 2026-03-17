@@ -76,3 +76,11 @@ export function ImageIcon() {
 		</svg>
 	);
 }
+
+export function AvatarIcon() {
+	return (
+		<svg {...iconProps} aria-hidden="true">
+			<path d="M7 1a3.5 3.5 0 100 7 3.5 3.5 0 000-7zM3.5 9.5a3.5 3.5 0 00-3.5 3.5v1h14v-1a3.5 3.5 0 00-3.5-3.5h-7z" />
+		</svg>
+	);
+}

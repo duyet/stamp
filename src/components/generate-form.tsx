@@ -9,7 +9,12 @@ import {
 } from "@clerk/nextjs";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { CheckIcon, ClipboardIcon, DownloadIcon } from "@/components/icons";
+import {
+	AvatarIcon,
+	CheckIcon,
+	ClipboardIcon,
+	DownloadIcon,
+} from "@/components/icons";
 import { ImageUpload, type ReferenceData } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import {
@@ -197,9 +202,10 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							<SignInButton mode="modal">
 								<button
 									type="button"
-									className="text-xs text-stone-400 hover:text-stone-900 transition-colors"
+									className="text-stone-300 hover:text-stone-500 transition-colors"
+									aria-label="Sign in"
 								>
-									Sign in
+									<AvatarIcon />
 								</button>
 							</SignInButton>
 						</Show>
