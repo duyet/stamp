@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { DashboardContent } from "@/components/dashboard-content";
+import {
+	DashboardContent,
+	RecentStampsSection,
+} from "@/components/dashboard-content";
 
 export const metadata: Metadata = {
 	title: "Dashboard — stamp.builders",
@@ -20,6 +23,7 @@ export default function DashboardPage() {
 				</p>
 			</div>
 			<DashboardContent />
+			<RecentStampsSection />
 		</div>
 	);
 }

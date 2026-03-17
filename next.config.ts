@@ -1,4 +1,3 @@
-// biome-ignore lint/correctness/noNodejsModules: required for cloudflare dev
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 if (process.env.CI !== "true") {

@@ -150,15 +150,20 @@ export async function generateStamp(
 		response = (await ai.run(
 			// @ts-expect-error — model name valid at runtime, FormData works at runtime for multipart.body
 			"@cf/black-forest-labs/flux-2-klein-9b",
-			{ multipart: { body: form as unknown as ReadableStream, contentType: "multipart/form-data" } },
+			{
+				multipart: {
+					body: form as unknown as ReadableStream,
+					contentType: "multipart/form-data",
+				},
+			},
 		)) as { image?: string };
 	} else {
 		// Flux 1 Schnell — default, fast, 8 steps
 		// Uses plain object input (simpler, no multipart needed)
-		response = (await ai.run(
-			"@cf/black-forest-labs/flux-1-schnell",
-			{ prompt: enhancedPrompt, steps: 8 },
-		)) as { image?: string };
+		response = (await ai.run("@cf/black-forest-labs/flux-1-schnell", {
+			prompt: enhancedPrompt,
+			steps: 8,
+		})) as { image?: string };
 	}
 
 	if (!response.image) {

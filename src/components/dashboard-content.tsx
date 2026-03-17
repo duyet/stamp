@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { StampGrid } from "@/components/stamp-grid";
+import Link from "next/link";
 
 interface StyleCount {
 	style: string;
@@ -251,5 +253,27 @@ export function DashboardContent() {
 				</div>
 			)}
 		</>
+	);
+}
+
+export function RecentStampsSection() {
+	return (
+		<section className="py-12">
+			<div className="flex items-baseline justify-between mb-8">
+				<h2
+					className="text-2xl font-semibold text-stamp-navy"
+					style={{ fontFamily: "var(--font-stamp)" }}
+				>
+					Recent Stamps
+				</h2>
+				<Link
+					href="/collections"
+					className="text-sm text-stone-600 hover:text-stamp-navy transition-colors"
+				>
+					View all &rarr;
+				</Link>
+			</div>
+			<StampGrid />
+		</section>
 	);
 }

@@ -75,7 +75,7 @@ function StipplePattern({ id, color }: { id: string; color: string }) {
 
 function GlassesGirl() {
 	return (
-		<svg viewBox="0 0 120 120" className="w-full h-full">
+		<svg viewBox="0 0 120 120" className="w-full h-full" role="img" aria-label="Naive folk art illustration of a person with glasses">
 			<StipplePattern id="sp1" color="#8da4c0" />
 			<rect width="120" height="120" fill="#d0dcea" />
 			<rect width="120" height="120" fill="url(#sp1)" />
@@ -155,7 +155,7 @@ function GlassesGirl() {
 
 function FlowerGirl() {
 	return (
-		<svg viewBox="0 0 120 120" className="w-full h-full">
+		<svg viewBox="0 0 120 120" className="w-full h-full" role="img" aria-label="Naive folk art illustration of a person with flowers">
 			<StipplePattern id="sp2" color="#b88c2e" />
 			<rect width="120" height="120" fill="#d4a843" />
 			<rect width="120" height="120" fill="url(#sp2)" />
@@ -217,7 +217,7 @@ function FlowerGirl() {
 
 function PortraitMan() {
 	return (
-		<svg viewBox="0 0 120 120" className="w-full h-full">
+		<svg viewBox="0 0 120 120" className="w-full h-full" role="img" aria-label="Naive folk art illustration of a portrait">
 			<StipplePattern id="sp3" color="#b8ad9c" />
 			<rect width="120" height="120" fill="#e8e0d4" />
 			<rect width="120" height="120" fill="url(#sp3)" />
