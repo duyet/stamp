@@ -67,7 +67,7 @@ export function HomeContent() {
 			</section>
 
 			{/* Generate form */}
-			<section id="generate" className="pb-20 scroll-mt-8">
+			<section id="generate" className="pb-16 scroll-mt-8">
 				<GenerateForm onGenerated={handleGenerated} />
 			</section>
 
