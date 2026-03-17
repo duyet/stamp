@@ -107,9 +107,10 @@ Examples:
  * Build multipart form data for Flux models that require it.
  * Returns the body stream and content-type with boundary.
  */
-function buildMultipartInput(
-	params: Record<string, string>,
-): { body: ReadableStream; contentType: string } {
+function buildMultipartInput(params: Record<string, string>): {
+	body: ReadableStream;
+	contentType: string;
+} {
 	const form = new FormData();
 	for (const [key, value] of Object.entries(params)) {
 		form.append(key, value);
