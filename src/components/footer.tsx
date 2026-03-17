@@ -24,6 +24,20 @@ export function Footer() {
 						Pricing
 					</Link>
 				</nav>
+				<nav className="flex items-center justify-center gap-6 text-xs text-stone-400 mb-6">
+					<Link
+						href="/privacy"
+						className="hover:text-stone-600 transition-colors"
+					>
+						Privacy
+					</Link>
+					<Link
+						href="/terms"
+						className="hover:text-stone-600 transition-colors"
+					>
+						Terms
+					</Link>
+				</nav>
 				<div className="text-center">
 					<a
 						href="https://stamp.duyet.net"
