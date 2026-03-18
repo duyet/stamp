@@ -56,12 +56,14 @@ export default function CollectionsPage() {
 		<div className="max-w-5xl mx-auto px-6 py-20 animate-page-fade-in">
 			<div className="text-center mb-8">
 				<h1
-					className="text-4xl font-bold text-stamp-navy tracking-tight mb-3"
+					className="text-4xl font-bold text-stamp-navy dark:text-stone-100 tracking-tight mb-3"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Collections
 				</h1>
-				<p className="text-stone-600">Stamps created by the community</p>
+				<p className="text-stone-600 dark:text-stone-400">
+					Stamps created by the community
+				</p>
 			</div>
 
 			{/* Style filter buttons */}
@@ -71,8 +73,8 @@ export default function CollectionsPage() {
 					onClick={() => setSelectedStyle(ALL_STYLES)}
 					className={`px-4 py-2 rounded-full text-sm font-medium transition ${
 						selectedStyle === ALL_STYLES
-							? "bg-stone-900 text-white"
-							: "bg-stone-100 text-stone-700 hover:bg-stone-200"
+							? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900"
+							: "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
 					}`}
 				>
 					All Styles
@@ -84,8 +86,8 @@ export default function CollectionsPage() {
 						onClick={() => setSelectedStyle(key as StampStyle)}
 						className={`px-4 py-2 rounded-full text-sm font-medium transition ${
 							selectedStyle === key
-								? "bg-stone-900 text-white"
-								: "bg-stone-100 text-stone-700 hover:bg-stone-200"
+								? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900"
+								: "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
 						}`}
 					>
 						{name}
@@ -97,11 +99,11 @@ export default function CollectionsPage() {
 			{error ? (
 				<div className="text-center py-20">
 					<div className="max-w-md mx-auto">
-						<p className="text-red-600 mb-4">{error}</p>
+						<p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
 						<button
 							type="button"
 							onClick={handleRetry}
-							className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 text-white rounded-lg text-sm font-medium hover:bg-stone-800 transition-colors"
+							className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors"
 						>
 							<RefreshIcon />
 							Try again
@@ -113,11 +115,15 @@ export default function CollectionsPage() {
 			) : filteredStamps.length === 0 ? (
 				<div className="text-center py-20">
 					<div className="max-w-sm mx-auto">
-						<p className="text-stone-600 mb-2">No stamps found.</p>
-						<p className="text-sm text-stone-500 mb-6">{emptyStateMessage}</p>
+						<p className="text-stone-600 dark:text-stone-400 mb-2">
+							No stamps found.
+						</p>
+						<p className="text-sm text-stone-500 dark:text-stone-600 mb-6">
+							{emptyStateMessage}
+						</p>
 						<Link
 							href="/generate"
-							className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white rounded-full font-medium text-sm hover:bg-stone-800 hover:shadow-lg transition-all"
+							className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full font-medium text-sm hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-lg transition-all"
 						>
 							Create your stamp
 						</Link>
