@@ -268,3 +268,30 @@ textarea:focus:not(:focus-visible),
 select:focus:not(:focus-visible) {
 	outline: none;
 }
+
+/* Slow pulse animation for ambient effects */
+@keyframes pulse-slow {
+	0%, 100% {
+		opacity: 0.5;
+	}
+	50% {
+		opacity: 0.8;
+	}
+}
+.animate-pulse-slow {
+	animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Gradient shift animation for hero text */
+@keyframes gradient-shift {
+	0%, 100% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+}
+.animate-gradient-shift {
+	background-size: 200% 100%;
+	animation: gradient-shift 3s ease infinite;
+}

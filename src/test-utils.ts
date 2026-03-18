@@ -55,16 +55,45 @@ export function createMockRateLimitDb(
 		windowStart: Date;
 	} | null,
 ) {
+	// Mutable state that gets updated by SQL operations
+	let currentState = existing
+		? { ...existing }
+		: null;
+
 	const insertValues = vi.fn().mockResolvedValue(undefined);
 	const updateSet = vi.fn().mockReturnValue({
 		where: vi.fn().mockResolvedValue(undefined),
 	});
 
+	// Mock D1 client for raw SQL
+	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
+		return {
+			bind: vi.fn().mockImplementation((...args: unknown[]) => {
+				return {
+					run: vi.fn().mockImplementation(() => {
+						// Simulate atomic UPDATE for rate limit
+						if (sql.includes("UPDATE rate_limits") && sql.includes("generations_count = generations_count + 1")) {
+							if (currentState && currentState.generationsCount < 100) {
+								currentState.generationsCount += 1;
+							}
+						}
+						return {};
+					}),
+				};
+			}),
+		};
+	});
+
 	return {
 		db: {
+			$client: {
+				prepare: mockPrepare,
+			},
 			query: {
 				rateLimits: {
-					findFirst: vi.fn().mockResolvedValue(existing),
+					findFirst: vi.fn().mockImplementation(() => {
+						return Promise.resolve(currentState ? { ...currentState } : null);
+					}),
 				},
 			},
 			insert: vi.fn().mockReturnValue({ values: insertValues }),
@@ -72,6 +101,7 @@ export function createMockRateLimitDb(
 		} as unknown as Database,
 		insertValues,
 		updateSet,
+		mockPrepare,
 	};
 }
 
@@ -109,6 +139,9 @@ export function createMockAi(
 /**
  * Create a mock Drizzle database for credits tests.
  * Returns the mock db plus references to the insert/update spies for assertions.
+ *
+ * The mock simulates atomic SQL UPDATE operations by tracking state changes
+ * and returning updated data on subsequent queries.
  */
 export function createMockCreditsDb(
 	existing: {
@@ -121,16 +154,59 @@ export function createMockCreditsDb(
 		updatedAt: number;
 	} | null,
 ) {
+	// Mutable state that gets updated by SQL operations
+	let currentState = existing
+		? { ...existing }
+		: null;
+
 	const insertValues = vi.fn().mockResolvedValue(undefined);
 	const updateSet = vi.fn().mockReturnValue({
 		where: vi.fn().mockResolvedValue(undefined),
 	});
 
+	// Mock D1 client for raw SQL (prepare().bind().run())
+	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
+		// Simulate atomic UPDATE by modifying state directly
+		return {
+			bind: vi.fn().mockImplementation((...args: unknown[]) => {
+				return {
+					run: vi.fn().mockImplementation(() => {
+						// Parse the SQL to simulate the UPDATE
+						if (sql.includes("UPDATE user_credits")) {
+							if (sql.includes("daily_used = daily_used +")) {
+								// Daily credit deduction
+								const cost = args[0] as number;
+								if (currentState && currentState.dailyUsed + cost <= currentState.dailyLimit) {
+									currentState.dailyUsed += cost;
+									currentState.updatedAt = args[1] as number;
+								}
+							} else if (sql.includes("purchased_credits = purchased_credits -")) {
+								// Purchased credit deduction
+								const cost = args[0] as number;
+								if (currentState && currentState.purchasedCredits >= cost) {
+									currentState.purchasedCredits -= cost;
+									currentState.updatedAt = args[1] as number;
+								}
+							}
+						}
+						return {};
+					}),
+				};
+			}),
+		};
+	});
+
 	return {
 		db: {
+			$client: {
+				prepare: mockPrepare,
+			},
 			query: {
 				userCredits: {
-					findFirst: vi.fn().mockResolvedValue(existing),
+					findFirst: vi.fn().mockImplementation(() => {
+						// Return current state (which may have been modified by SQL UPDATE)
+						return Promise.resolve(currentState ? { ...currentState } : null);
+					}),
 				},
 			},
 			insert: vi.fn().mockReturnValue({ values: insertValues }),
@@ -138,6 +214,7 @@ export function createMockCreditsDb(
 		} as unknown as Database,
 		insertValues,
 		updateSet,
+		mockPrepare,
 	};
 }
 

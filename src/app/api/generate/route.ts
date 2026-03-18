@@ -15,6 +15,33 @@ import { getClientIp } from "@/lib/get-client-ip";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
+/**
+ * Sanitize error messages for logging to prevent leaking sensitive information.
+ * Removes potential API keys, tokens, and other sensitive patterns.
+ */
+function sanitizeErrorForLogging(error: unknown): string {
+	if (error instanceof Error) {
+		// Remove common sensitive patterns from error messages
+		const sanitized = error.message
+			.replace(/api[_-]?key["\s:=]+[^\s,}]*/gi, "api_key=***")
+			.replace(/token["\s:=]+[^\s,}]*/gi, "token=***")
+			.replace(/secret["\s:=]+[^\s,}]*/gi, "secret=***")
+			.replace(/password["\s:=]+[^\s,}]*/gi, "password=***")
+			.replace(/bearer["\s:=]+[^\s,}]*/gi, "bearer=***")
+			.replace(/sk-[a-zA-Z0-9]{20,}/g, "sk-***")
+			.replace(/["\s:]([^"\\]{10,})["\\]/g, (match) => {
+				// Truncate long strings that might be sensitive
+				const content = match.slice(1, -1);
+				if (content.length > 50) {
+					return `"${content.slice(0, 20)}...${content.slice(-10)}"`;
+				}
+				return match;
+			});
+		return sanitized;
+	}
+	return String(error);
+}
+
 export async function POST(request: NextRequest) {
 	try {
 		const env = getEnv();
@@ -130,16 +157,105 @@ export async function POST(request: NextRequest) {
 		const genStart = Date.now();
 
 		// Convert base64 reference image to Uint8Array if provided
+		// Maximum decoded size: 5MB (to prevent DoS)
+		const MAX_REFERENCE_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 		let referenceImageBytes: Uint8Array | undefined;
 		if (referenceImageData) {
-			// Remove data URL prefix if present
-			const base64Data = referenceImageData.includes(",")
-				? referenceImageData.split(",")[1]
-				: referenceImageData;
-			const binaryString = atob(base64Data);
-			referenceImageBytes = new Uint8Array(binaryString.length);
-			for (let i = 0; i < binaryString.length; i++) {
-				referenceImageBytes[i] = binaryString.charCodeAt(i);
+			try {
+				// Validate input length before decoding (base64 inflates by ~33%)
+				if (referenceImageData.length > 10 * 1024 * 1024) {
+					// 10MB base64 is approximately 7.5MB decoded - reject early
+					return NextResponse.json(
+						{ error: "Reference image too large. Maximum size is 5MB." },
+						{ status: 413 },
+					);
+				}
+
+				// Extract base64 data from data URL if present
+				let base64Data: string;
+				let expectedMimeType: string | null = null;
+
+				if (referenceImageData.includes(",")) {
+					const [prefix, data] = referenceImageData.split(",", 2);
+					base64Data = data;
+					// Extract MIME type from data URL prefix (e.g., "data:image/png;base64")
+					const mimeMatch = prefix.match(/data:([^;]+);base64/);
+					if (mimeMatch) {
+						expectedMimeType = mimeMatch[1];
+					}
+				} else {
+					base64Data = referenceImageData;
+				}
+
+				// Validate base64 format (only valid base64 characters)
+				if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64Data)) {
+					return NextResponse.json(
+						{ error: "Invalid base64 format in reference image." },
+						{ status: 400 },
+					);
+				}
+
+				// Decode base64 with error handling
+				const binaryString = atob(base64Data);
+
+				// Check decoded size
+				if (binaryString.length > MAX_REFERENCE_IMAGE_SIZE) {
+					return NextResponse.json(
+						{
+							error: `Reference image too large (${Math.round(binaryString.length / 1024 / 1024)}MB). Maximum size is 5MB.`,
+						},
+						{ status: 413 },
+					);
+				}
+
+				// Validate image magic bytes for security
+				const firstBytes = new Uint8Array(8);
+				for (let i = 0; i < Math.min(8, binaryString.length); i++) {
+					firstBytes[i] = binaryString.charCodeAt(i);
+				}
+
+				// PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
+				const isPng =
+					firstBytes[0] === 0x89 &&
+					firstBytes[1] === 0x50 &&
+					firstBytes[2] === 0x4e &&
+					firstBytes[3] === 0x47;
+
+				// JPEG magic bytes: FF D8 FF
+				const isJpeg =
+					firstBytes[0] === 0xff &&
+					firstBytes[1] === 0xd8 &&
+					firstBytes[2] === 0xff;
+
+				if (!isPng && !isJpeg) {
+					return NextResponse.json(
+						{ error: "Reference image must be a valid PNG or JPEG file." },
+						{ status: 400 },
+					);
+				}
+
+				// Convert to Uint8Array
+				referenceImageBytes = new Uint8Array(binaryString.length);
+				for (let i = 0; i < binaryString.length; i++) {
+					referenceImageBytes[i] = binaryString.charCodeAt(i);
+				}
+
+				// Validate MIME type if provided in data URL
+				if (expectedMimeType) {
+					const allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg"];
+					if (!allowedMimeTypes.includes(expectedMimeType)) {
+						return NextResponse.json(
+							{ error: `Invalid image type: ${expectedMimeType}. Allowed types: PNG, JPEG` },
+							{ status: 400 },
+						);
+					}
+				}
+			} catch (error) {
+				// atob() throws on invalid base64
+				return NextResponse.json(
+					{ error: "Failed to decode reference image. Please ensure it's a valid base64-encoded image." },
+					{ status: 400 },
+				);
 			}
 		}
 
@@ -261,7 +377,7 @@ export async function POST(request: NextRequest) {
 				})
 				.catch((err: unknown) => {
 					console.error(
-						`[AgentState] FAILED stamp=${stampId} error=${err instanceof Error ? err.message : String(err)}`,
+						`[AgentState] FAILED stamp=${stampId} error=${sanitizeErrorForLogging(err)}`,
 					);
 				});
 		} else {
@@ -282,7 +398,8 @@ export async function POST(request: NextRequest) {
 			generationTimeMs,
 		});
 	} catch (error) {
-		console.error("Stamp generation failed:", error);
+		// Log sanitized error for debugging, but don't leak details to client
+		console.error("Stamp generation failed:", sanitizeErrorForLogging(error));
 		return NextResponse.json(
 			{ error: "Failed to generate stamp. Please try again." },
 			{ status: 500 },

@@ -59,7 +59,14 @@ export function HomeContent() {
 	return (
 		<div className="max-w-5xl mx-auto px-6 animate-page-fade-in">
 			{/* Hero — stamp fan + compact title */}
-			<section className="pt-6 pb-8 text-center">
+			<section className="pt-6 pb-8 text-center relative">
+				{/* Ambient background glow */}
+				<div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+					<div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gradient-to-br from-stamp-blue/5 via-transparent to-transparent rounded-full blur-3xl animate-pulse-slow" />
+					<div className="absolute top-20 right-0 w-[200px] h-[200px] bg-stamp-navy/5 rounded-full blur-2xl" />
+					<div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-stamp-blue/5 rounded-full blur-2xl" />
+				</div>
+
 				<div className="flex justify-center mb-5">
 					<StampFan
 						images={recentStamps.slice(0, 5).map((s) => s.imageUrl)}
@@ -70,7 +77,7 @@ export function HomeContent() {
 					/>
 				</div>
 				<h1
-					className="text-5xl md:text-7xl font-bold tracking-tight mb-3 hero-gradient"
+					className="text-5xl md:text-7xl font-bold tracking-tight mb-3 hero-gradient animate-gradient-shift"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders
@@ -82,10 +89,14 @@ export function HomeContent() {
 				</p>
 				<Link
 					href="#generate"
-					className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white rounded-full font-medium text-base hover:bg-stone-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+					className="group relative inline-flex items-center gap-2 px-8 py-4 bg-stone-900 text-white rounded-full font-medium text-base overflow-hidden hover:bg-stone-800 hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition-all duration-300"
 				>
-					<span>Create your stamp</span>
-					<ArrowDownIcon />
+					{/* Button shine effect */}
+					<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+					<span className="relative z-10">Create your stamp</span>
+					<span className="relative z-10 group-hover:translate-y-0.5 transition-transform duration-300">
+						<ArrowDownIcon />
+					</span>
 				</Link>
 			</section>
 

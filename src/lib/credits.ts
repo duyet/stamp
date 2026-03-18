@@ -59,6 +59,9 @@ export async function getUserCredits(db: Database, userId: string) {
  * Check if a user has credits available and deduct the given cost.
  * Deducts from daily credits first, then purchased credits.
  *
+ * Uses atomic UPDATE with WHERE clause to prevent race conditions.
+ * Uses raw SQL to ensure the check-and-update happens atomically.
+ *
  * @param cost - Number of credits to deduct (default 1, e.g. 5 for HD).
  */
 export async function checkAndDeductCredit(
@@ -70,46 +73,77 @@ export async function checkAndDeductCredit(
 	remaining: number;
 	source: "daily" | "purchased";
 }> {
-	const credits = await getUserCredits(db, userId);
 	const now = Date.now();
 
-	const dailyRemaining = credits.dailyLimit - credits.dailyUsed;
+	// Get current credit state for reference
+	const credits = await getUserCredits(db, userId);
 
-	// Try daily credits first
-	if (dailyRemaining >= cost) {
-		const newDailyUsed = credits.dailyUsed + cost;
-		await db
-			.update(userCredits)
-			.set({ dailyUsed: newDailyUsed, updatedAt: now })
-			.where(eq(userCredits.userId, userId));
+	// Try atomic UPDATE on daily credits first
+	// WHERE clause ensures we only update if within limit
+	// Use the underlying D1 session for raw SQL
+	await db.$client
+		.prepare(
+			`UPDATE user_credits SET daily_used = daily_used + ?, updated_at = ? WHERE user_id = ? AND daily_used + ? <= daily_limit`,
+		)
+		.bind(cost, now, userId, cost)
+		.run();
 
+	// Check if the UPDATE succeeded by querying the new state
+	const afterDaily = await db.query.userCredits.findFirst({
+		where: eq(userCredits.userId, userId),
+	});
+
+	// Check if dailyUsed actually increased (meaning the atomic UPDATE succeeded)
+	if (
+		afterDaily &&
+		afterDaily.dailyUsed > credits.dailyUsed &&
+		afterDaily.dailyUsed <= afterDaily.dailyLimit
+	) {
+		// Daily credit was deducted successfully
 		const remaining =
-			credits.dailyLimit - newDailyUsed + credits.purchasedCredits;
+			afterDaily.dailyLimit -
+			afterDaily.dailyUsed +
+			afterDaily.purchasedCredits;
 		return { allowed: true, remaining, source: "daily" };
 	}
 
-	// Try purchased credits
-	if (credits.purchasedCredits >= cost) {
-		const newPurchased = credits.purchasedCredits - cost;
-		await db
-			.update(userCredits)
-			.set({ purchasedCredits: newPurchased, updatedAt: now })
-			.where(eq(userCredits.userId, userId));
+	// Daily credits exhausted or update failed, try purchased credits atomically
+	await db.$client
+		.prepare(
+			`UPDATE user_credits SET purchased_credits = purchased_credits - ?, updated_at = ? WHERE user_id = ? AND purchased_credits >= ?`,
+		)
+		.bind(cost, now, userId, cost)
+		.run();
 
+	// Verify purchased credit deduction
+	const afterPurchased = await db.query.userCredits.findFirst({
+		where: eq(userCredits.userId, userId),
+	});
+
+	// Check if purchasedCredits actually decreased
+	if (
+		afterPurchased &&
+		afterPurchased.purchasedCredits < credits.purchasedCredits
+	) {
+		// Purchased credit was deducted successfully
 		await db.insert(creditTransactions).values({
 			id: nanoid(12),
 			userId,
 			type: "deduct_purchased",
 			amount: -cost,
-			balanceAfter: newPurchased,
+			balanceAfter: afterPurchased.purchasedCredits,
 			metadata: null,
 			createdAt: now,
 		});
 
-		return { allowed: true, remaining: newPurchased, source: "purchased" };
+		return {
+			allowed: true,
+			remaining: afterPurchased.purchasedCredits,
+			source: "purchased",
+		};
 	}
 
-	// No credits available
+	// No credits available - neither update succeeded
 	return { allowed: false, remaining: 0, source: "daily" };
 }
 
