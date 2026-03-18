@@ -32,41 +32,51 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns analytics data with correct shape", async () => {
-		let callCount = 0;
-		const selectResults = [
-			[
-				{
-					total_stamps: 100,
-					stamps_today: 5,
-					stamps_week: 25,
-					stamps_month: 80,
-				},
-			], // consolidated stamp counts
+		// All possible query results - mock will return these cyclically
+		// Using cyclic approach since Promise.all calls queries in parallel
+		const allResults = [
+			// popular styles
 			[
 				{ style: "vintage", count: 50 },
 				{ style: "modern", count: 30 },
-			], // popular styles
+			],
+			// daily trend
 			[
 				{ day: 1710460800000, count: 3 },
 				{ day: 1710547200000, count: 5 },
-			], // daily trend
-			[{ count: 500 }], // total page views
-			[{ count: 42 }], // unique visitors
-			[{ count: 15 }], // total downloads
-			[{ count: 8 }], // total shares
+			],
+			// total page views
+			[{ count: 500 }],
+			// unique visitors
+			[{ count: 42 }],
+			// total downloads
+			[{ count: 15 }],
+			// total shares
+			[{ count: 8 }],
+			// event breakdown
 			[
 				{ event: "page_view", count: 500 },
 				{ event: "download", count: 15 },
-			], // event breakdown
+			],
+			// page view breakdown
 			[
 				{ path: "/", count: 300 },
 				{ path: "/generate", count: 150 },
-			], // page view breakdown
+			],
+			// location country
+			[{ countrycode: "US", count: 25 }],
+			// location city
+			[{ countrycode: "US", city: "New York", count: 10 }],
+			// timezone
+			[{ timezone: "America/New_York", hour: 14, count: 5 }],
+			// map data
+			[{ countrycode: "US", count: 25 }],
 		];
 
+		let resultIndex = 0;
 		const mockSelect = vi.fn().mockImplementation(() => {
-			const result = selectResults[callCount] || [];
-			callCount++;
+			const result = allResults[resultIndex % allResults.length];
+			resultIndex++;
 			return createSelectChain(result);
 		});
 

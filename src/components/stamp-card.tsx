@@ -13,6 +13,7 @@ interface StampCardProps {
 
 function StampCard({ stamp, onClick }: StampCardProps) {
 	const { isFavorite, toggleFavorite } = useFavorites();
+	const favorite = isFavorite(stamp.id);
 
 	const content = (
 		<>
@@ -24,11 +25,9 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 						toggleFavorite(stamp.id);
 					}}
 					className="absolute top-2 right-2 z-10 p-1.5 bg-white/90 backdrop-blur rounded-full shadow-sm hover:bg-white transition-colors"
-					aria-label={
-						isFavorite(stamp.id) ? "Remove from favorites" : "Add to favorites"
-					}
+					aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
 				>
-					<HeartIcon filled={isFavorite(stamp.id)} />
+					<HeartIcon filled={favorite} />
 				</button>
 				<Image
 					src={stamp.imageUrl}

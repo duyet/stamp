@@ -27,6 +27,16 @@ export default function CollectionsPage() {
 		[stamps, selectedStyle],
 	);
 
+	// Memoized empty state message for selected style
+	const emptyStateMessage = useMemo(() => {
+		if (selectedStyle === ALL_STYLES) {
+			return "Be the first to create a stamp!";
+		}
+		const styleName =
+			STAMP_STYLE_PRESETS[selectedStyle as StampStyle]?.name.toLowerCase();
+		return styleName ? `No ${styleName} stamps yet.` : "No stamps found.";
+	}, [selectedStyle]);
+
 	// Trigger refetch on retry
 	function handleRetry() {
 		setRetryKey((prev) => prev + 1);
@@ -111,19 +121,7 @@ export default function CollectionsPage() {
 				<div className="text-center py-20">
 					<div className="max-w-sm mx-auto">
 						<p className="text-stone-600 mb-2">No stamps found.</p>
-						<p className="text-sm text-stone-500 mb-6">
-							{selectedStyle === ALL_STYLES
-								? "Be the first to create a stamp!"
-								: (() => {
-										const styleName =
-											STAMP_STYLE_PRESETS[
-												selectedStyle as StampStyle
-											]?.name.toLowerCase();
-										return styleName
-											? `No ${styleName} stamps yet.`
-											: "No stamps found.";
-									})()}
-						</p>
+						<p className="text-sm text-stone-500 mb-6">{emptyStateMessage}</p>
 						<Link
 							href="/generate"
 							className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white rounded-full font-medium text-sm hover:bg-stone-800 hover:shadow-lg transition-all"

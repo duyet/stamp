@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import { FOCUSABLE_SELECTOR } from "@/constants/a11y";
 import type { Stamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
+import { useRegenerateStamp } from "@/hooks/use-regenerate-stamp";
 import {
 	CheckIcon,
 	ChevronIcon,
@@ -23,8 +25,11 @@ interface StampModalProps {
 
 export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 	const { copied, copy } = useCopy();
-	const [regenerating, setRegenerating] = useState(false);
-	const [regenerateError, setRegenerateError] = useState<string | null>(null);
+	const {
+		regenerate,
+		regenerating,
+		error: regenerateError,
+	} = useRegenerateStamp();
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
 	const modalRef = useRef<HTMLDivElement>(null);
 	const focusableElementsRef = useRef<HTMLElement[]>([]);
@@ -32,50 +37,11 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 	async function handleRegenerate() {
 		if (!onRegenerate) return;
 
-		setRegenerating(true);
-		setRegenerateError(null);
-
 		try {
-			const res = await fetch("/api/generate", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					prompt: stamp.prompt,
-					style: stamp.style,
-					isPublic: stamp.isPublic,
-					timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-				}),
-			});
-
-			const data = (await res.json()) as {
-				id?: string;
-				imageUrl?: string;
-				error?: string;
-			};
-
-			if (!res.ok) {
-				throw new Error(data.error ?? "Regeneration failed");
-			}
-
-			if (!data.id || !data.imageUrl) {
-				throw new Error("Invalid response from server");
-			}
-
-			// Create new stamp object with updated data
-			const newStamp: Stamp = {
-				...stamp,
-				id: data.id,
-				imageUrl: data.imageUrl,
-				createdAt: new Date(),
-			};
-
+			const newStamp = await regenerate(stamp);
 			onRegenerate(newStamp);
-		} catch (err) {
-			setRegenerateError(
-				err instanceof Error ? err.message : "Failed to regenerate stamp",
-			);
-		} finally {
-			setRegenerating(false);
+		} catch {
+			// Error handled by hook
 		}
 	}
 
@@ -221,27 +187,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 							>
 								{regenerating ? (
 									<>
-										<svg
-											className="animate-spin h-3.5 w-3.5"
-											viewBox="0 0 24 24"
-											fill="none"
-											aria-hidden="true"
-										>
-											<title>Regenerating</title>
-											<circle
-												className="opacity-25"
-												cx="12"
-												cy="12"
-												r="10"
-												stroke="currentColor"
-												strokeWidth={4}
-											/>
-											<path
-												className="opacity-75"
-												fill="currentColor"
-												d="M4 12a8 8 0 018-8V0C5.373 0 8 2.627 8 5.92v10.16c0 3.293 2.627 6 5.92 6h5.086c3.355 0 6.082-2.627 6.082-6V12c0-3.293-2.627-6-5.92-6h-4zm2 8a2 2 0 100-4 2 2v4a2 2 0 002 2h4a2 2 0 002-2v-4z"
-											/>
-										</svg>
+										<LoadingSpinner size="sm" />
 										Regenerating...
 									</>
 								) : (
