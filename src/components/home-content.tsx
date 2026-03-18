@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
+import { ArrowDownIcon } from "@/components/icons";
 import { StampFan } from "@/components/stamp-fan";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
@@ -74,21 +75,7 @@ export function HomeContent() {
 					className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white rounded-full font-medium text-base hover:bg-stone-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
 				>
 					<span>Create your stamp</span>
-					<svg
-						className="w-4 h-4"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						aria-hidden="true"
-					>
-						<title>Arrow down</title>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							strokeWidth={2}
-							d="M19 14l-7 7m0 0l-7-7m7 7V3"
-						/>
-					</svg>
+					<ArrowDownIcon />
 				</Link>
 			</section>
 

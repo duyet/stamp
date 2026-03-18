@@ -96,3 +96,19 @@ export function HeartIcon({ filled }: { filled?: boolean }) {
 		</svg>
 	);
 }
+
+export function RefreshIcon() {
+	return (
+		<svg {...iconProps} aria-hidden="true">
+			<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+		</svg>
+	);
+}
+
+export function ArrowDownIcon() {
+	return (
+		<svg {...iconProps} viewBox="0 0 24 24" strokeWidth={2} aria-hidden="true">
+			<path d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+		</svg>
+	);
+}
