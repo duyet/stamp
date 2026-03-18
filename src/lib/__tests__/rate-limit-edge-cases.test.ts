@@ -86,16 +86,15 @@ describe("checkRateLimit edge cases", () => {
 	});
 
 	it("increments count correctly for allowed users", async () => {
-		const { db, updateSet } = createMockRateLimitDb({
+		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 1,
 			windowStart: FIXED_NOW,
 		});
 
-		await checkRateLimit(db, "1.2.3.4");
+		const result = await checkRateLimit(db, "1.2.3.4");
 
-		expect(updateSet).toHaveBeenCalledWith(
-			expect.objectContaining({ generationsCount: 2 }),
-		);
+		expect(result.allowed).toBe(true);
+		expect(result.remaining).toBe(18); // 20 - 2 = 18 (was 1, now 2)
 	});
 });

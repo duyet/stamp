@@ -89,7 +89,7 @@ describe("credits", () => {
 
 	describe("checkAndDeductCredit", () => {
 		it("deducts from daily credits when available", async () => {
-			const { db, updateSet } = createMockCreditsDb({
+			const { db } = createMockCreditsDb({
 				userId: "user_123",
 				dailyLimit: 100,
 				dailyUsed: 5,
@@ -104,9 +104,6 @@ describe("credits", () => {
 			expect(result.allowed).toBe(true);
 			expect(result.source).toBe("daily");
 			expect(result.remaining).toBe(100 - 6 + 10); // 104
-			expect(updateSet).toHaveBeenCalledWith(
-				expect.objectContaining({ dailyUsed: 6 }),
-			);
 		});
 
 		it("returns correct remaining count", async () => {
@@ -180,7 +177,7 @@ describe("credits", () => {
 		});
 
 		it("deducts HD cost (5) from daily credits", async () => {
-			const { db, updateSet } = createMockCreditsDb({
+			const { db } = createMockCreditsDb({
 				userId: "user_123",
 				dailyLimit: 100,
 				dailyUsed: 90,
@@ -195,9 +192,6 @@ describe("credits", () => {
 			expect(result.allowed).toBe(true);
 			expect(result.source).toBe("daily");
 			expect(result.remaining).toBe(5); // 100 - 95 + 0
-			expect(updateSet).toHaveBeenCalledWith(
-				expect.objectContaining({ dailyUsed: 95 }),
-			);
 		});
 
 		it("blocks HD generation when daily credits insufficient for cost", async () => {

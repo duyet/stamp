@@ -4,6 +4,7 @@
 import type { NextRequest } from "next/server";
 import { vi } from "vitest";
 import type { Database } from "@/db";
+import { DAILY_CREDIT_LIMITS } from "@/lib/constants";
 
 /**
  * Create a JSON POST/PATCH/PUT request for testing API route handlers.
@@ -59,9 +60,17 @@ export function createMockRateLimitDb(
 	let currentState = existing ? { ...existing } : null;
 
 	const insertValues = vi.fn().mockResolvedValue(undefined);
-	const updateSet = vi.fn().mockReturnValue({
-		where: vi.fn().mockResolvedValue(undefined),
-	});
+	const updateSet = vi
+		.fn()
+		.mockImplementation((fields: Record<string, unknown>) => {
+			// Simulate Drizzle update().set() by updating currentState directly
+			if (currentState && fields.generationsCount !== undefined) {
+				currentState = { ...currentState, ...fields };
+			}
+			return {
+				where: vi.fn().mockResolvedValue(undefined),
+			};
+		});
 
 	// Mock D1 client for raw SQL
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
@@ -159,9 +168,17 @@ export function createMockCreditsDb(
 	let currentState = existing ? { ...existing } : null;
 
 	const insertValues = vi.fn().mockResolvedValue(undefined);
-	const updateSet = vi.fn().mockReturnValue({
-		where: vi.fn().mockResolvedValue(undefined),
-	});
+	const updateSet = vi
+		.fn()
+		.mockImplementation((fields: Record<string, unknown>) => {
+			// Simulate Drizzle update().set() by updating currentState directly
+			if (currentState && fields.dailyUsed !== undefined) {
+				currentState = { ...currentState, ...fields };
+			}
+			return {
+				where: vi.fn().mockResolvedValue(undefined),
+			};
+		});
 
 	// Mock D1 client for raw SQL (prepare().bind().run())
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {

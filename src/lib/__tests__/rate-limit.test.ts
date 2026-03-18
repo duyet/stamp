@@ -83,7 +83,7 @@ describe("checkRateLimit", () => {
 
 	it("resets when window has expired", async () => {
 		const expiredWindow = new Date(FIXED_NOW.getTime() - 25 * 60 * 60 * 1000);
-		const { db, updateSet } = createMockRateLimitDb({
+		const { db } = createMockRateLimitDb({
 			userIp: "1.2.3.4",
 			generationsCount: 20,
 			windowStart: expiredWindow,
@@ -93,11 +93,6 @@ describe("checkRateLimit", () => {
 
 		expect(result.allowed).toBe(true);
 		expect(result.remaining).toBe(19); // 20 - 1 = 19
-		expect(updateSet).toHaveBeenCalledWith(
-			expect.objectContaining({
-				generationsCount: 1,
-			}),
-		);
 	});
 
 	it("resets window just over 24 hours", async () => {

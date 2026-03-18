@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
+import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { addTags, createConversation } from "@/lib/agentstate";
@@ -14,6 +15,19 @@ import { generateStamp } from "@/lib/generate-stamp";
 import { getClientIp } from "@/lib/get-client-ip";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
+
+/**
+ * Constants for image validation.
+ */
+const MAX_REFERENCE_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_BASE64_INPUT_LENGTH = 10 * 1024 * 1024; // 10MB base64
+
+// PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
+const PNG_MAGIC_BYTES = new Uint8Array([
+	0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+]);
+// JPEG magic bytes: FF D8 FF
+const JPEG_MAGIC_BYTES = new Uint8Array([0xff, 0xd8, 0xff]);
 
 /**
  * Sanitize error messages for logging to prevent leaking sensitive information.
@@ -42,7 +56,134 @@ function sanitizeErrorForLogging(error: unknown): string {
 	return String(error);
 }
 
+/**
+ * Refund credits if generation fails after deduction.
+ * Uses atomic SQL to safely decrement the credit counter.
+ */
+async function refundCredits(
+	db: Database,
+	userId: string | null,
+	userIp: string,
+	creditCost: number,
+): Promise<void> {
+	if (userId) {
+		// Refund to daily credits or purchased credits atomically
+		await db.$client
+			.prepare(
+				`UPDATE user_credits SET daily_used = daily_used - ?, updated_at = ? WHERE user_id = ? AND daily_used > 0`,
+			)
+			.bind(creditCost, Date.now(), userId)
+			.run();
+	} else {
+		// Refund anonymous rate limit
+		await db.$client
+			.prepare(
+				`UPDATE rate_limits SET generations_count = generations_count - 1 WHERE user_ip = ? AND generations_count > 0`,
+			)
+			.bind(userIp)
+			.run();
+	}
+}
+
+/**
+ * Validate and decode a base64 reference image.
+ * Returns Uint8Array of image data or throws on error.
+ */
+function validateReferenceImage(referenceImageData: string): Uint8Array {
+	// Validate input length before decoding (base64 inflates by ~33%)
+	if (referenceImageData.length > MAX_BASE64_INPUT_LENGTH) {
+		throw new Error(
+			`Reference image too large. Maximum size is ${MAX_REFERENCE_IMAGE_SIZE / 1024 / 1024}MB.`,
+		);
+	}
+
+	// Extract base64 data from data URL if present
+	let base64Data: string;
+	let expectedMimeType: string | null = null;
+
+	if (referenceImageData.includes(",")) {
+		const [prefix, data] = referenceImageData.split(",", 2);
+		base64Data = data;
+		// Extract MIME type from data URL prefix (e.g., "data:image/png;base64")
+		const mimeMatch = prefix.match(/data:([^;]+);base64/);
+		if (mimeMatch) {
+			expectedMimeType = mimeMatch[1];
+		}
+	} else {
+		base64Data = referenceImageData;
+	}
+
+	// Validate base64 format (only valid base64 characters, minimum length)
+	// Fixed: Empty string "" matches /[A-Za-z0-9+/]*={0,2}/ so we require minimum length
+	if (!/^[A-Za-z0-9+/]{8,}={0,2}$/.test(base64Data)) {
+		throw new Error("Invalid base64 format in reference image.");
+	}
+
+	// Decode base64 with error handling
+	const binaryString = atob(base64Data);
+
+	// Check decoded size
+	if (binaryString.length > MAX_REFERENCE_IMAGE_SIZE) {
+		throw new Error(
+			`Reference image too large (${Math.round(binaryString.length / 1024 / 1024)}MB). Maximum size is ${MAX_REFERENCE_IMAGE_SIZE / 1024 / 1024}MB.`,
+		);
+	}
+
+	// Validate image magic bytes for security
+	const firstBytes = new Uint8Array(8);
+	for (let i = 0; i < Math.min(8, binaryString.length); i++) {
+		firstBytes[i] = binaryString.charCodeAt(i);
+	}
+
+	// Check PNG magic bytes (all 8 bytes: 89 50 4E 47 0D 0A 1A 0A)
+	const isPng =
+		firstBytes.length >= 8 &&
+		firstBytes[0] === PNG_MAGIC_BYTES[0] &&
+		firstBytes[1] === PNG_MAGIC_BYTES[1] &&
+		firstBytes[2] === PNG_MAGIC_BYTES[2] &&
+		firstBytes[3] === PNG_MAGIC_BYTES[3] &&
+		firstBytes[4] === PNG_MAGIC_BYTES[4] &&
+		firstBytes[5] === PNG_MAGIC_BYTES[5] &&
+		firstBytes[6] === PNG_MAGIC_BYTES[6] &&
+		firstBytes[7] === PNG_MAGIC_BYTES[7];
+
+	// Check JPEG magic bytes (FF D8 FF)
+	const isJpeg =
+		firstBytes.length >= 3 &&
+		firstBytes[0] === JPEG_MAGIC_BYTES[0] &&
+		firstBytes[1] === JPEG_MAGIC_BYTES[1] &&
+		firstBytes[2] === JPEG_MAGIC_BYTES[2];
+
+	if (!isPng && !isJpeg) {
+		throw new Error("Reference image must be a valid PNG or JPEG file.");
+	}
+
+	// Validate MIME type if provided in data URL
+	if (expectedMimeType) {
+		const allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg"];
+		if (!allowedMimeTypes.includes(expectedMimeType)) {
+			throw new Error(
+				`Invalid image type: ${expectedMimeType}. Allowed types: PNG, JPEG`,
+			);
+		}
+	}
+
+	// Convert to Uint8Array
+	const uint8Array = new Uint8Array(binaryString.length);
+	for (let i = 0; i < binaryString.length; i++) {
+		uint8Array[i] = binaryString.charCodeAt(i);
+	}
+	return uint8Array;
+}
+
 export async function POST(request: NextRequest) {
+	// Track whether credits were deducted for refund in catch block
+	let creditsDeducted = false;
+	let dbForRefund: Database | undefined;
+	let userIdForRefund: string | null = null;
+	let userIpForRefund = "";
+	let creditCostForRefund = 1;
+
 	try {
 		const env = getEnv();
 		const db = getDb();
@@ -145,6 +286,13 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		// Track credit info for potential refund
+		creditsDeducted = true;
+		dbForRefund = db;
+		userIdForRefund = userId;
+		userIpForRefund = userIp;
+		creditCostForRefund = creditCost;
+
 		const ai = env.AI;
 		if (!ai) {
 			return NextResponse.json(
@@ -156,110 +304,19 @@ export async function POST(request: NextRequest) {
 		// Time the generation (LLM enhancement + image generation)
 		const genStart = Date.now();
 
-		// Convert base64 reference image to Uint8Array if provided
-		// Maximum decoded size: 5MB (to prevent DoS)
-		const MAX_REFERENCE_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+		// Validate and decode reference image if provided (throws on error)
 		let referenceImageBytes: Uint8Array | undefined;
 		if (referenceImageData) {
 			try {
-				// Validate input length before decoding (base64 inflates by ~33%)
-				if (referenceImageData.length > 10 * 1024 * 1024) {
-					// 10MB base64 is approximately 7.5MB decoded - reject early
-					return NextResponse.json(
-						{ error: "Reference image too large. Maximum size is 5MB." },
-						{ status: 413 },
-					);
-				}
-
-				// Extract base64 data from data URL if present
-				let base64Data: string;
-				let expectedMimeType: string | null = null;
-
-				if (referenceImageData.includes(",")) {
-					const [prefix, data] = referenceImageData.split(",", 2);
-					base64Data = data;
-					// Extract MIME type from data URL prefix (e.g., "data:image/png;base64")
-					const mimeMatch = prefix.match(/data:([^;]+);base64/);
-					if (mimeMatch) {
-						expectedMimeType = mimeMatch[1];
-					}
-				} else {
-					base64Data = referenceImageData;
-				}
-
-				// Validate base64 format (only valid base64 characters)
-				if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64Data)) {
-					return NextResponse.json(
-						{ error: "Invalid base64 format in reference image." },
-						{ status: 400 },
-					);
-				}
-
-				// Decode base64 with error handling
-				const binaryString = atob(base64Data);
-
-				// Check decoded size
-				if (binaryString.length > MAX_REFERENCE_IMAGE_SIZE) {
-					return NextResponse.json(
-						{
-							error: `Reference image too large (${Math.round(binaryString.length / 1024 / 1024)}MB). Maximum size is 5MB.`,
-						},
-						{ status: 413 },
-					);
-				}
-
-				// Validate image magic bytes for security
-				const firstBytes = new Uint8Array(8);
-				for (let i = 0; i < Math.min(8, binaryString.length); i++) {
-					firstBytes[i] = binaryString.charCodeAt(i);
-				}
-
-				// PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
-				const isPng =
-					firstBytes[0] === 0x89 &&
-					firstBytes[1] === 0x50 &&
-					firstBytes[2] === 0x4e &&
-					firstBytes[3] === 0x47;
-
-				// JPEG magic bytes: FF D8 FF
-				const isJpeg =
-					firstBytes[0] === 0xff &&
-					firstBytes[1] === 0xd8 &&
-					firstBytes[2] === 0xff;
-
-				if (!isPng && !isJpeg) {
-					return NextResponse.json(
-						{ error: "Reference image must be a valid PNG or JPEG file." },
-						{ status: 400 },
-					);
-				}
-
-				// Convert to Uint8Array
-				referenceImageBytes = new Uint8Array(binaryString.length);
-				for (let i = 0; i < binaryString.length; i++) {
-					referenceImageBytes[i] = binaryString.charCodeAt(i);
-				}
-
-				// Validate MIME type if provided in data URL
-				if (expectedMimeType) {
-					const allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg"];
-					if (!allowedMimeTypes.includes(expectedMimeType)) {
-						return NextResponse.json(
-							{
-								error: `Invalid image type: ${expectedMimeType}. Allowed types: PNG, JPEG`,
-							},
-							{ status: 400 },
-						);
-					}
-				}
+				referenceImageBytes = validateReferenceImage(referenceImageData);
 			} catch (error) {
-				// atob() throws on invalid base64
+				// Image validation failed - refund credits and return error
+				await refundCredits(db, userId, userIp, creditCost);
+				const errorMessage =
+					error instanceof Error ? error.message : "Invalid reference image.";
 				return NextResponse.json(
-					{
-						error:
-							"Failed to decode reference image. Please ensure it's a valid base64-encoded image.",
-					},
-					{ status: 400 },
+					{ error: errorMessage },
+					{ status: errorMessage.includes("too large") ? 413 : 400 },
 				);
 			}
 		}
@@ -403,6 +460,24 @@ export async function POST(request: NextRequest) {
 			generationTimeMs,
 		});
 	} catch (error) {
+		// Refund credits if generation fails after deduction
+		// This handles failures in generateStamp() or R2 upload
+		if (creditsDeducted && dbForRefund) {
+			try {
+				await refundCredits(
+					dbForRefund,
+					userIdForRefund,
+					userIpForRefund,
+					creditCostForRefund,
+				);
+			} catch (refundError) {
+				console.error(
+					"[Generate] Failed to refund credits:",
+					sanitizeErrorForLogging(refundError),
+				);
+			}
+		}
+
 		// Log sanitized error for debugging, but don't leak details to client
 		console.error("Stamp generation failed:", sanitizeErrorForLogging(error));
 		return NextResponse.json(

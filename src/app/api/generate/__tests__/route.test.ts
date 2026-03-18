@@ -46,6 +46,10 @@ const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>
 	createJsonRequest(URL, "POST", body, headers);
 
 describe("POST /api/generate", () => {
+	// Minimal valid 1x1 transparent PNG in base64 (used for reference image tests)
+	const VALID_PNG_BASE64 =
+		"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
 	const mockDb = {
 		insert: vi.fn().mockReturnValue({
 			values: vi.fn().mockResolvedValue(undefined),
@@ -322,7 +326,7 @@ describe("POST /api/generate", () => {
 			const res = await POST(
 				req({
 					prompt: "a cat",
-					referenceImageData: btoa("fake-image-data"),
+					referenceImageData: VALID_PNG_BASE64,
 				}),
 			);
 			expect(res.status).toBe(400);
@@ -339,7 +343,7 @@ describe("POST /api/generate", () => {
 				req({
 					prompt: "",
 					hd: true,
-					referenceImageData: btoa("fake-image-data"),
+					referenceImageData: VALID_PNG_BASE64,
 				}),
 			);
 			expect(res.status).toBe(200);
@@ -349,7 +353,7 @@ describe("POST /api/generate", () => {
 			vi.mocked(getAuthUserId).mockResolvedValue({
 				userId: "user_abc123",
 			} as never);
-			const base64Image = btoa("fake-image-data");
+			const base64Image = VALID_PNG_BASE64;
 
 			await POST(
 				req({
