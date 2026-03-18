@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createGetRequest, createSelectChain } from "@/test-utils";
+import {
+	createGetRequest,
+	createMockRateLimitPrepare,
+	createSelectChain,
+} from "@/test-utils";
 
 vi.mock("@/lib/clerk", () => ({
 	getAuthUserId: vi.fn(),
@@ -45,12 +49,7 @@ describe("GET /api/analytics", () => {
 
 	it("returns analytics data with correct shape", async () => {
 		// Mock $client.prepare for rate limiting
-		const mockPrepare = vi.fn().mockReturnValue({
-			bind: vi.fn().mockReturnValue({
-				first: vi.fn().mockResolvedValue({ count: 0 }),
-				run: vi.fn().mockResolvedValue(undefined),
-			}),
-		});
+		const mockPrepare = createMockRateLimitPrepare();
 
 		// All possible query results - mock will return these cyclically
 		// Using cyclic approach since Promise.all calls queries in parallel
@@ -144,12 +143,7 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns defaults when queries return empty results", async () => {
-		const mockPrepare = vi.fn().mockReturnValue({
-			bind: vi.fn().mockReturnValue({
-				first: vi.fn().mockResolvedValue({ count: 0 }),
-				run: vi.fn().mockResolvedValue(undefined),
-			}),
-		});
+		const mockPrepare = createMockRateLimitPrepare();
 		const mockSelect = vi.fn().mockImplementation(() => createSelectChain([]));
 		const mockAll = vi.fn().mockResolvedValue([
 			{
@@ -183,12 +177,7 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns 500 on database error", async () => {
-		const mockPrepare = vi.fn().mockReturnValue({
-			bind: vi.fn().mockReturnValue({
-				first: vi.fn().mockResolvedValue({ count: 0 }),
-				run: vi.fn().mockResolvedValue(undefined),
-			}),
-		});
+		const mockPrepare = createMockRateLimitPrepare();
 		const mockSelect = vi.fn().mockReturnValue({
 			from: vi.fn().mockRejectedValue(new Error("DB connection failed")),
 		});
@@ -206,12 +195,7 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("handles null style in popular styles gracefully", async () => {
-		const mockPrepare = vi.fn().mockReturnValue({
-			bind: vi.fn().mockReturnValue({
-				first: vi.fn().mockResolvedValue({ count: 0 }),
-				run: vi.fn().mockResolvedValue(undefined),
-			}),
-		});
+		const mockPrepare = createMockRateLimitPrepare();
 		let callCount = 0;
 		const selectResults = [
 			[

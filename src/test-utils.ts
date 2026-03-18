@@ -269,3 +269,28 @@ export function createSelectChain(result: unknown[]) {
 
 	return chain;
 }
+
+/**
+ * Create a mock D1 $client.prepare for rate limit testing.
+ * Returns a vi.fn() that mocks prepare().bind() with first() and run() methods.
+ *
+ * @param currentCount - The current generations_count to return (undefined = no existing record)
+ * @param changes - Number of rows affected by UPDATE (default: 1)
+ */
+export function createMockRateLimitPrepare(
+	currentCount?: number,
+	changes = 1,
+): ReturnType<typeof vi.fn> {
+	return vi.fn().mockReturnValue({
+		bind: vi.fn().mockReturnValue({
+			first: vi
+				.fn()
+				.mockResolvedValue(
+					currentCount === undefined
+						? null
+						: { generations_count: currentCount },
+				),
+			run: vi.fn().mockResolvedValue({ meta: { changes } }),
+		}),
+	});
+}

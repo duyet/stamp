@@ -8,9 +8,9 @@ import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
 
 // Simple admin allowlist - in production, use environment variable or database table
-const ADMIN_USERS = (process.env.ADMIN_USERS || "")
-	.split(",")
-	.filter(Boolean) as string[];
+const ADMIN_USERS = new Set(
+	(process.env.ADMIN_USERS || "").split(",").filter(Boolean),
+);
 
 interface StampCountsResult {
 	total_stamps: number;
@@ -30,32 +30,46 @@ async function checkAnalyticsRateLimit(
 	const now = Date.now();
 	const windowStart = now - ANALYTICS_RATE_WINDOW;
 
-	// Use raw SQL for atomic rate limit check
+	// First, try atomic UPDATE with WHERE clause
+	// Only increments if current count is below limit AND window is still valid
+	await db.$client
+		.prepare(
+			`UPDATE analytics_rate_limits SET generations_count = generations_count + 1 WHERE user_ip = ? AND generations_count < ? AND window_start >= ?`,
+		)
+		.bind(userIp, ANALYTICS_RATE_LIMIT, windowStart)
+		.run();
+
+	// Check if the UPDATE succeeded by reading the current state
 	const result = await db.$client
 		.prepare(
-			`SELECT count(*) as count FROM analytics_rate_limits WHERE user_ip = ? AND window_start >= ?`,
+			`SELECT generations_count FROM analytics_rate_limits WHERE user_ip = ?`,
 		)
-		.bind(userIp, windowStart)
-		.first<{ count: number }>();
+		.bind(userIp)
+		.first<{ generations_count: number }>();
 
-	const currentCount = result?.count ?? 0;
-
-	if (currentCount >= ANALYTICS_RATE_LIMIT) {
+	if (result) {
+		// Existing record - check if UPDATE succeeded and window is valid
+		if (
+			result.generations_count <= ANALYTICS_RATE_LIMIT &&
+			result.generations_count > 0
+		) {
+			return {
+				allowed: true,
+				remaining: ANALYTICS_RATE_LIMIT - result.generations_count,
+			};
+		}
 		return { allowed: false, remaining: 0 };
 	}
 
-	// Increment counter atomically
+	// No existing record - do atomic insert
 	await db.$client
 		.prepare(
-			`INSERT INTO analytics_rate_limits (user_ip, generations_count, window_start) VALUES (?, 1, ?) ON CONFLICT(user_ip) DO UPDATE SET generations_count = generations_count + 1`,
+			`INSERT INTO analytics_rate_limits (user_ip, generations_count, window_start) VALUES (?, 1, ?)`,
 		)
-		.bind(userIp, windowStart)
+		.bind(userIp, now)
 		.run();
 
-	return {
-		allowed: true,
-		remaining: ANALYTICS_RATE_LIMIT - currentCount - 1,
-	};
+	return { allowed: true, remaining: ANALYTICS_RATE_LIMIT - 1 };
 }
 
 export async function GET(request: NextRequest) {
@@ -71,7 +85,7 @@ export async function GET(request: NextRequest) {
 	}
 
 	// Check if user is in admin allowlist
-	if (!ADMIN_USERS.includes(userId)) {
+	if (!ADMIN_USERS.has(userId)) {
 		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 	}
 
@@ -88,8 +102,6 @@ export async function GET(request: NextRequest) {
 	}
 
 	try {
-		const db = getDb();
-
 		// Timestamps in seconds (matching integer "created_at" column with mode: "timestamp")
 		const nowSec = Math.floor(Date.now() / 1000);
 		const daySec = 86_400;
