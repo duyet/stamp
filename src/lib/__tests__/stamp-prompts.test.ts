@@ -67,8 +67,8 @@ describe("STAMP_STYLE_PRESETS", () => {
 
 	it("all styles include no-padding constraint", () => {
 		for (const [, preset] of Object.entries(STAMP_STYLE_PRESETS)) {
-			expect(preset.prompt).toContain("no padding outside stamp edges");
-			expect(preset.prompt).toContain("no background frame");
+			expect(preset.prompt).toMatch(/NO padding outside stamp edges/i);
+			expect(preset.prompt).toMatch(/NO background frame/i);
 		}
 	});
 });
@@ -83,8 +83,8 @@ describe("STAMP_BASE_STYLE", () => {
 
 	it("includes anti-padding and no-frame constraints", () => {
 		expect(STAMP_BASE_STYLE).toContain("fills the entire image");
-		expect(STAMP_BASE_STYLE).toContain("no padding outside stamp edges");
-		expect(STAMP_BASE_STYLE).toContain("no background frame");
+		expect(STAMP_BASE_STYLE).toMatch(/NO padding outside stamp edges/i);
+		expect(STAMP_BASE_STYLE).toMatch(/NO background frame/i);
 	});
 
 	it("does not force portrait-specific elements in base style", () => {
@@ -117,7 +117,7 @@ describe("buildStampPrompt", () => {
 
 	it("includes no-padding constraint", () => {
 		const result = buildStampPrompt("test");
-		expect(result).toContain("no outer padding or frame");
+		expect(result).toMatch(/NO outer padding or frame/i);
 	});
 
 	it("works for all styles", () => {
