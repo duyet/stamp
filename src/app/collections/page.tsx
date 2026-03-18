@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RefreshIcon } from "@/components/icons";
 import { StampCardMemo } from "@/components/stamp-card";
+import { StampModal } from "@/components/stamp-modal";
+import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
@@ -13,7 +15,8 @@ type StyleFilter = StampStyle | typeof ALL_STYLES;
 export default function CollectionsPage() {
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
 	const [retryKey, setRetryKey] = useState(0);
-	const { stamps, loading, error } = useStamps(100, retryKey);
+	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
+	const { stamps, loading, error, setStamps } = useStamps(100, retryKey);
 
 	// Memoized filter to avoid re-computation on every render
 	const filteredStamps = useMemo(
@@ -27,6 +30,15 @@ export default function CollectionsPage() {
 	// Trigger refetch on retry
 	function handleRetry() {
 		setRetryKey((prev) => prev + 1);
+	}
+
+	// Handle regeneration from modal
+	function handleRegenerate(newStamp: Stamp) {
+		setSelectedStamp(newStamp);
+		setStamps((prev) => {
+			const filtered = prev.filter((s) => s.id !== newStamp.id);
+			return [newStamp, ...filtered];
+		});
 	}
 
 	return (
@@ -123,9 +135,22 @@ export default function CollectionsPage() {
 			) : (
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 					{filteredStamps.map((stamp) => (
-						<StampCardMemo key={stamp.id} stamp={stamp} />
+						<StampCardMemo
+							key={stamp.id}
+							stamp={stamp}
+							onClick={() => setSelectedStamp(stamp)}
+						/>
 					))}
 				</div>
+			)}
+
+			{/* Stamp overlay modal */}
+			{selectedStamp && (
+				<StampModal
+					stamp={selectedStamp}
+					onClose={() => setSelectedStamp(null)}
+					onRegenerate={handleRegenerate}
+				/>
 			)}
 		</div>
 	);

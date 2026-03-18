@@ -64,16 +64,21 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 		return (
 			<button
 				type="button"
-				className="group relative text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 w-full"
+				className="group relative text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-300 ease-out hover:shadow-2xl hover:shadow-stamp-blue/20 hover:-translate-y-2 hover:scale-[1.02] hover:rotate-1 w-full"
 				onClick={onClick}
 			>
 				{content}
+				{/* Quick view overlay */}
+				<div className="absolute inset-0 bg-gradient-to-t from-stamp-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+				<div className="absolute bottom-3 left-3 right-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+					<span className="text-sm font-medium">Click to view</span>
+				</div>
 			</button>
 		);
 	}
 
 	return (
-		<div className="group relative rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+		<div className="group relative rounded-xl overflow-hidden transition-all duration-300 ease-out hover:shadow-xl hover:shadow-stamp-blue/10 hover:-translate-y-1 hover:scale-[1.01]">
 			{content}
 		</div>
 	);

@@ -46,6 +46,16 @@ export function HomeContent() {
 		setRecentStamps((prev) => [newStamp, ...prev]);
 	}
 
+	function handleRegenerate(newStamp: Stamp) {
+		// Update selected stamp to show new image in modal
+		setSelectedStamp(newStamp);
+		// Update stamps list - replace the stamp with same ID or add to front
+		setRecentStamps((prev) => {
+			const filtered = prev.filter((s) => s.id !== newStamp.id);
+			return [newStamp, ...filtered];
+		});
+	}
+
 	return (
 		<div className="max-w-5xl mx-auto px-6 animate-page-fade-in">
 			{/* Hero — stamp fan + compact title */}
@@ -103,7 +113,7 @@ export function HomeContent() {
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-300 ease-out hover:shadow-2xl hover:shadow-stamp-blue/20 hover:-translate-y-2 hover:scale-[1.02] hover:rotate-1"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">
@@ -138,6 +148,7 @@ export function HomeContent() {
 				<StampModal
 					stamp={selectedStamp}
 					onClose={() => setSelectedStamp(null)}
+					onRegenerate={handleRegenerate}
 				/>
 			)}
 		</div>
