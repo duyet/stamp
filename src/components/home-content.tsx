@@ -78,15 +78,15 @@ export function HomeContent() {
 					/>
 				</div>
 				<h1
-					className="text-5xl md:text-7xl font-bold tracking-tight mb-3 hero-gradient animate-gradient-shift"
+					className="text-5xl md:text-7xl font-bold tracking-tight mb-4 hero-gradient animate-gradient-shift"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders
 				</h1>
-				<p className="text-base text-stone-600 dark:text-stone-400 max-w-md mx-auto leading-relaxed mb-6">
+				<p className="text-lg text-stone-600 dark:text-stone-400 max-w-md mx-auto leading-relaxed mb-8 font-medium">
 					Describe anything and get a unique AI-generated postage stamp in
 					seconds.{" "}
-					<span className="text-stamp-blue dark:text-stamp-blue font-medium">
+					<span className="text-stamp-blue dark:text-stamp-blue font-bold">
 						Free to create.
 					</span>
 				</p>
@@ -97,12 +97,10 @@ export function HomeContent() {
 							behavior: "smooth",
 						});
 					}}
-					className="group relative inline-flex items-center gap-2 px-8 py-4 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full font-medium text-base overflow-hidden hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-xl hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300"
+					className="group relative inline-flex items-center gap-2 px-10 py-4 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full font-semibold text-lg overflow-hidden hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-2xl hover:shadow-stamp-blue/30 hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 button-shine-effect"
 				>
-					{/* Button shine effect */}
-					<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 dark:via-stone-400/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
 					<span className="relative z-10">Create your stamp</span>
-					<span className="relative z-10 group-hover:translate-y-0.5 transition-transform duration-300">
+					<span className="relative z-10 group-hover:translate-y-1 transition-transform duration-300">
 						<ArrowDownIcon />
 					</span>
 				</button>

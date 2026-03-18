@@ -8,6 +8,7 @@ import { StampGridSkeleton } from "@/components/stamp-grid-skeleton";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
+import { GRID_LAYOUTS } from "@/lib/constants";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
 const ALL_STYLES = "all" as const;
@@ -25,7 +26,10 @@ export default function CollectionsPage() {
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
 	const [retryKey, setRetryKey] = useState(0);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
-	const { stamps, loading, error, setStamps } = useStamps(100, retryKey);
+	const { stamps, loading, error, setStamps } = useStamps(
+		GRID_LAYOUTS.MAX_STAMP_LIMIT,
+		retryKey,
+	);
 
 	// Memoized filter to avoid re-computation on every render
 	const filteredStamps = useMemo(
@@ -111,7 +115,23 @@ export default function CollectionsPage() {
 			) : filteredStamps.length === 0 ? (
 				<div className="text-center py-20">
 					<div className="max-w-sm mx-auto">
-						<p className="text-stone-600 dark:text-stone-400 mb-2">
+						{/* Empty state stamp illustration */}
+						<div className="mb-6 relative inline-block">
+							<div className="w-24 h-24 mx-auto relative opacity-40">
+								<div className="absolute inset-0 border-4 border-dashed border-stone-300 dark:border-stone-700 rounded-lg transform rotate-6" />
+								<div className="absolute inset-2 bg-stone-100 dark:bg-stone-800 rounded flex items-center justify-center">
+									<span className="text-4xl" role="img" aria-label="Empty">
+										📮
+									</span>
+								</div>
+								<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-200 dark:bg-stone-800 rounded-full" />
+								<div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-200 dark:bg-stone-800 rounded-full" />
+								<div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-stone-200 dark:bg-stone-800 rounded-full" />
+								<div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-stone-200 dark:bg-stone-800 rounded-full" />
+							</div>
+						</div>
+
+						<p className="text-stone-600 dark:text-stone-400 mb-2 text-base font-medium">
 							No stamps found.
 						</p>
 						<p className="text-sm text-stone-500 dark:text-stone-600 mb-6">

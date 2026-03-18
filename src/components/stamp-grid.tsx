@@ -5,9 +5,10 @@ import Link from "next/link";
 import { StampIcon } from "@/components/icons";
 import { StampCardMemo } from "@/components/stamp-card";
 import { useStamps } from "@/hooks/use-stamps";
+import { STAMPS_PER_PAGE } from "@/lib/constants";
 
 export function StampGrid() {
-	const { stamps, loading } = useStamps(50);
+	const { stamps, loading } = useStamps(STAMPS_PER_PAGE);
 
 	if (loading) {
 		return (

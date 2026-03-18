@@ -6,7 +6,11 @@ import { DashboardLocations } from "@/components/dashboard-locations";
 import { DashboardMap } from "@/components/dashboard-map";
 import { StyleShowcase } from "@/components/dashboard-style-showcase";
 import { DashboardTimezoneTimeline } from "@/components/dashboard-timezone-timeline";
+import { HorizontalBarChart } from "@/components/horizontal-bar-chart";
 import { StampGrid } from "@/components/stamp-grid";
+import { StatCard } from "@/components/stat-card";
+import { DASHBOARD } from "@/lib/constants";
+import { formatDateShort } from "@/lib/date-utils";
 import type { LocationStats, MapData, TimezoneStats } from "@/types/analytics";
 
 interface StyleCount {
@@ -56,75 +60,6 @@ interface Analytics {
 	mapData: MapData[];
 }
 
-function formatDate(ts: number): string {
-	return new Date(ts).toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-	});
-}
-
-function StatCard({ label, value }: { label: string; value: number }) {
-	return (
-		<div className="bg-white rounded-xl p-5 border border-stone-200">
-			<p className="text-xs text-stone-600 uppercase tracking-wide mb-2">
-				{label}
-			</p>
-			<p className="text-3xl font-bold text-stone-900">
-				{value.toLocaleString()}
-			</p>
-		</div>
-	);
-}
-
-function HorizontalBarChart({
-	title,
-	items,
-	labelWidth = "w-20",
-	formatLabel,
-}: {
-	title: string;
-	items: Array<{ label: string; count: number }>;
-	labelWidth?: string;
-	formatLabel?: (val: string) => string;
-}) {
-	if (items.length === 0) return null;
-	const maxCount = Math.max(...items.map((item) => item.count), 1);
-
-	return (
-		<section>
-			<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-				{title}
-			</h2>
-			<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
-				{items.map((item) => {
-					const label = item.label;
-					const count = item.count;
-					return (
-						<div key={label} className="flex items-center gap-3">
-							<span
-								className={`${labelWidth} text-sm text-stone-700 capitalize shrink-0 truncate`}
-							>
-								{formatLabel ? formatLabel(label) : label}
-							</span>
-							<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
-								<div
-									className="h-full bg-stone-800 rounded-full transition-all"
-									style={{
-										width: `${Math.round((count / maxCount) * 100)}%`,
-									}}
-								/>
-							</div>
-							<span className="w-10 text-sm text-stone-600 text-right shrink-0">
-								{count}
-							</span>
-						</div>
-					);
-				})}
-			</div>
-		</section>
-	);
-}
-
 export function DashboardContent() {
 	const [data, setData] = useState<Analytics | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -155,29 +90,31 @@ export function DashboardContent() {
 				// Fetch one featured stamp per style for the showcase
 				if (d.popularStyles.length > 0) {
 					const styleData = await Promise.all(
-						d.popularStyles.slice(0, 6).map(async (s) => {
-							try {
-								const stampRes = await fetch(
-									`/api/stamps?style=${encodeURIComponent(s.style)}&limit=1`,
-								);
-								if (stampRes.ok) {
-									const stamps = (await stampRes.json()) as Array<{
-										id: string;
-										imageUrl: string;
-										prompt: string;
-										description: string | null;
-									}>;
-									return {
-										style: s.style,
-										count: s.count,
-										featuredStamp: stamps[0] ?? undefined,
-									};
+						d.popularStyles
+							.slice(0, DASHBOARD.POPULAR_STYLES_LIMIT)
+							.map(async (s) => {
+								try {
+									const stampRes = await fetch(
+										`/api/stamps?style=${encodeURIComponent(s.style)}&limit=1`,
+									);
+									if (stampRes.ok) {
+										const stamps = (await stampRes.json()) as Array<{
+											id: string;
+											imageUrl: string;
+											prompt: string;
+											description: string | null;
+										}>;
+										return {
+											style: s.style,
+											count: s.count,
+											featuredStamp: stamps[0] ?? undefined,
+										};
+									}
+								} catch {
+									/* ignore */
 								}
-							} catch {
-								/* ignore */
-							}
-							return { style: s.style, count: s.count };
-						}),
+								return { style: s.style, count: s.count };
+							}),
 					);
 					setStyleStamps(styleData);
 				}
@@ -274,29 +211,29 @@ export function DashboardContent() {
 					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
 						Generations per day (last 30 days)
 					</h2>
-					<div className="bg-white rounded-xl border border-stone-200 p-6">
+					<div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-6">
 						<div className="flex items-end gap-1 h-32">
 							{data.dailyTrend.map((d) => (
 								<div
 									key={d.day}
 									className="flex-1 flex flex-col items-center justify-end gap-1 group"
-									title={`${formatDate(d.day)}: ${d.count}`}
+									title={`${formatDateShort(d.day)}: ${d.count}`}
 								>
 									<div
-										className="w-full bg-stone-800 rounded-t opacity-40 group-hover:opacity-80 transition-opacity"
+										className="w-full bg-stone-800 dark:bg-stone-200 rounded-t opacity-40 group-hover:opacity-80 transition-opacity"
 										style={{
-											height: `${Math.max(4, Math.round((d.count / maxDayCount) * 112))}px`,
+											height: `${Math.max(DASHBOARD.MIN_BAR_HEIGHT, Math.round((d.count / maxDayCount) * DASHBOARD.MAX_BAR_HEIGHT))}px`,
 										}}
 									/>
 								</div>
 							))}
 						</div>
-						<div className="flex justify-between mt-2 text-xs text-stone-600">
+						<div className="flex justify-between mt-2 text-xs text-stone-600 dark:text-stone-400">
 							{data.dailyTrend.length > 0 && (
 								<>
-									<span>{formatDate(data.dailyTrend[0].day)}</span>
+									<span>{formatDateShort(data.dailyTrend[0].day)}</span>
 									<span>
-										{formatDate(
+										{formatDateShort(
 											data.dailyTrend[data.dailyTrend.length - 1].day,
 										)}
 									</span>

@@ -16,15 +16,21 @@ describe("GET /api/stamps", () => {
 			id: "stamp1",
 			prompt: "a cat",
 			imageUrl: "/api/stamps/stamp1/image",
+			thumbnailUrl: null,
 			style: "vintage",
 			isPublic: true,
+			createdAt: new Date("2024-01-01T12:00:00Z"),
+			description: null,
 		},
 		{
 			id: "stamp2",
 			prompt: "a dog",
 			imageUrl: "/api/stamps/stamp2/image",
+			thumbnailUrl: null,
 			style: "modern",
 			isPublic: true,
+			createdAt: new Date("2024-01-01T11:00:00Z"),
+			description: null,
 		},
 	];
 
@@ -43,29 +49,59 @@ describe("GET /api/stamps", () => {
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
-		expect(data.stamps).toEqual(mockResults);
+		// Dates are serialized to ISO strings in JSON
+		const expectedStamps = mockResults.map((stamp) => ({
+			...stamp,
+			createdAt: stamp.createdAt.toISOString(),
+		}));
+		expect(data.stamps).toEqual(expectedStamps);
+		expect(data.hasMore).toBe(false);
+		expect(data.nextCursor).toBeUndefined();
 	});
 
 	it("uses default limit of 50", async () => {
 		await GET(createGetRequest(URL));
-		expect(mockChain.limit).toHaveBeenCalledWith(50);
+		expect(mockChain.limit).toHaveBeenCalledWith(51); // limit + 1 for hasMore check
 	});
 
-	it("uses default offset of 0", async () => {
-		await GET(createGetRequest(URL));
-		expect(mockChain.offset).toHaveBeenCalledWith(0);
+	it("generates cursor when hasMore", async () => {
+		const moreResults = [
+			...mockResults,
+			{
+				id: "stamp3",
+				prompt: "more",
+				imageUrl: "/api/stamps/stamp3/image",
+				thumbnailUrl: null,
+				style: "vintage",
+				isPublic: true,
+				createdAt: new Date("2024-01-01T10:00:00Z"),
+				description: null,
+			},
+		];
+		const moreChain = createSelectChain(moreResults);
+		vi.mocked(getDb).mockReturnValue({
+			select: vi.fn().mockReturnValue(moreChain),
+		} as never);
+
+		const res = await GET(createGetRequest(URL, { limit: "2" }));
+		const data = (await res.json()) as Record<string, unknown>;
+
+		// The mock chain returns the full array, so we need to handle that
+		expect(Array.isArray(data.stamps)).toBe(true);
+		expect(data.hasMore).toBe(true);
+		expect(data.nextCursor).toBeDefined();
 	});
 
-	it("respects custom limit and offset", async () => {
-		await GET(createGetRequest(URL, { limit: "20", offset: "10" }));
+	it("respects cursor for pagination", async () => {
+		const cursor = new Date("2024-01-01T10:00:00Z").toISOString();
+		await GET(createGetRequest(URL, { cursor, limit: "10" }));
 
-		expect(mockChain.limit).toHaveBeenCalledWith(20);
-		expect(mockChain.offset).toHaveBeenCalledWith(10);
+		expect(mockChain.limit).toHaveBeenCalledWith(11); // limit + 1
 	});
 
 	it("caps limit at 100", async () => {
 		await GET(createGetRequest(URL, { limit: "200" }));
-		expect(mockChain.limit).toHaveBeenCalledWith(100);
+		expect(mockChain.limit).toHaveBeenCalledWith(101);
 	});
 
 	it("returns empty array when no stamps", async () => {

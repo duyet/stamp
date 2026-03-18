@@ -120,3 +120,29 @@ export const BG_COLORS = {
 	/** Subtle border */
 	borderSubtle: "border-stone-100 dark:border-stone-800",
 } as const;
+
+/**
+ * Dashboard-specific constants
+ */
+export const DASHBOARD = {
+	/** Number of days to show in daily trend chart */
+	DAILY_TREND_DAYS: 30,
+	/** Maximum bar height in pixels for trend chart */
+	MAX_BAR_HEIGHT: 112,
+	/** Minimum bar height in pixels for trend chart */
+	MIN_BAR_HEIGHT: 4,
+	/** Number of stat cards per row in overview section */
+	STATS_PER_ROW: 4,
+	/** Number of popular styles to showcase */
+	POPULAR_STYLES_LIMIT: 6,
+} as const;
+
+/**
+ * Grid layout constants
+ */
+export const GRID_LAYOUTS = {
+	/** Default skeleton card count for stamp grids */
+	DEFAULT_SKELETON_COUNT: 8,
+	/** Maximum number of stamps to show in collections */
+	MAX_STAMP_LIMIT: 100,
+} as const;

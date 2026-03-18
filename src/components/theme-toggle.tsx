@@ -7,17 +7,25 @@ import { Moon, Sun } from "./icons";
 export function ThemeToggle() {
 	const { theme, setTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
+	const [isAnimating, setIsAnimating] = useState(false);
 
 	// Prevent hydration mismatch
 	useEffect(() => {
 		setMounted(true);
 	}, []);
 
+	const handleThemeChange = () => {
+		setIsAnimating(true);
+		setTheme(theme === "dark" ? "light" : "dark");
+		// Reset animation after it completes
+		setTimeout(() => setIsAnimating(false), 400);
+	};
+
 	if (!mounted) {
 		return (
 			<button
 				type="button"
-				className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+				className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-300 hover:scale-110"
 				aria-label="Toggle theme"
 			>
 				<span className="w-5 h-5 block" />
@@ -30,15 +38,19 @@ export function ThemeToggle() {
 	return (
 		<button
 			type="button"
-			onClick={() => setTheme(isDark ? "light" : "dark")}
-			className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+			onClick={handleThemeChange}
+			className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-300 hover:scale-110 active:scale-95 relative overflow-hidden"
 			aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
 		>
-			{isDark ? (
-				<Sun className="w-5 h-5 text-stone-600 dark:text-stone-400" />
-			) : (
-				<Moon className="w-5 h-5 text-stone-600 dark:text-stone-400" />
-			)}
+			<div
+				className={`transition-all duration-300 ${isAnimating ? "theme-icon-animate" : ""}`}
+			>
+				{isDark ? (
+					<Sun className="w-5 h-5 text-stone-600 dark:text-stone-400" />
+				) : (
+					<Moon className="w-5 h-5 text-stone-600 dark:text-stone-400" />
+				)}
+			</div>
 		</button>
 	);
 }

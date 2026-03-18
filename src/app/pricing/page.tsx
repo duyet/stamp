@@ -48,7 +48,7 @@ export default function PricingPage() {
 			<div className="bg-stone-100 dark:bg-stone-800/50 rounded-2xl p-6 sm:p-10 max-w-3xl mx-auto">
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{/* Free card */}
-					<div className="bg-white dark:bg-stone-900 rounded-2xl p-6 sm:p-8 flex flex-col shadow-sm">
+					<div className="bg-white dark:bg-stone-900 rounded-2xl p-6 sm:p-8 flex flex-col shadow-sm hover-lift-bold animate-card-entrance">
 						<div className="flex items-start justify-between mb-2">
 							<h2
 								className="text-lg font-semibold text-stamp-navy dark:text-stone-100"
@@ -86,14 +86,14 @@ export default function PricingPage() {
 						</p>
 						<Link
 							href="/"
-							className="block text-center bg-stamp-navy dark:bg-stone-100 text-white dark:text-stone-900 rounded-xl py-3 px-6 text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 transition"
+							className="block text-center bg-stamp-navy dark:bg-stone-100 text-white dark:text-stone-900 rounded-xl py-3 px-6 text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 transition-all duration-300 hover:shadow-md button-shine-effect"
 						>
 							Start Creating
 						</Link>
 					</div>
 
 					{/* Pro card */}
-					<div className="relative bg-stone-200/60 dark:bg-stone-700/50 rounded-2xl overflow-hidden flex flex-col">
+					<div className="relative bg-stone-200/60 dark:bg-stone-700/50 rounded-2xl overflow-hidden flex flex-col hover-lift-bold animate-card-entrance-delay-1">
 						{/* Coming soon overlay */}
 						<div className="absolute inset-0 bg-stone-100/60 dark:bg-stone-900/60 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-2xl">
 							<span className="text-xs font-medium bg-white dark:bg-stone-800 text-stone-500 dark:text-stone-400 px-3 py-1.5 rounded-full tracking-wide uppercase">
@@ -143,9 +143,10 @@ export default function PricingPage() {
 				Questions?{" "}
 				<a
 					href="mailto:hello@stamp.builders"
-					className="text-stone-600 dark:text-stone-400 hover:text-stamp-navy dark:hover:text-stone-200 transition underline underline-offset-2"
+					className="text-stone-600 dark:text-stone-400 hover:text-stamp-navy dark:hover:text-stone-200 transition-all duration-200 relative group font-medium"
 				>
 					Get in touch
+					<span className="absolute bottom-0 left-0 w-0 h-0.5 bg-current group-hover:w-full transition-all duration-300" />
 				</a>
 			</p>
 		</div>

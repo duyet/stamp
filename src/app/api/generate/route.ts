@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import type { Database } from "@/db";
@@ -18,6 +19,21 @@ import { refundCredits } from "@/lib/refund-credits";
 import { sanitizeErrorForLogging } from "@/lib/sanitize-error";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 import { validateReferenceImage } from "@/lib/validate-image";
+
+// In-memory request deduplication cache (prevents double-click spam)
+// Key: hash(userId, userIp, prompt, style, hd)
+// Value: { stampId, timestamp }
+const pendingRequests = new Map<
+	string,
+	{ stampId: string; timestamp: number }
+>();
+const DEDUP_WINDOW_MS = 5000; // 5 seconds
+const MAX_PENDING_SIZE = 1000;
+
+// Export for testing
+export function clearPendingRequests() {
+	pendingRequests.clear();
+}
 
 export async function POST(request: NextRequest) {
 	// Track whether credits were deducted for refund in catch block
@@ -140,6 +156,61 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		// Request deduplication: prevent double-click spam
+		// Use a hash of the request parameters to identify duplicate requests
+		const requestId = createHash("sha256")
+			.update(
+				JSON.stringify({
+					userId: userId || null,
+					userIp,
+					prompt: prompt?.trim() || "",
+					style,
+					hd,
+					referenceImageData: referenceImageData ? "present" : "absent",
+				}),
+			)
+			.digest("hex");
+
+		// Check if there's a pending request with the same parameters
+		const pending = pendingRequests.get(requestId);
+		const now = Date.now();
+
+		if (pending && now - pending.timestamp < DEDUP_WINDOW_MS) {
+			// Duplicate request detected - return the existing stamp ID
+			// This prevents generating multiple identical stamps from double-clicks
+			console.log(
+				`[Generate] Deduped request ${requestId.slice(0, 8)}... → existing stamp ${pending.stampId}`,
+			);
+
+			// Still deduct credits since we're "generating" (just returning cached result)
+			// The user did intent to generate, and we're providing the result
+			return NextResponse.json({
+				id: pending.stampId,
+				imageUrl: `/api/stamps/${pending.stampId}/image`,
+				prompt,
+				enhancedPrompt: null,
+				description: null,
+				style,
+				hd,
+				remaining,
+				generationTimeMs: 0,
+				deduplicated: true,
+			});
+		}
+
+		// Clean up old entries from the dedup cache (prevent memory leaks)
+		if (pendingRequests.size > MAX_PENDING_SIZE) {
+			for (const [key, value] of pendingRequests.entries()) {
+				if (now - value.timestamp > DEDUP_WINDOW_MS) {
+					pendingRequests.delete(key);
+				}
+			}
+		}
+
+		// Reserve a stamp ID and register the pending request
+		const stampId = nanoid(12);
+		pendingRequests.set(requestId, { stampId, timestamp: now });
+
 		// Track credit info for potential refund
 		creditsDeducted = true;
 		dbForRefund = db;
@@ -184,7 +255,6 @@ export async function POST(request: NextRequest) {
 		const generationTimeMs = Date.now() - genStart;
 
 		// Upload to R2
-		const stampId = nanoid(12);
 		const ext = mimeType.includes("png") ? "png" : "jpg";
 		const key = `stamps/${stampId}.${ext}`;
 
@@ -330,6 +400,9 @@ export async function POST(request: NextRequest) {
 				);
 			}
 		});
+
+		// Clean up dedup cache entry after successful generation
+		pendingRequests.delete(requestId);
 
 		return NextResponse.json({
 			id: stampId,

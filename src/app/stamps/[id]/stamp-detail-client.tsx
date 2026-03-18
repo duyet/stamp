@@ -8,6 +8,7 @@ import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Stamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
 import { useRegenerateStamp } from "@/hooks/use-regenerate-stamp";
+import { formatDateLong } from "@/lib/date-utils";
 import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 
 interface StampDetailClientProps {
@@ -131,10 +132,8 @@ export function StampDetailClient({
 						)}
 
 						{/* Metadata */}
-						<div className="mb-8 text-sm text-stone-500">
-							<p>
-								Created: {new Date(displayStamp.createdAt).toLocaleDateString()}
-							</p>
+						<div className="mb-8 text-sm text-stone-500 dark:text-stone-400">
+							<p>Created: {formatDateLong(displayStamp.createdAt)}</p>
 						</div>
 
 						{/* Actions */}
