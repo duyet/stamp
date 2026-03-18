@@ -1,8 +1,16 @@
 import { sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { getAuthUserId } from "@/lib/clerk";
+import { getEnv } from "@/lib/env";
+import { getClientIp } from "@/lib/get-client-ip";
+
+// Simple admin allowlist - in production, use environment variable or database table
+const ADMIN_USERS = (process.env.ADMIN_USERS || "")
+	.split(",")
+	.filter(Boolean) as string[];
 
 interface StampCountsResult {
 	total_stamps: number;
@@ -11,10 +19,72 @@ interface StampCountsResult {
 	stamps_month: number;
 }
 
+// Rate limit for expensive analytics queries (10 requests per 15 minutes)
+const ANALYTICS_RATE_LIMIT = 10;
+const ANALYTICS_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
+
+async function checkAnalyticsRateLimit(
+	db: Database,
+	userIp: string,
+): Promise<{ allowed: boolean; remaining: number }> {
+	const now = Date.now();
+	const windowStart = now - ANALYTICS_RATE_WINDOW;
+
+	// Use raw SQL for atomic rate limit check
+	const result = await db.$client
+		.prepare(
+			`SELECT count(*) as count FROM analytics_rate_limits WHERE user_ip = ? AND window_start >= ?`,
+		)
+		.bind(userIp, windowStart)
+		.first<{ count: number }>();
+
+	const currentCount = result?.count ?? 0;
+
+	if (currentCount >= ANALYTICS_RATE_LIMIT) {
+		return { allowed: false, remaining: 0 };
+	}
+
+	// Increment counter atomically
+	await db.$client
+		.prepare(
+			`INSERT INTO analytics_rate_limits (user_ip, generations_count, window_start) VALUES (?, 1, ?) ON CONFLICT(user_ip) DO UPDATE SET generations_count = generations_count + 1`,
+		)
+		.bind(userIp, windowStart)
+		.run();
+
+	return {
+		allowed: true,
+		remaining: ANALYTICS_RATE_LIMIT - currentCount - 1,
+	};
+}
+
 export async function GET(request: NextRequest) {
+	const _env = getEnv();
+	const db = getDb();
+
 	const { userId } = await getAuthUserId(request.headers);
+	const userIp = getClientIp(request.headers);
+
+	// Require authentication
 	if (!userId) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+
+	// Check if user is in admin allowlist
+	if (!ADMIN_USERS.includes(userId)) {
+		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+	}
+
+	// Rate limit expensive analytics queries
+	const { allowed, remaining: _remaining } = await checkAnalyticsRateLimit(
+		db,
+		userIp,
+	);
+	if (!allowed) {
+		return NextResponse.json(
+			{ error: "Rate limit exceeded. Please try again later." },
+			{ status: 429 },
+		);
 	}
 
 	try {

@@ -4,7 +4,6 @@
 import type { NextRequest } from "next/server";
 import { vi } from "vitest";
 import type { Database } from "@/db";
-import { DAILY_CREDIT_LIMITS } from "@/lib/constants";
 
 /**
  * Create a JSON POST/PATCH/PUT request for testing API route handlers.
@@ -75,7 +74,7 @@ export function createMockRateLimitDb(
 	// Mock D1 client for raw SQL
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
 		return {
-			bind: vi.fn().mockImplementation((...args: unknown[]) => {
+			bind: vi.fn().mockImplementation((..._args: unknown[]) => {
 				return {
 					run: vi.fn().mockImplementation(() => {
 						// Simulate atomic UPDATE for rate limit

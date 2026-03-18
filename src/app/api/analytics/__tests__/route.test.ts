@@ -9,16 +9,28 @@ vi.mock("@/db", () => ({
 	getDb: vi.fn(),
 }));
 
+vi.mock("@/lib/env", () => ({
+	getEnv: vi.fn(),
+}));
+
 import { getDb } from "@/db";
 import { getAuthUserId } from "@/lib/clerk";
-import { GET } from "../route";
+import { getEnv } from "@/lib/env";
+
+// Dynamic import to allow stubEnv to take effect before route module loads
+let GET: typeof import("../route")["GET"];
 
 describe("GET /api/analytics", () => {
 	const request = createGetRequest("http://localhost/api/analytics");
 
-	beforeEach(() => {
+	beforeEach(async () => {
+		// Set ADMIN_USERS before route module is loaded
+		vi.stubEnv("ADMIN_USERS", "user_admin,user_other");
 		vi.clearAllMocks();
 		vi.mocked(getAuthUserId).mockResolvedValue({ userId: "user_admin" });
+		vi.mocked(getEnv).mockReturnValue({} as never);
+		// Import route after env is set
+		GET = (await import("../route")).GET;
 	});
 
 	it("returns 401 when not authenticated", async () => {
@@ -32,6 +44,14 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns analytics data with correct shape", async () => {
+		// Mock $client.prepare for rate limiting
+		const mockPrepare = vi.fn().mockReturnValue({
+			bind: vi.fn().mockReturnValue({
+				first: vi.fn().mockResolvedValue({ count: 0 }),
+				run: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
+
 		// All possible query results - mock will return these cyclically
 		// Using cyclic approach since Promise.all calls queries in parallel
 		const allResults = [
@@ -91,6 +111,7 @@ describe("GET /api/analytics", () => {
 		]);
 
 		vi.mocked(getDb).mockReturnValue({
+			$client: { prepare: mockPrepare },
 			select: mockSelect,
 			all: mockAll,
 		} as never);
@@ -123,6 +144,12 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns defaults when queries return empty results", async () => {
+		const mockPrepare = vi.fn().mockReturnValue({
+			bind: vi.fn().mockReturnValue({
+				first: vi.fn().mockResolvedValue({ count: 0 }),
+				run: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
 		const mockSelect = vi.fn().mockImplementation(() => createSelectChain([]));
 		const mockAll = vi.fn().mockResolvedValue([
 			{
@@ -134,6 +161,7 @@ describe("GET /api/analytics", () => {
 		]);
 
 		vi.mocked(getDb).mockReturnValue({
+			$client: { prepare: mockPrepare },
 			select: mockSelect,
 			all: mockAll,
 		} as never);
@@ -155,11 +183,18 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns 500 on database error", async () => {
+		const mockPrepare = vi.fn().mockReturnValue({
+			bind: vi.fn().mockReturnValue({
+				first: vi.fn().mockResolvedValue({ count: 0 }),
+				run: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
 		const mockSelect = vi.fn().mockReturnValue({
 			from: vi.fn().mockRejectedValue(new Error("DB connection failed")),
 		});
 
 		vi.mocked(getDb).mockReturnValue({
+			$client: { prepare: mockPrepare },
 			select: mockSelect,
 		} as never);
 
@@ -171,6 +206,12 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("handles null style in popular styles gracefully", async () => {
+		const mockPrepare = vi.fn().mockReturnValue({
+			bind: vi.fn().mockReturnValue({
+				first: vi.fn().mockResolvedValue({ count: 0 }),
+				run: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
 		let callCount = 0;
 		const selectResults = [
 			[
@@ -207,6 +248,7 @@ describe("GET /api/analytics", () => {
 		]);
 
 		vi.mocked(getDb).mockReturnValue({
+			$client: { prepare: mockPrepare },
 			select: mockSelect,
 			all: mockAll,
 		} as never);

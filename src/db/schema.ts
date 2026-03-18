@@ -94,3 +94,9 @@ export const creditTransactions = sqliteTable(
 );
 
 export type CreditTransaction = typeof creditTransactions.$inferSelect;
+
+export const analyticsRateLimits = sqliteTable("analytics_rate_limits", {
+	userIp: text("user_ip").primaryKey(),
+	generationsCount: integer("generations_count").notNull().default(1),
+	windowStart: integer("window_start").notNull(),
+});
