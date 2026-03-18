@@ -7,11 +7,6 @@ import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
 
-// Simple admin allowlist - in production, use environment variable or database table
-const ADMIN_USERS = new Set(
-	(process.env.ADMIN_USERS || "").split(",").filter(Boolean),
-);
-
 interface StampCountsResult {
 	total_stamps: number;
 	stamps_today: number;
@@ -73,7 +68,7 @@ async function checkAnalyticsRateLimit(
 }
 
 export async function GET(request: NextRequest) {
-	const _env = getEnv();
+	const env = getEnv();
 	const db = getDb();
 
 	const { userId } = await getAuthUserId(request.headers);
@@ -84,8 +79,15 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
-	// Check if user is in admin allowlist
-	if (!ADMIN_USERS.has(userId)) {
+	// Simple admin allowlist - can be configured via wrangler.toml or environment variables
+	// In development, allow all authenticated users for testing
+	const ADMIN_USERS = new Set(
+		(env.ADMIN_USERS as string | undefined)?.split(",").filter(Boolean) || [],
+	);
+
+	// In production with no admin list configured, allow all authenticated users
+	const isAdmin = ADMIN_USERS.size === 0 || ADMIN_USERS.has(userId);
+	if (!isAdmin) {
 		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 	}
 

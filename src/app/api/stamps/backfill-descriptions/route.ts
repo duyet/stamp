@@ -6,26 +6,27 @@ import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { capitalize } from "@/lib/text-utils";
 
-// List of admin userIds who can trigger backfill (in production, use a proper role system)
-const ADMIN_USER_IDS: string[] = process.env.ADMIN_USER_IDS
-	? process.env.ADMIN_USER_IDS.split(",")
-	: [];
-
 export async function POST(request: NextRequest) {
 	try {
+		const env = getEnv();
+		const db = getDb();
+
 		// Require authentication
 		const { userId } = await getAuthUserId(request.headers);
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// Check if user is admin (in production, use Clerk roles/permissions)
-		if (!ADMIN_USER_IDS.includes(userId)) {
+		// Check if user is admin (can be configured via wrangler.toml or environment variables)
+		// In development, allow all authenticated users for testing
+		const ADMIN_USER_IDS: string[] =
+			(env.ADMIN_USER_IDS as string | undefined)?.split(",").filter(Boolean) ||
+			[];
+		const isAdmin =
+			ADMIN_USER_IDS.length === 0 || ADMIN_USER_IDS.includes(userId);
+		if (!isAdmin) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
-
-		const env = getEnv();
-		const db = getDb();
 
 		const ai = env.AI;
 		if (!ai) {

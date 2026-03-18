@@ -22,33 +22,54 @@ export async function checkRateLimit(
 	const nowMs = now.getTime();
 	const windowStartMs = nowMs - RATE_LIMIT_WINDOW_MS;
 
-	// First, try atomic UPDATE with WHERE clause
-	// Only increments if current count is below limit
-	await db.$client
+	// Try atomic UPDATE with WHERE clause first
+	// Only increments if current count is below limit AND window is still valid
+	// The meta.changes property tells us if the UPDATE succeeded
+	const updateResult = await db.$client
 		.prepare(
 			`UPDATE rate_limits SET generations_count = generations_count + 1 WHERE user_ip = ? AND generations_count < ? AND window_start >= ?`,
 		)
 		.bind(userIp, MAX_GENERATIONS_PER_DAY, new Date(windowStartMs))
 		.run();
 
-	// Check if the UPDATE succeeded
-	const afterUpdate = await db.query.rateLimits.findFirst({
+	// Check if UPDATE succeeded (meta.changes > 0 means rows were modified)
+	if (updateResult.meta.changes > 0) {
+		// UPDATE succeeded - existing record was incremented within limit
+		// Fetch current state to get accurate remaining count
+		const current = await db.query.rateLimits.findFirst({
+			where: eq(rateLimits.userIp, userIp),
+		});
+		if (current) {
+			return {
+				allowed: true,
+				remaining: MAX_GENERATIONS_PER_DAY - current.generationsCount,
+			};
+		}
+	}
+
+	// UPDATE didn't affect any rows - either no record exists or window expired
+	// Check if there's an existing record with expired window
+	const existing = await db.query.rateLimits.findFirst({
 		where: eq(rateLimits.userIp, userIp),
 	});
 
-	if (afterUpdate && afterUpdate.windowStart >= new Date(windowStartMs)) {
-		// Existing record within window - check if UPDATE succeeded
-		if (afterUpdate.generationsCount <= MAX_GENERATIONS_PER_DAY) {
-			return {
-				allowed: true,
-				remaining: MAX_GENERATIONS_PER_DAY - afterUpdate.generationsCount,
-			};
+	if (existing) {
+		// Record exists but window expired or limit reached
+		if (existing.generationsCount >= MAX_GENERATIONS_PER_DAY) {
+			// Limit exhausted
+			return { allowed: false, remaining: 0 };
 		}
-		return { allowed: false, remaining: 0 };
+		// Window expired - reset to 1
+		await db.$client
+			.prepare(
+				`UPDATE rate_limits SET generations_count = 1, window_start = ? WHERE user_ip = ?`,
+			)
+			.bind(now, userIp)
+			.run();
+		return { allowed: true, remaining: MAX_GENERATIONS_PER_DAY - 1 };
 	}
 
-	// No existing record or window expired - do atomic insert
-	// Use INSERT with the assumption that most requests will be new IPs
+	// No existing record - insert new one
 	await db.insert(rateLimits).values({
 		id: userIp,
 		userIp,

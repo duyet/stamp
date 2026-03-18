@@ -74,7 +74,7 @@ export function createMockRateLimitDb(
 	// Mock D1 client for raw SQL
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
 		return {
-			bind: vi.fn().mockImplementation((..._args: unknown[]) => {
+			bind: vi.fn().mockImplementation((...args: unknown[]) => {
 				return {
 					run: vi.fn().mockImplementation(() => {
 						// Simulate atomic UPDATE for rate limit
@@ -82,11 +82,15 @@ export function createMockRateLimitDb(
 							sql.includes("UPDATE rate_limits") &&
 							sql.includes("generations_count = generations_count + 1")
 						) {
-							if (currentState && currentState.generationsCount < 100) {
+							// Check if within limit (20 is max per day)
+							// If count is already at limit, don't increment
+							if (currentState && currentState.generationsCount < 20) {
 								currentState.generationsCount += 1;
+								return { meta: { changes: 1 } };
 							}
+							return { meta: { changes: 0 } };
 						}
-						return {};
+						return { meta: { changes: 0 } };
 					}),
 				};
 			}),
