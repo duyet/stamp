@@ -22,7 +22,7 @@ export default function CollectionsPage() {
 	);
 
 	return (
-		<div className="max-w-5xl mx-auto px-6 py-20">
+		<div className="max-w-5xl mx-auto px-6 py-20 animate-page-fade-in">
 			<div className="text-center mb-8">
 				<h1
 					className="text-4xl font-bold text-stamp-navy tracking-tight mb-3"

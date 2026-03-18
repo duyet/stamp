@@ -16,13 +16,13 @@ export function Header() {
 				<div className="flex items-center gap-3 sm:gap-6 text-sm">
 					<Link
 						href="/generate"
-						className="text-stone-600 hover:text-stone-900 transition-colors hidden sm:block"
+						className="text-stone-600 hover:text-stone-900 transition-colors hidden sm:block link-hover-underline"
 					>
 						Create
 					</Link>
 					<Link
 						href="/pricing"
-						className="text-stone-600 hover:text-stone-900 transition-colors flex items-center gap-1.5"
+						className="text-stone-600 hover:text-stone-900 transition-colors flex items-center gap-1.5 link-hover-underline"
 					>
 						<span className="hidden sm:inline">Pricing</span>
 						<span className="text-xs font-medium bg-stamp-green/15 text-stamp-green px-1.5 py-0.5 rounded-full">
@@ -31,7 +31,7 @@ export function Header() {
 					</Link>
 					<Link
 						href="/collections"
-						className="text-stone-600 hover:text-stone-900 transition-colors"
+						className="text-stone-600 hover:text-stone-900 transition-colors link-hover-underline"
 					>
 						Collections
 					</Link>
@@ -39,7 +39,7 @@ export function Header() {
 						<SignInButton mode="modal">
 							<button
 								type="button"
-								className="text-stone-600 hover:text-stone-900 transition-colors"
+								className="text-stone-600 hover:text-stone-900 transition-colors link-hover-underline"
 							>
 								Sign in
 							</button>

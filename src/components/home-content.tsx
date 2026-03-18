@@ -46,9 +46,9 @@ export function HomeContent() {
 	}
 
 	return (
-		<div className="max-w-5xl mx-auto px-6">
+		<div className="max-w-5xl mx-auto px-6 animate-page-fade-in">
 			{/* Hero — stamp fan + compact title */}
-			<section className="pt-6 pb-6 text-center">
+			<section className="pt-6 pb-8 text-center">
 				<div className="flex justify-center mb-5">
 					<StampFan
 						images={recentStamps.slice(0, 5).map((s) => s.imageUrl)}
@@ -59,16 +59,37 @@ export function HomeContent() {
 					/>
 				</div>
 				<h1
-					className="text-5xl md:text-7xl font-bold tracking-tight mb-2 hero-gradient"
+					className="text-5xl md:text-7xl font-bold tracking-tight mb-3 hero-gradient"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders
 				</h1>
-				<p className="text-base text-stone-600 max-w-md mx-auto leading-relaxed">
+				<p className="text-base text-stone-600 max-w-md mx-auto leading-relaxed mb-6">
 					Describe anything and get a unique AI-generated postage stamp in
 					seconds.{" "}
 					<span className="text-stamp-blue font-medium">Free to create.</span>
 				</p>
+				<Link
+					href="#generate"
+					className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white rounded-full font-medium text-base hover:bg-stone-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+				>
+					<span>Create your stamp</span>
+					<svg
+						className="w-4 h-4"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+						aria-hidden="true"
+					>
+						<title>Arrow down</title>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M19 14l-7 7m0 0l-7-7m7 7V3"
+						/>
+					</svg>
+				</Link>
 			</section>
 
 			{/* Generate form */}
