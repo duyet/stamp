@@ -7,6 +7,7 @@ import {
 	DownloadIcon,
 	HeartIcon,
 } from "@/components/icons";
+import { Toggle } from "@/components/toggle";
 import { useFavorites } from "@/hooks/use-favorites";
 
 interface GeneratedStamp {
@@ -40,19 +41,17 @@ export function GenerationResults({
 		<div className="mt-10">
 			{/* Controls for latest stamp */}
 			<div className="text-center mb-4 space-y-2">
-				<label className="inline-flex items-center gap-2 cursor-pointer group">
-					<div className="relative">
-						<input
-							type="checkbox"
-							checked={isPublic}
-							onChange={onVisibilityChange}
-							className="peer sr-only"
-						/>
-						<div className="w-8 h-4 bg-stone-200 rounded-full peer-checked:bg-stone-800 transition-colors" />
-						<div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4" />
-					</div>
-					<span className="text-xs text-stone-500">Public collection</span>
-				</label>
+				<div className="inline-flex">
+					<Toggle
+						checked={isPublic}
+						onChange={(checked) =>
+							onVisibilityChange({
+								target: { checked: checked } as HTMLInputElement,
+							} as React.ChangeEvent<HTMLInputElement>)
+						}
+						label="Public collection"
+					/>
+				</div>
 				<p className="text-xs text-stone-400">
 					{remaining} remaining today
 					{generationTimeMs && (

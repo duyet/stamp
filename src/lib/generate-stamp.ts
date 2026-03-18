@@ -77,12 +77,13 @@ async function buildMultipartInput(
 		form.append(key, value);
 	}
 	// Add reference image if provided (for img2img with FLUX.2)
+	// Convert to ArrayBuffer for Blob construction (avoid data URL fetch overhead)
 	if (referenceImageData) {
-		// Convert Uint8Array to data URL
-		const dataUrl = uint8ArrayToDataUrl(referenceImageData, "image/png");
-		// Fetch as Blob to get proper BlobPart type
-		const response = await fetch(dataUrl);
-		const blob = await response.blob();
+		// Create a copy of the ArrayBuffer to avoid SharedArrayBuffer type issues
+		const arrayBuffer = new ArrayBuffer(referenceImageData.byteLength);
+		const view = new Uint8Array(arrayBuffer);
+		view.set(referenceImageData);
+		const blob = new Blob([arrayBuffer], { type: "image/png" });
 		form.append("input_image_0", blob as unknown as File);
 	}
 	return form;

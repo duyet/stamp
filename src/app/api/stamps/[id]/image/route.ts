@@ -11,12 +11,22 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
 	webp: "image/webp",
 };
 
+const VALID_EXTENSIONS = ["png", "jpg", "jpeg", "webp"] as const;
+const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const MAX_ID_LENGTH = 100;
+
 export async function GET(
 	_request: NextRequest,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
 		const { id } = await params;
+
+		// Validate ID format to prevent injection attacks
+		if (!ID_PATTERN.test(id) || id.length > MAX_ID_LENGTH) {
+			return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+		}
+
 		const env = getEnv();
 		const db = getDb();
 		const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
@@ -25,6 +35,11 @@ export async function GET(
 		const isReference = id.startsWith("ref_");
 		const prefix = isReference ? "references" : "stamps";
 		const cleanId = isReference ? id.slice(4) : id;
+
+		// Validate cleanId is not empty after prefix removal
+		if (!cleanId || !ID_PATTERN.test(cleanId)) {
+			return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+		}
 
 		let object: R2ObjectBody | null = null;
 		let contentType = "image/png";
@@ -38,6 +53,13 @@ export async function GET(
 
 			if (stamp?.imageExt) {
 				const ext = stamp.imageExt;
+				// Validate extension is in allowlist
+				if (!VALID_EXTENSIONS.includes(ext as any)) {
+					return NextResponse.json(
+						{ error: "Invalid image extension" },
+						{ status: 400 },
+					);
+				}
 				object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
 				contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
 			}

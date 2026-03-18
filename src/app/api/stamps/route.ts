@@ -2,15 +2,32 @@ import { and, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
+import { STAMP_STYLES } from "@/lib/constants";
 
 export async function GET(request: Request) {
 	try {
 		const db = getDb();
 
 		const url = new URL(request.url);
-		const limit = Math.min(Number(url.searchParams.get("limit") || 50), 100);
-		const offset = Number(url.searchParams.get("offset") || 0);
-		const style = url.searchParams.get("style");
+		const limitParam = Number(url.searchParams.get("limit") || 50);
+		const offsetParam = Number(url.searchParams.get("offset") || 0);
+		const styleParam = url.searchParams.get("style");
+
+		// Validate pagination parameters
+		const limit = Math.max(
+			1,
+			Math.min(Number.isFinite(limitParam) ? limitParam : 50, 100),
+		);
+		const offset = Math.max(
+			0,
+			Number.isFinite(offsetParam) ? offsetParam : 0,
+		);
+
+		// Validate style parameter against allowlist
+		const style =
+			styleParam && STAMP_STYLES.includes(styleParam as any)
+				? styleParam
+				: undefined;
 
 		const whereClause = style
 			? and(eq(stamps.isPublic, true), eq(stamps.style, style))
