@@ -25,7 +25,7 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 						e.stopPropagation();
 						toggleFavorite(stamp.id);
 					}}
-					className="absolute top-2 right-2 z-10 p-2.5 bg-white/90 backdrop-blur rounded-full shadow-sm hover:bg-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+					className="absolute top-2 right-2 z-10 p-2.5 bg-white/90 dark:bg-stone-800/90 backdrop-blur rounded-full shadow-sm hover:bg-white dark:hover:bg-stone-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
 					aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
 				>
 					<HeartIcon filled={favorite} />
@@ -40,18 +40,18 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 				/>
 			</div>
 			<div className="p-3">
-				<p className="text-sm text-stone-700 truncate">
+				<p className="text-sm text-stone-700 dark:text-stone-300 truncate">
 					{stamp.description || stamp.prompt}
 				</p>
 				<div className="mt-2 flex items-center justify-between">
-					<span className="text-xs text-stone-500 capitalize">
+					<span className="text-xs text-stone-500 dark:text-stone-400 capitalize">
 						{stamp.style}
 					</span>
 					<a
 						href={stamp.imageUrl}
 						download={`stamp-${stamp.id}.png`}
 						onClick={(e) => e.stopPropagation()}
-						className="text-xs text-stone-500 hover:text-stone-800 transition"
+						className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition"
 					>
 						Download
 					</a>
