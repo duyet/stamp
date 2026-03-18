@@ -153,6 +153,21 @@ export async function POST(request: NextRequest) {
 		const ext = mimeType.includes("png") ? "png" : "jpg";
 		const key = `stamps/${stampId}.${ext}`;
 
+		// Log generation metrics for monitoring
+		const model = hd ? "flux-2-klein" : "flux-1-schnell";
+		const slowThreshold = 30000; // 30 seconds
+		const isSlow = generationTimeMs > slowThreshold;
+
+		console.log(
+			`[Generate] stamp=${stampId} model=${model} style=${style} hd=${hd} time=${generationTimeMs}ms${isSlow ? " SLOW!" : ""} prompt_length=${prompt?.length ?? 0}`,
+		);
+
+		if (isSlow) {
+			console.warn(
+				`[Generate] SLOW GENERATION DETECTED: ${generationTimeMs}ms for stamp=${stampId} model=${model} style=${style}`,
+			);
+		}
+
 		await (env.STAMPS_BUCKET as unknown as R2Bucket).put(key, imageData, {
 			httpMetadata: { contentType: mimeType },
 		});
