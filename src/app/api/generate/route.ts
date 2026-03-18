@@ -245,7 +245,9 @@ export async function POST(request: NextRequest) {
 					const allowedMimeTypes = ["image/png", "image/jpeg", "image/jpg"];
 					if (!allowedMimeTypes.includes(expectedMimeType)) {
 						return NextResponse.json(
-							{ error: `Invalid image type: ${expectedMimeType}. Allowed types: PNG, JPEG` },
+							{
+								error: `Invalid image type: ${expectedMimeType}. Allowed types: PNG, JPEG`,
+							},
 							{ status: 400 },
 						);
 					}
@@ -253,7 +255,10 @@ export async function POST(request: NextRequest) {
 			} catch (error) {
 				// atob() throws on invalid base64
 				return NextResponse.json(
-					{ error: "Failed to decode reference image. Please ensure it's a valid base64-encoded image." },
+					{
+						error:
+							"Failed to decode reference image. Please ensure it's a valid base64-encoded image.",
+					},
 					{ status: 400 },
 				);
 			}

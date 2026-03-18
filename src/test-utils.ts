@@ -56,9 +56,7 @@ export function createMockRateLimitDb(
 	} | null,
 ) {
 	// Mutable state that gets updated by SQL operations
-	let currentState = existing
-		? { ...existing }
-		: null;
+	let currentState = existing ? { ...existing } : null;
 
 	const insertValues = vi.fn().mockResolvedValue(undefined);
 	const updateSet = vi.fn().mockReturnValue({
@@ -72,7 +70,10 @@ export function createMockRateLimitDb(
 				return {
 					run: vi.fn().mockImplementation(() => {
 						// Simulate atomic UPDATE for rate limit
-						if (sql.includes("UPDATE rate_limits") && sql.includes("generations_count = generations_count + 1")) {
+						if (
+							sql.includes("UPDATE rate_limits") &&
+							sql.includes("generations_count = generations_count + 1")
+						) {
 							if (currentState && currentState.generationsCount < 100) {
 								currentState.generationsCount += 1;
 							}
@@ -155,9 +156,7 @@ export function createMockCreditsDb(
 	} | null,
 ) {
 	// Mutable state that gets updated by SQL operations
-	let currentState = existing
-		? { ...existing }
-		: null;
+	let currentState = existing ? { ...existing } : null;
 
 	const insertValues = vi.fn().mockResolvedValue(undefined);
 	const updateSet = vi.fn().mockReturnValue({
@@ -176,11 +175,16 @@ export function createMockCreditsDb(
 							if (sql.includes("daily_used = daily_used +")) {
 								// Daily credit deduction
 								const cost = args[0] as number;
-								if (currentState && currentState.dailyUsed + cost <= currentState.dailyLimit) {
+								if (
+									currentState &&
+									currentState.dailyUsed + cost <= currentState.dailyLimit
+								) {
 									currentState.dailyUsed += cost;
 									currentState.updatedAt = args[1] as number;
 								}
-							} else if (sql.includes("purchased_credits = purchased_credits -")) {
+							} else if (
+								sql.includes("purchased_credits = purchased_credits -")
+							) {
 								// Purchased credit deduction
 								const cost = args[0] as number;
 								if (currentState && currentState.purchasedCredits >= cost) {
