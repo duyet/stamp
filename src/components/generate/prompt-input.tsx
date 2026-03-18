@@ -64,7 +64,7 @@ export function PromptInput({
 					rows={1}
 					disabled={disabled}
 					aria-label="Describe your stamp"
-					className="w-full pl-4 pr-14 py-3 rounded-lg border border-stone-300 bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-400 focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50"
+					className="w-full pl-4 pr-14 py-3 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-sm leading-relaxed placeholder:text-stone-400 dark:placeholder:text-stone-600 focus:border-stone-900 dark:focus:border-stone-500 focus:ring-2 focus:ring-stone-900/10 dark:focus:ring-stone-500/20 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50 shadow-sm focus:shadow-md"
 				/>
 				<div className="absolute right-3 top-3">
 					<Show when="signed-out">
@@ -95,8 +95,8 @@ export function PromptInput({
 								onClick={() => setActiveGroupIndex(groupIndex)}
 								className={`rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition ${
 									activeGroupIndex === groupIndex
-										? "bg-stone-900 text-white"
-										: "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
+										? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-md"
+										: "text-stone-500 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
 								}`}
 							>
 								{group.label ?? "Ideas"}
@@ -124,7 +124,7 @@ export function PromptInput({
 								}
 							}}
 							disabled={loading}
-							className="shrink-0 rounded-full px-3 py-1 text-xs text-stone-600 border border-stone-200 hover:text-stone-900 hover:border-stone-400 hover:bg-stone-50 cursor-pointer transition-colors duration-150 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
+							className="shrink-0 rounded-full px-3 py-1 text-xs text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hover:text-stone-900 dark:hover:text-stone-100 hover:border-stone-400 dark:hover:border-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800 cursor-pointer transition-all duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20 dark:focus-visible:ring-stone-500/20 hover:scale-105 hover:shadow-sm"
 						>
 							{example}
 						</button>
