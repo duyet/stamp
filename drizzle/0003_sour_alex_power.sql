@@ -1,0 +1,1 @@
+ALTER TABLE `stamps` ADD `image_ext` text;

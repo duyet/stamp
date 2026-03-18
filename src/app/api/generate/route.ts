@@ -358,6 +358,7 @@ export async function POST(request: NextRequest) {
 			enhancedPrompt,
 			description,
 			imageUrl,
+			imageExt: ext,
 			style,
 			isPublic,
 			userIp,

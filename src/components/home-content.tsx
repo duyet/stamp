@@ -30,6 +30,7 @@ export function HomeContent() {
 			imageUrl: stamp.imageUrl,
 			thumbnailUrl: null,
 			referenceImageUrl: null,
+			imageExt: null,
 			style: stamp.style ?? "vintage",
 			isPublic: true,
 			userIp: null,

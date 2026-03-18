@@ -22,6 +22,13 @@
       "when": 1773813995669,
       "tag": "0002_large_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1773817903488,
+      "tag": "0003_sour_alex_power",
+      "breakpoints": true
     }
   ]
 }
