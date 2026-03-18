@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RefreshIcon } from "@/components/icons";
 import { StampCardMemo } from "@/components/stamp-card";
@@ -96,7 +97,24 @@ export default function CollectionsPage() {
 				</div>
 			) : filteredStamps.length === 0 ? (
 				<div className="text-center py-20">
-					<p className="text-stone-600">No stamps found.</p>
+					<div className="max-w-sm mx-auto">
+						<p className="text-stone-600 mb-2">No stamps found.</p>
+						<p className="text-sm text-stone-500 mb-6">
+							{selectedStyle === ALL_STYLES
+								? "Be the first to create a stamp!"
+								: `No ${
+										STAMP_STYLE_PRESETS[
+											selectedStyle as StampStyle
+										]?.name.toLowerCase() || ""
+									} stamps yet.`}
+						</p>
+						<Link
+							href="/generate"
+							className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white rounded-full font-medium text-sm hover:bg-stone-800 hover:shadow-lg transition-all"
+						>
+							<span>Create your stamp</span>
+						</Link>
+					</div>
 				</div>
 			) : (
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
