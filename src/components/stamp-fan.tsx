@@ -40,6 +40,7 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 								width={130}
 								height={130}
 								className="w-full h-full object-cover"
+								priority={idx < 3}
 							/>
 						</button>
 					) : (
@@ -51,6 +52,7 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 									width={130}
 									height={130}
 									className="w-full h-full object-cover"
+									priority={idx < 3}
 								/>
 							) : (
 								fallbacks[idx]
