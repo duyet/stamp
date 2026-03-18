@@ -233,15 +233,16 @@ body {
 	animation: form-enter 0.4s ease-out forwards;
 }
 
-/* Hero gradient text effect - bold animated gradient */
+/* Hero gradient text effect - bold animated gradient (more ego) */
 .hero-gradient {
 	background: linear-gradient(
 		90deg,
-		#1e3a8a 0%,
-		#4f46e5 25%,
-		#7c3aed 50%,
-		#db2777 75%,
-		#ea580c 100%
+		#0f172a 0%,
+		#3b82f6 15%,
+		#8b5cf6 35%,
+		#ec4899 55%,
+		#f97316 75%,
+		#eab308 100%
 	);
 	background-size: 200% 100%;
 	-webkit-background-clip: text;
@@ -316,6 +317,40 @@ select:focus:not(:focus-visible) {
 .animate-pulse-slow {
 	animation: pulse-slow 4s ease-in-out infinite;
 }
+
+/* Shimmer loading animation for skeleton loaders */
+@keyframes shimmer {
+	0% {
+		background-position: -200% 0;
+	}
+	100% {
+		background-position: 200% 0;
+	}
+}
+.animate-shimmer {
+	background: linear-gradient(
+		90deg,
+		rgba(0, 0, 0, 0) 0%,
+		rgba(0, 0, 0, 0.05) 20%,
+		rgba(0, 0, 0, 0.1) 60%,
+		rgba(0, 0, 0, 0.05) 80%,
+		rgba(0, 0, 0, 0) 100%
+	);
+	background-size: 200% 100%;
+	animation: shimmer 1.5s ease-in-out infinite;
+}
+.dark .animate-shimmer {
+	background: linear-gradient(
+		90deg,
+		rgba(255, 255, 255, 0) 0%,
+		rgba(255, 255, 255, 0.05) 20%,
+		rgba(255, 255, 255, 0.1) 60%,
+		rgba(255, 255, 255, 0.05) 80%,
+		rgba(255, 255, 255, 0) 100%
+	);
+	background-size: 200% 100%;
+}
+
 
 /* Gradient shift animation for hero text */
 @keyframes gradient-shift {

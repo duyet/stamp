@@ -22,7 +22,7 @@ export function StampGridSkeleton({
 			{Array.from({ length: count }, () => (
 				<div
 					key={nanoid()}
-					className="aspect-square rounded-xl bg-stone-100 animate-pulse"
+					className="aspect-square rounded-xl bg-stone-100 dark:bg-stone-800 animate-shimmer"
 					role="presentation"
 				/>
 			))}

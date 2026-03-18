@@ -122,7 +122,10 @@ export async function POST(request: NextRequest) {
 		const resetAt =
 			"resetAt" in creditResult ? creditResult.resetAt : undefined;
 		const creditSource =
-			"source" in creditResult ? creditResult.source : "daily";
+			"source" in creditResult &&
+			(creditResult.source === "daily" || creditResult.source === "purchased")
+				? creditResult.source
+				: "daily";
 
 		if (!allowed) {
 			return NextResponse.json(
