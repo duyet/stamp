@@ -24,7 +24,17 @@ export async function GET(request: Request) {
 			.limit(limit)
 			.offset(offset);
 
-		return NextResponse.json({ stamps: results });
+		// Cache for 60 seconds, stale for 300 seconds (5 min)
+		// This allows quick page loads while still getting fresh data
+		return NextResponse.json(
+			{ stamps: results },
+			{
+				headers: {
+					"Cache-Control":
+						"public, max-age=60, stale-while-revalidate=300, stale-if-error=86400",
+				},
+			},
+		);
 	} catch (error) {
 		console.error("Failed to fetch stamps:", error);
 		return NextResponse.json(
