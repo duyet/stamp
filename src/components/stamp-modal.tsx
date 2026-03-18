@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FOCUSABLE_SELECTOR } from "@/constants/a11y";
 import type { Stamp } from "@/db/schema";
@@ -251,6 +252,12 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 								)}
 							</button>
 						)}
+						<Link
+							href={`/stamps/${stamp.id}`}
+							className="inline-flex items-center gap-2 px-5 py-2 text-stamp-blue bg-stone-50 border border-stone-200/80 rounded-full text-sm hover:bg-stone-100 hover:border-stone-300 transition-all duration-200"
+						>
+							View page
+						</Link>
 						<a
 							href={stamp.imageUrl}
 							download={`stamp-${stamp.id}.png`}
