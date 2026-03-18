@@ -1,5 +1,6 @@
 "use client";
 
+import { nanoid } from "nanoid";
 import Link from "next/link";
 import { StampIcon } from "@/components/icons";
 import { StampCardMemo } from "@/components/stamp-card";
@@ -11,9 +12,9 @@ export function StampGrid() {
 	if (loading) {
 		return (
 			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-				{Array.from({ length: 8 }, (_, i) => (
+				{Array.from({ length: 8 }, () => (
 					<div
-						key={`skeleton-${i}`}
+						key={nanoid()}
 						className="aspect-square rounded-xl bg-stone-100 dark:bg-stone-800 animate-shimmer"
 						role="presentation"
 						aria-hidden="true"
