@@ -37,8 +37,11 @@ export function LoadingSpinner({
 				/>
 				<path
 					className="opacity-75"
-					fill="currentColor"
-					d="M4 12a8 8 0 018-8V0C5.373 0 8 2.627 8 5.92v10.16c0 3.293 2.627 6 5.92 6h5.086c3.355 0 6.082-2.627 6.082-6V12c0-3.293-2.627-6-5.92-6h-4zm2 8a2 2 0 100-4 2 2v4a2 2 0 002 2h4a2 2 0 002-2v-4z"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth={4}
+					strokeLinecap="round"
+					d="M4 12a8 8 0 018-8"
 				/>
 			</svg>
 			<span className="sr-only">{label}</span>

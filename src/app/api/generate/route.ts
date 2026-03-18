@@ -58,22 +58,36 @@ function sanitizeErrorForLogging(error: unknown): string {
 
 /**
  * Refund credits if generation fails after deduction.
- * Uses atomic SQL to safely decrement the credit counter.
+ * Uses atomic SQL to safely increment the credit counter.
+ * Refunds to the correct bucket (daily or purchased) based on source.
  */
 async function refundCredits(
 	db: Database,
 	userId: string | null,
 	userIp: string,
 	creditCost: number,
+	source: "daily" | "purchased" = "daily",
 ): Promise<void> {
 	if (userId) {
-		// Refund to daily credits or purchased credits atomically
-		await db.$client
-			.prepare(
-				`UPDATE user_credits SET daily_used = daily_used - ?, updated_at = ? WHERE user_id = ? AND daily_used > 0`,
-			)
-			.bind(creditCost, Date.now(), userId)
-			.run();
+		// Refund to the correct credit bucket based on deduction source
+		const now = Date.now();
+		if (source === "purchased") {
+			// Refund to purchased credits
+			await db.$client
+				.prepare(
+					`UPDATE user_credits SET purchased_credits = purchased_credits + ?, updated_at = ? WHERE user_id = ?`,
+				)
+				.bind(creditCost, now, userId)
+				.run();
+		} else {
+			// Refund to daily credits
+			await db.$client
+				.prepare(
+					`UPDATE user_credits SET daily_used = daily_used - ?, updated_at = ? WHERE user_id = ? AND daily_used > 0`,
+				)
+				.bind(creditCost, now, userId)
+				.run();
+		}
 	} else {
 		// Refund anonymous rate limit
 		await db.$client
@@ -183,6 +197,7 @@ export async function POST(request: NextRequest) {
 	let userIdForRefund: string | null = null;
 	let userIpForRefund = "";
 	let creditCostForRefund = 1;
+	let creditSourceForRefund: "daily" | "purchased" = "daily";
 
 	try {
 		const env = getEnv();
@@ -277,6 +292,8 @@ export async function POST(request: NextRequest) {
 		const { allowed, remaining } = creditResult;
 		const resetAt =
 			"resetAt" in creditResult ? creditResult.resetAt : undefined;
+		const creditSource =
+			"source" in creditResult ? creditResult.source : "daily";
 
 		if (!allowed) {
 			return NextResponse.json(
@@ -297,6 +314,7 @@ export async function POST(request: NextRequest) {
 		userIdForRefund = userId;
 		userIpForRefund = userIp;
 		creditCostForRefund = creditCost;
+		creditSourceForRefund = creditSource;
 
 		const ai = env.AI;
 		if (!ai) {
@@ -475,6 +493,7 @@ export async function POST(request: NextRequest) {
 					userIdForRefund,
 					userIpForRefund,
 					creditCostForRefund,
+					creditSourceForRefund,
 				);
 			} catch (refundError) {
 				console.error(

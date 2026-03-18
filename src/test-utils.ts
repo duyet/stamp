@@ -74,7 +74,7 @@ export function createMockRateLimitDb(
 	// Mock D1 client for raw SQL
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
 		return {
-			bind: vi.fn().mockImplementation((...args: unknown[]) => {
+			bind: vi.fn().mockImplementation((..._args: unknown[]) => {
 				return {
 					run: vi.fn().mockImplementation(() => {
 						// Simulate atomic UPDATE for rate limit

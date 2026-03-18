@@ -27,7 +27,7 @@ export function StyleSelector({
 					<div
 						className={`w-12 h-12 rounded transition-all duration-200 ${
 							currentStyle === key
-								? "ring-2 ring-stone-900 ring-offset-1"
+								? "ring-2 ring-stone-900 ring-offset-1 shadow-lg shadow-stamp-blue/20 scale-105"
 								: "opacity-50 hover:opacity-80"
 						}`}
 					>

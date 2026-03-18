@@ -88,9 +88,14 @@ export function HomeContent() {
 					seconds.{" "}
 					<span className="text-stamp-blue font-medium">Free to create.</span>
 				</p>
-				<Link
-					href="#generate"
-					className="group relative inline-flex items-center gap-2 px-8 py-4 bg-stone-900 text-white rounded-full font-medium text-base overflow-hidden hover:bg-stone-800 hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition-all duration-300"
+				<button
+					type="button"
+					onClick={() => {
+						document.getElementById("generate")?.scrollIntoView({
+							behavior: "smooth",
+						});
+					}}
+					className="group relative inline-flex items-center gap-2 px-8 py-4 bg-stone-900 text-white rounded-full font-medium text-base overflow-hidden hover:bg-stone-800 hover:shadow-xl hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300"
 				>
 					{/* Button shine effect */}
 					<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -98,7 +103,7 @@ export function HomeContent() {
 					<span className="relative z-10 group-hover:translate-y-0.5 transition-transform duration-300">
 						<ArrowDownIcon />
 					</span>
-				</Link>
+				</button>
 			</section>
 
 			{/* Generate form */}
