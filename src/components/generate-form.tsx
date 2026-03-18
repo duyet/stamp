@@ -1,29 +1,16 @@
 "use client";
 
-import { SignInButton, useAuth } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import type { StampStyle } from "@/lib/stamp-prompts";
+import { GenerateError } from "./generate/generate-error";
+import { GenerateLoading } from "./generate/generate-loading";
 import { GenerationOptions } from "./generate/generation-options";
 import { GenerationResults } from "./generate/generation-results";
 import { PromptInput } from "./generate/prompt-input";
 import { StyleSelector } from "./generate/style-selector";
-
-/**
- * Format countdown milliseconds to HH:MM:SS or MM:SS
- */
-function formatCountdown(ms: number): string {
-	const totalSeconds = Math.ceil(ms / 1000);
-	const hours = Math.floor(totalSeconds / 3600);
-	const minutes = Math.floor((totalSeconds % 3600) / 60);
-	const seconds = totalSeconds % 60;
-
-	if (hours > 0) {
-		return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-	}
-	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}
 
 interface GeneratedStamp {
 	id: string;
@@ -231,66 +218,18 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			</form>
 
 			{/* Loading skeleton */}
-			{loading && (
-				<div className="mt-6 p-6 bg-stone-50 rounded-xl border border-stone-200 animate-form-enter">
-					<div className="flex items-center justify-center gap-3">
-						<div className="animate-spin h-5 w-5 border-2 border-stone-900 border-t-transparent rounded-full" />
-						<div className="text-sm text-stone-600">
-							{reference ? "Analyzing your photo" : "Designing your stamp"}
-							...
-							<span className="block text-xs text-stone-400 mt-1">
-								This takes 3-5 seconds
-							</span>
-						</div>
-					</div>
-				</div>
-			)}
+			{loading && <GenerateLoading reference={!!reference} />}
 
 			{/* Error */}
 			{error && (
-				<div
-					role="alert"
-					aria-live="polite"
-					className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
-				>
-					<div className="flex items-start justify-between gap-3">
-						<div className="flex-1">
-							<p className="text-sm text-red-700 font-medium">{error}</p>
-							{isRateLimited && countdown > 0 && (
-								<p className="mt-1 text-xs text-stone-500">
-									Resets in {formatCountdown(countdown)}
-								</p>
-							)}
-							{isRateLimited && !isSignedIn && (
-								<div className="mt-2 pt-2 border-t border-red-100 flex items-center justify-between">
-									<p className="text-stone-600">
-										Sign in for 100 free stamps per day
-									</p>
-									<SignInButton mode="modal">
-										<button
-											type="button"
-											className="px-3 py-1 bg-stone-900 text-white rounded text-xs font-medium hover:bg-stone-800 transition"
-										>
-											Sign in
-										</button>
-									</SignInButton>
-								</div>
-							)}
-						</div>
-						<button
-							type="button"
-							onClick={() => handleSubmit()}
-							className="shrink-0 px-3 py-1.5 bg-stone-900 text-white text-xs font-medium rounded hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							disabled={loading || countdown > 0}
-						>
-							{loading
-								? "Retrying..."
-								: countdown > 0
-									? "Wait..."
-									: "Try again"}
-						</button>
-					</div>
-				</div>
+				<GenerateError
+					error={error}
+					isRateLimited={isRateLimited}
+					countdown={countdown}
+					isSignedIn={isSignedIn}
+					onRetry={() => handleSubmit()}
+					loading={loading}
+				/>
 			)}
 
 			{/* Results */}
