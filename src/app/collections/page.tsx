@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Button } from "@/components/button";
 import { RefreshIcon } from "@/components/icons";
 import { StampCardMemo } from "@/components/stamp-card";
 import { StampGridSkeleton } from "@/components/stamp-grid-skeleton";
@@ -12,6 +12,14 @@ import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
 const ALL_STYLES = "all" as const;
 type StyleFilter = StampStyle | typeof ALL_STYLES;
+
+// Filter button className helper to eliminate duplication
+const getFilterButtonClass = (isActive: boolean) =>
+	`px-4 py-2 rounded-full text-sm font-medium transition ${
+		isActive
+			? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900"
+			: "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
+	}`;
 
 export default function CollectionsPage() {
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
@@ -71,11 +79,7 @@ export default function CollectionsPage() {
 				<button
 					type="button"
 					onClick={() => setSelectedStyle(ALL_STYLES)}
-					className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-						selectedStyle === ALL_STYLES
-							? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900"
-							: "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
-					}`}
+					className={getFilterButtonClass(selectedStyle === ALL_STYLES)}
 				>
 					All Styles
 				</button>
@@ -84,11 +88,7 @@ export default function CollectionsPage() {
 						key={key}
 						type="button"
 						onClick={() => setSelectedStyle(key as StampStyle)}
-						className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-							selectedStyle === key
-								? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900"
-								: "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
-						}`}
+						className={getFilterButtonClass(selectedStyle === key)}
 					>
 						{name}
 					</button>
@@ -100,14 +100,10 @@ export default function CollectionsPage() {
 				<div className="text-center py-20">
 					<div className="max-w-md mx-auto">
 						<p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-						<button
-							type="button"
-							onClick={handleRetry}
-							className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors"
-						>
+						<Button onClick={handleRetry} size="sm">
 							<RefreshIcon />
 							Try again
-						</button>
+						</Button>
 					</div>
 				</div>
 			) : loading ? (
@@ -121,12 +117,12 @@ export default function CollectionsPage() {
 						<p className="text-sm text-stone-500 dark:text-stone-600 mb-6">
 							{emptyStateMessage}
 						</p>
-						<Link
-							href="/generate"
-							className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full font-medium text-sm hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-lg transition-all"
+						<Button
+							variant="cta"
+							onClick={() => (window.location.href = "/generate")}
 						>
 							Create your stamp
-						</Link>
+						</Button>
 					</div>
 				</div>
 			) : (
