@@ -1,8 +1,9 @@
 "use client";
 
 import { useAuth, useClerk } from "@clerk/nextjs";
-import { Toggle } from "@/components/toggle";
+
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { Toggle } from "@/components/toggle";
 
 interface GenerationOptionsProps {
 	isPublic: boolean;
@@ -29,11 +30,7 @@ export function GenerationOptions({
 	return (
 		<div className="flex items-center justify-between">
 			<div className="flex items-center gap-4">
-				<Toggle
-					checked={isPublic}
-					onChange={onPublicChange}
-					label="Public"
-				/>
+				<Toggle checked={isPublic} onChange={onPublicChange} label="Public" />
 				<Toggle
 					checked={hd}
 					onChange={(checked) => {

@@ -18,14 +18,11 @@ export async function GET(request: Request) {
 			1,
 			Math.min(Number.isFinite(limitParam) ? limitParam : 50, 100),
 		);
-		const offset = Math.max(
-			0,
-			Number.isFinite(offsetParam) ? offsetParam : 0,
-		);
+		const offset = Math.max(0, Number.isFinite(offsetParam) ? offsetParam : 0);
 
 		// Validate style parameter against allowlist
 		const style =
-			styleParam && STAMP_STYLES.includes(styleParam as any)
+			styleParam && (STAMP_STYLES as readonly string[]).includes(styleParam)
 				? styleParam
 				: undefined;
 

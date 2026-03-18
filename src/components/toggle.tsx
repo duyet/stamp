@@ -21,8 +21,8 @@ export function Toggle({
 }: ToggleProps) {
 	return (
 		<label
-		htmlFor={id}
-		className={`relative inline-flex items-center gap-2 cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+			htmlFor={id}
+			className={`relative inline-flex items-center gap-2 cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
 		>
 			<input
 				type="checkbox"

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RefreshIcon } from "@/components/icons";
 import { StampCardMemo } from "@/components/stamp-card";
+import { StampGridSkeleton } from "@/components/stamp-grid-skeleton";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
@@ -108,15 +109,7 @@ export default function CollectionsPage() {
 					</div>
 				</div>
 			) : loading ? (
-				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-					{Array.from({ length: 8 }, (_, i) => (
-						<div
-							// biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton placeholders never change order
-							key={`skeleton-${i}`}
-							className="aspect-square rounded-xl bg-stone-100 animate-pulse"
-						/>
-					))}
-				</div>
+				<StampGridSkeleton count={8} />
 			) : filteredStamps.length === 0 ? (
 				<div className="text-center py-20">
 					<div className="max-w-sm mx-auto">

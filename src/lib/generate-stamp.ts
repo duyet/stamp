@@ -1,4 +1,3 @@
-import { uint8ArrayToDataUrl } from "./base64-utils";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "./stamp-prompts";
 import { capitalize } from "./text-utils";
 

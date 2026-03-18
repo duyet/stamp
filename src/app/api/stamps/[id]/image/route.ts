@@ -54,7 +54,7 @@ export async function GET(
 			if (stamp?.imageExt) {
 				const ext = stamp.imageExt;
 				// Validate extension is in allowlist
-				if (!VALID_EXTENSIONS.includes(ext as any)) {
+				if (!(VALID_EXTENSIONS as readonly string[]).includes(ext)) {
 					return NextResponse.json(
 						{ error: "Invalid image extension" },
 						{ status: 400 },

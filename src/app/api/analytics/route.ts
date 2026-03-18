@@ -27,7 +27,7 @@ async function checkAnalyticsRateLimit(
 
 	// First, try atomic UPDATE with WHERE clause
 	// Only increments if current count is below limit AND window is still valid
-	await db.$client
+	const updateResult = await db.$client
 		.prepare(
 			`UPDATE analytics_rate_limits SET generations_count = generations_count + 1 WHERE user_ip = ? AND generations_count < ? AND window_start >= ?`,
 		)
@@ -44,9 +44,11 @@ async function checkAnalyticsRateLimit(
 
 	if (result) {
 		// Existing record - check if UPDATE succeeded and window is valid
+		// Use strict inequality to prevent exceeding limit by 1
 		if (
-			result.generations_count <= ANALYTICS_RATE_LIMIT &&
-			result.generations_count > 0
+			result.generations_count < ANALYTICS_RATE_LIMIT &&
+			result.generations_count > 0 &&
+			updateResult.meta.changes > 0
 		) {
 			return {
 				allowed: true,

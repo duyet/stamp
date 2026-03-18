@@ -55,13 +55,20 @@ export const rateLimits = sqliteTable(
 export type Stamp = typeof stamps.$inferSelect;
 export type NewStamp = typeof stamps.$inferInsert;
 
-export const events = sqliteTable("events", {
-	id: text("id").primaryKey(),
-	event: text("event").notNull(),
-	metadata: text("metadata"),
-	userIp: text("user_ip"),
-	createdAt: integer("created_at").notNull(),
-});
+export const events = sqliteTable(
+	"events",
+	{
+		id: text("id").primaryKey(),
+		event: text("event").notNull(),
+		metadata: text("metadata"),
+		userIp: text("user_ip"),
+		createdAt: integer("created_at").notNull(),
+	},
+	(table) => [
+		index("idx_events_event").on(table.event),
+		index("idx_events_event_created").on(table.event, table.createdAt),
+	],
+);
 
 export type Event = typeof events.$inferSelect;
 export type NewEvent = typeof events.$inferInsert;
