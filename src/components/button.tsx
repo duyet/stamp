@@ -35,7 +35,7 @@ export function Button({
 	...props
 }: ButtonProps) {
 	const baseStyles =
-		"inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed";
+		"inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed button-ripple";
 
 	return (
 		<button
