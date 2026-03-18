@@ -1,8 +1,10 @@
 /**
  * Constants for image validation.
  */
-const MAX_REFERENCE_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_BASE64_INPUT_LENGTH = 10 * 1024 * 1024; // 10MB base64
+import { IMAGE_CONSTANTS } from "./constants";
+
+const MAX_REFERENCE_IMAGE_SIZE = IMAGE_CONSTANTS.MAX_UPLOAD_SIZE_BYTES; // 5MB
+const MAX_BASE64_INPUT_LENGTH = 10 * 1024 * 1024; // 10MB base64 (inflated)
 
 // PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
 const PNG_MAGIC_BYTES = new Uint8Array([
@@ -10,6 +12,8 @@ const PNG_MAGIC_BYTES = new Uint8Array([
 ]);
 // JPEG magic bytes: FF D8 FF
 const JPEG_MAGIC_BYTES = new Uint8Array([0xff, 0xd8, 0xff]);
+
+import { base64ToUint8Array } from "./base64-utils";
 
 /**
  * Validate and decode a base64 reference image.
@@ -98,10 +102,6 @@ export function validateReferenceImage(referenceImageData: string): Uint8Array {
 		}
 	}
 
-	// Convert to Uint8Array
-	const uint8Array = new Uint8Array(binaryString.length);
-	for (let i = 0; i < binaryString.length; i++) {
-		uint8Array[i] = binaryString.charCodeAt(i);
-	}
-	return uint8Array;
+	// Convert to Uint8Array using shared utility
+	return base64ToUint8Array(base64Data);
 }

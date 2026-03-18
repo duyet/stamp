@@ -28,7 +28,9 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 					className="absolute top-2 right-2 z-10 p-2.5 bg-white/90 dark:bg-stone-800/90 backdrop-blur rounded-full shadow-sm hover:bg-white dark:hover:bg-stone-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
 					aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
 				>
-					<HeartIcon filled={favorite} />
+					<span className={favorite ? "animate-heart-pop" : ""}>
+						<HeartIcon filled={favorite} />
+					</span>
 				</button>
 				<Image
 					src={stamp.imageUrl}
