@@ -77,7 +77,7 @@ export function HomeContent() {
 					/>
 				</div>
 				<h1
-					className="text-5xl md:text-7xl font-bold tracking-tight mb-3 text-stone-900"
+					className="text-5xl md:text-7xl font-bold tracking-tight mb-3 hero-gradient animate-gradient-shift"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders
