@@ -32,10 +32,14 @@ export function Toggle({
 				disabled={disabled}
 				className="peer sr-only"
 			/>
-			<div className="relative w-8 h-4 bg-stone-200 rounded-full peer-checked:bg-stone-800 transition-colors duration-200">
+			<div className="relative w-8 h-4 bg-stone-200 dark:bg-stone-700 rounded-full peer-checked:bg-stone-800 dark:peer-checked:bg-stone-500 transition-colors duration-200">
 				<div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 peer-checked:translate-x-4 shadow-sm" />
 			</div>
-			{label && <span className="text-sm text-stone-600">{label}</span>}
+			{label && (
+				<span className="text-sm text-stone-600 dark:text-stone-400">
+					{label}
+				</span>
+			)}
 		</label>
 	);
 }

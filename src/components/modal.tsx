@@ -102,7 +102,7 @@ export function Modal({ isOpen, onClose, children, ariaLabel }: ModalProps) {
 		>
 			{/* Backdrop */}
 			<div
-				className="absolute inset-0 bg-white/92 backdrop-blur-xl animate-modal-fade"
+				className="absolute inset-0 bg-white/92 dark:bg-stone-900/92 backdrop-blur-xl animate-modal-fade"
 				aria-hidden="true"
 			/>
 
