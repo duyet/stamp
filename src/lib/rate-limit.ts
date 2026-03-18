@@ -54,21 +54,28 @@ export async function checkRateLimit(
 	});
 
 	if (existing) {
-		// Record exists but window expired or limit reached
+		// Record exists - check if window has expired FIRST before checking count
+		const windowExpired =
+			new Date(existing.windowStart).getTime() < windowStartMs;
+
+		if (windowExpired) {
+			// Window expired - reset to 1 regardless of current count
+			await db.$client
+				.prepare(
+					`UPDATE rate_limits SET generations_count = 1, window_start = ? WHERE user_ip = ?`,
+				)
+				.bind(now, userIp)
+				.run();
+			return { allowed: true, remaining: MAX_GENERATIONS_PER_DAY - 1 };
+		}
+
+		// Window still valid - check if limit reached
 		if (existing.generationsCount >= MAX_GENERATIONS_PER_DAY) {
 			// Limit exhausted - calculate reset time from window start
 			const resetAt =
 				new Date(existing.windowStart).getTime() + RATE_LIMIT_WINDOW_MS;
 			return { allowed: false, remaining: 0, resetAt };
 		}
-		// Window expired - reset to 1
-		await db.$client
-			.prepare(
-				`UPDATE rate_limits SET generations_count = 1, window_start = ? WHERE user_ip = ?`,
-			)
-			.bind(now, userIp)
-			.run();
-		return { allowed: true, remaining: MAX_GENERATIONS_PER_DAY - 1 };
 	}
 
 	// No existing record - insert new one

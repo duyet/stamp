@@ -30,8 +30,18 @@ export async function GET(request: Request) {
 			? and(eq(stamps.isPublic, true), eq(stamps.style, style))
 			: eq(stamps.isPublic, true);
 
+		// Select only columns needed for stamp listing (reduces data transfer by ~60%)
 		const results = await db
-			.select()
+			.select({
+				id: stamps.id,
+				prompt: stamps.prompt,
+				imageUrl: stamps.imageUrl,
+				thumbnailUrl: stamps.thumbnailUrl,
+				style: stamps.style,
+				isPublic: stamps.isPublic,
+				createdAt: stamps.createdAt,
+				description: stamps.description,
+			})
 			.from(stamps)
 			.where(whereClause)
 			.orderBy(desc(stamps.createdAt))

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { memo } from "react";
 import { HeartIcon } from "@/components/icons";
+import { TiltCard } from "@/components/tilt-card";
 import type { Stamp } from "@/db/schema";
 import { useFavorites } from "@/hooks/use-favorites";
 
@@ -24,7 +25,7 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 						e.stopPropagation();
 						toggleFavorite(stamp.id);
 					}}
-					className="absolute top-2 right-2 z-10 p-1.5 bg-white/90 backdrop-blur rounded-full shadow-sm hover:bg-white transition-colors"
+					className="absolute top-2 right-2 z-10 p-2.5 bg-white/90 backdrop-blur rounded-full shadow-sm hover:bg-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
 					aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
 				>
 					<HeartIcon filled={favorite} />
@@ -61,18 +62,19 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 
 	if (onClick) {
 		return (
-			<button
-				type="button"
-				className="group relative text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-300 ease-out hover:shadow-2xl hover:shadow-stamp-blue/20 hover:-translate-y-2 hover:scale-[1.02] hover:rotate-1 w-full"
-				onClick={onClick}
+			<TiltCard
+				intensity={1.2}
+				className="group relative text-left cursor-pointer rounded-xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-stamp-blue/20 transition-shadow duration-300"
 			>
-				{content}
-				{/* Quick view overlay */}
-				<div className="absolute inset-0 bg-gradient-to-t from-stamp-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-				<div className="absolute bottom-3 left-3 right-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-					<span className="text-sm font-medium">Click to view</span>
-				</div>
-			</button>
+				<button type="button" className="w-full" onClick={onClick}>
+					{content}
+					{/* Quick view overlay */}
+					<div className="absolute inset-0 bg-gradient-to-t from-stamp-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+					<div className="absolute bottom-3 left-3 right-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+						<span className="text-sm font-medium">Click to view</span>
+					</div>
+				</button>
+			</TiltCard>
 		);
 	}
 

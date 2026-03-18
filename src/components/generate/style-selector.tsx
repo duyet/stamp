@@ -20,7 +20,7 @@ export function StyleSelector({
 					key={key}
 					type="button"
 					onClick={() => onStyleChange(key as StampStyle)}
-					className="shrink-0 cursor-pointer transition"
+					className="shrink-0 p-2 cursor-pointer transition"
 					aria-label={`Select ${preset.name} style`}
 					aria-pressed={currentStyle === key}
 				>

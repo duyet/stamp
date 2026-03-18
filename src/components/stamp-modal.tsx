@@ -117,7 +117,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					ref={closeButtonRef}
 					type="button"
 					onClick={onClose}
-					className="absolute -top-2 -right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-700 transition-all duration-200"
+					className="absolute -top-2 -right-2 z-10 w-11 h-11 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 hover:text-stone-700 transition-all duration-200"
 					aria-label="Close modal"
 				>
 					<CloseIcon />
