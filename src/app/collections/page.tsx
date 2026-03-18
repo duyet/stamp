@@ -102,17 +102,21 @@ export default function CollectionsPage() {
 						<p className="text-sm text-stone-500 mb-6">
 							{selectedStyle === ALL_STYLES
 								? "Be the first to create a stamp!"
-								: `No ${
-										STAMP_STYLE_PRESETS[
-											selectedStyle as StampStyle
-										]?.name.toLowerCase() || ""
-									} stamps yet.`}
+								: (() => {
+										const styleName =
+											STAMP_STYLE_PRESETS[
+												selectedStyle as StampStyle
+											]?.name.toLowerCase();
+										return styleName
+											? `No ${styleName} stamps yet.`
+											: "No stamps found.";
+									})()}
 						</p>
 						<Link
 							href="/generate"
 							className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 text-white rounded-full font-medium text-sm hover:bg-stone-800 hover:shadow-lg transition-all"
 						>
-							<span>Create your stamp</span>
+							Create your stamp
 						</Link>
 					</div>
 				</div>

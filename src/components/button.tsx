@@ -2,9 +2,23 @@
  * Shared Button component with consistent styling variants
  */
 
+const VARIANT_STYLES = {
+	primary:
+		"bg-stone-900 text-white rounded-lg hover:bg-stone-800 active:scale-[0.98]",
+	pill: "rounded-full text-sm hover:scale-105",
+	cta: "bg-stone-900 text-white rounded-full hover:bg-stone-800 hover:shadow-lg hover:-translate-y-0.5",
+	ghost: "text-stone-600 hover:text-stone-900 hover:bg-stone-100",
+} as const;
+
+const SIZE_STYLES = {
+	sm: "px-4 py-1.5 text-xs",
+	md: "px-6 py-2 text-sm",
+	lg: "px-8 py-3 text-base",
+} as const;
+
 export interface ButtonProps extends React.ComponentProps<"button"> {
-	variant?: "primary" | "pill" | "cta" | "ghost";
-	size?: "sm" | "md" | "lg";
+	variant?: keyof typeof VARIANT_STYLES;
+	size?: keyof typeof SIZE_STYLES;
 	loading?: boolean;
 }
 
@@ -20,23 +34,9 @@ export function Button({
 	const baseStyles =
 		"inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed";
 
-	const variantStyles = {
-		primary:
-			"bg-stone-900 text-white rounded-lg hover:bg-stone-800 active:scale-[0.98]",
-		pill: "rounded-full text-sm hover:scale-105",
-		cta: "bg-stone-900 text-white rounded-full hover:bg-stone-800 hover:shadow-lg hover:-translate-y-0.5",
-		ghost: "text-stone-600 hover:text-stone-900 hover:bg-stone-100",
-	};
-
-	const sizeStyles = {
-		sm: "px-4 py-1.5 text-xs",
-		md: "px-6 py-2 text-sm",
-		lg: "px-8 py-3 text-base",
-	};
-
 	return (
 		<button
-			className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+			className={`${baseStyles} ${VARIANT_STYLES[variant]} ${SIZE_STYLES[size]} ${className}`}
 			disabled={disabled || loading}
 			{...props}
 		>

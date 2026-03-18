@@ -247,23 +247,24 @@ body {
 	animation: page-fade-in 0.3s ease-out forwards;
 }
 
-/* Accessible focus ring */
-*:focus-visible {
+/* Accessible focus ring - scoped to interactive elements only */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
 	outline: 2px solid #4a6fa5;
 	outline-offset: 2px;
 	border-radius: 4px;
 }
 
 /* Remove default outline for mouse users, keep for keyboard */
-*:focus:not(:focus-visible) {
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+[tabindex]:focus:not(:focus-visible),
+input:focus:not(:focus-visible),
+textarea:focus:not(:focus-visible),
+select:focus:not(:focus-visible) {
 	outline: none;
-}
-
-/* Ensure interactive elements always show focus on keyboard */
-button:focus-visible,
-a:focus-visible,
-[tabindex]:focus-visible {
-	outline: 2px solid #4a6fa5;
-	outline-offset: 2px;
-	border-radius: 4px;
 }
