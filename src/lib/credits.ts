@@ -75,70 +75,58 @@ export async function checkAndDeductCredit(
 }> {
 	const now = Date.now();
 
-	// Get current credit state for reference
+	// Get current credit state (handles auto-reset)
 	const credits = await getUserCredits(db, userId);
 
 	// Try atomic UPDATE on daily credits first
 	// WHERE clause ensures we only update if within limit
-	// Use the underlying D1 session for raw SQL
-	await db.$client
+	// The meta.changes property tells us if the UPDATE succeeded
+	const dailyResult = await db.$client
 		.prepare(
 			`UPDATE user_credits SET daily_used = daily_used + ?, updated_at = ? WHERE user_id = ? AND daily_used + ? <= daily_limit`,
 		)
 		.bind(cost, now, userId, cost)
 		.run();
 
-	// Check if the UPDATE succeeded by querying the new state
-	const afterDaily = await db.query.userCredits.findFirst({
-		where: eq(userCredits.userId, userId),
-	});
-
-	// Check if dailyUsed actually increased (meaning the atomic UPDATE succeeded)
-	if (
-		afterDaily &&
-		afterDaily.dailyUsed > credits.dailyUsed &&
-		afterDaily.dailyUsed <= afterDaily.dailyLimit
-	) {
+	// Check if the UPDATE succeeded (meta.changes > 0 means rows were modified)
+	if (dailyResult.meta.changes > 0) {
 		// Daily credit was deducted successfully
-		const remaining =
-			afterDaily.dailyLimit -
-			afterDaily.dailyUsed +
-			afterDaily.purchasedCredits;
+		// Calculate remaining without another query
+		const dailyRemaining = credits.dailyLimit - (credits.dailyUsed + cost);
+		const remaining = dailyRemaining + credits.purchasedCredits;
 		return { allowed: true, remaining, source: "daily" };
 	}
 
-	// Daily credits exhausted or update failed, try purchased credits atomically
-	await db.$client
+	// Daily credits exhausted, try purchased credits atomically
+	const purchasedResult = await db.$client
 		.prepare(
 			`UPDATE user_credits SET purchased_credits = purchased_credits - ?, updated_at = ? WHERE user_id = ? AND purchased_credits >= ?`,
 		)
 		.bind(cost, now, userId, cost)
 		.run();
 
-	// Verify purchased credit deduction
-	const afterPurchased = await db.query.userCredits.findFirst({
-		where: eq(userCredits.userId, userId),
-	});
+	// Check if purchased credit deduction succeeded
+	if (purchasedResult.meta.changes > 0) {
+		const newPurchasedBalance = credits.purchasedCredits - cost;
 
-	// Check if purchasedCredits actually decreased
-	if (
-		afterPurchased &&
-		afterPurchased.purchasedCredits < credits.purchasedCredits
-	) {
-		// Purchased credit was deducted successfully
-		await db.insert(creditTransactions).values({
-			id: nanoid(12),
-			userId,
-			type: "deduct_purchased",
-			amount: -cost,
-			balanceAfter: afterPurchased.purchasedCredits,
-			metadata: null,
-			createdAt: now,
-		});
+		// Record transaction asynchronously (fire-and-forget for non-critical logging)
+		db.insert(creditTransactions)
+			.values({
+				id: nanoid(12),
+				userId,
+				type: "deduct_purchased",
+				amount: -cost,
+				balanceAfter: newPurchasedBalance,
+				metadata: null,
+				createdAt: now,
+			})
+			.catch((err) => {
+				console.error("[Credits] Failed to record transaction:", err);
+			});
 
 		return {
 			allowed: true,
-			remaining: afterPurchased.purchasedCredits,
+			remaining: newPurchasedBalance,
 			source: "purchased",
 		};
 	}

@@ -134,7 +134,6 @@ export async function GET(request: NextRequest) {
 			locationCountryResult,
 			locationCityResult,
 			timezoneResult,
-			mapDataResult,
 		] = await Promise.all([
 			db
 				.select({
@@ -240,17 +239,6 @@ export async function GET(request: NextRequest) {
 				)
 				.orderBy(sql`count(*) desc`)
 				.limit(500),
-
-			// Map data: country codes with counts
-			db
-				.select({
-					countryCode: stamps.locationCountry,
-					count: sql<number>`count(*) as count`,
-				})
-				.from(stamps)
-				.where(sql`${stamps.locationCountry} is not null`)
-				.groupBy(stamps.locationCountry)
-				.orderBy(sql`count(*) desc`),
 		]);
 
 		// Build country name map for location stats
@@ -340,7 +328,7 @@ export async function GET(request: NextRequest) {
 				.map((c) => ({ city: c.city ?? "Unknown", count: c.count })),
 		}));
 
-		const mapData = mapDataResult.map((r) => ({
+		const mapData = locationCountryResult.map((r) => ({
 			countryCode: r.countryCode ?? "XX",
 			count: r.count,
 		}));

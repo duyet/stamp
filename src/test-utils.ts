@@ -188,6 +188,7 @@ export function createMockCreditsDb(
 					run: vi.fn().mockImplementation(() => {
 						// Parse the SQL to simulate the UPDATE
 						if (sql.includes("UPDATE user_credits")) {
+							let changes = 0;
 							if (sql.includes("daily_used = daily_used +")) {
 								// Daily credit deduction
 								const cost = args[0] as number;
@@ -197,6 +198,7 @@ export function createMockCreditsDb(
 								) {
 									currentState.dailyUsed += cost;
 									currentState.updatedAt = args[1] as number;
+									changes = 1;
 								}
 							} else if (
 								sql.includes("purchased_credits = purchased_credits -")
@@ -206,10 +208,12 @@ export function createMockCreditsDb(
 								if (currentState && currentState.purchasedCredits >= cost) {
 									currentState.purchasedCredits -= cost;
 									currentState.updatedAt = args[1] as number;
+									changes = 1;
 								}
 							}
+							return { meta: { changes } };
 						}
-						return {};
+						return { meta: { changes: 0 } };
 					}),
 				};
 			}),
