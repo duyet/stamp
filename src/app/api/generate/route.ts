@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { addTags, createConversation } from "@/lib/agentstate";
 import { getAuthUserId } from "@/lib/clerk";
+import { RATE_LIMIT_WINDOW_MS } from "@/lib/constants";
 import {
 	checkAndDeductCredit,
 	HD_CREDIT_COST,
@@ -90,11 +91,15 @@ async function refundCredits(
 		}
 	} else {
 		// Refund anonymous rate limit
+		// CRITICAL: Only refund if the window hasn't expired to prevent
+		// manipulating new window counts with refunds from expired windows
+		const nowMs = Date.now();
+		const windowStartMs = nowMs - RATE_LIMIT_WINDOW_MS;
 		await db.$client
 			.prepare(
-				`UPDATE rate_limits SET generations_count = generations_count - 1 WHERE user_ip = ? AND generations_count > 0`,
+				`UPDATE rate_limits SET generations_count = generations_count - 1 WHERE user_ip = ? AND generations_count > 0 AND window_start >= ?`,
 			)
-			.bind(userIp)
+			.bind(userIp, new Date(windowStartMs))
 			.run();
 	}
 }
@@ -334,7 +339,9 @@ export async function POST(request: NextRequest) {
 				referenceImageBytes = validateReferenceImage(referenceImageData);
 			} catch (error) {
 				// Image validation failed - refund credits and return error
-				await refundCredits(db, userId, userIp, creditCost);
+				await refundCredits(db, userId, userIp, creditCost, creditSource);
+				// Mark credits as refunded to prevent double refund in outer catch
+				creditsDeducted = false;
 				const errorMessage =
 					error instanceof Error ? error.message : "Invalid reference image.";
 				return NextResponse.json(
@@ -369,31 +376,51 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		// Upload to R2 first (we'll clean up if DB insert fails)
 		await (env.STAMPS_BUCKET as unknown as R2Bucket).put(key, imageData, {
 			httpMetadata: { contentType: mimeType },
 		});
 
 		const imageUrl = `/api/stamps/${stampId}/image`;
 
-		await db.insert(stamps).values({
-			id: stampId,
-			prompt: prompt?.trim() || "Generated from reference image",
-			enhancedPrompt,
-			description,
-			imageUrl,
-			imageExt: ext,
-			style,
-			isPublic,
-			userIp,
-			userId: userId ?? null,
-			locationCity,
-			locationCountry,
-			locationLat,
-			locationLng,
-			userTimezone: timezone,
-			userAgent: request.headers.get("user-agent") ?? undefined,
-			referrer: request.headers.get("referer") ?? undefined,
-		});
+		// Insert into database with cleanup on failure
+		try {
+			await db.insert(stamps).values({
+				id: stampId,
+				prompt: prompt?.trim() || "Generated from reference image",
+				enhancedPrompt,
+				description,
+				imageUrl,
+				imageExt: ext,
+				style,
+				isPublic,
+				userIp,
+				userId: userId ?? null,
+				locationCity,
+				locationCountry,
+				locationLat,
+				locationLng,
+				userTimezone: timezone,
+				userAgent: request.headers.get("user-agent") ?? undefined,
+				referrer: request.headers.get("referer") ?? undefined,
+			});
+		} catch (dbError) {
+			// DB insert failed - clean up orphaned R2 object
+			try {
+				await (env.STAMPS_BUCKET as unknown as R2Bucket).delete(key);
+				console.error(
+					`[Generate] DB insert failed, cleaned up R2 object: ${key}`,
+					dbError,
+				);
+			} catch (r2Error) {
+				console.error(
+					`[Generate] Failed to clean up R2 object after DB failure: ${key}`,
+					r2Error,
+				);
+			}
+			// Re-throw DB error to trigger refund in outer catch
+			throw dbError;
+		}
 
 		// Fire-and-forget event tracking
 		db.insert(events)

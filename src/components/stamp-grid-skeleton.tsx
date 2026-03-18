@@ -1,3 +1,5 @@
+import { nanoid } from "nanoid";
+
 /**
  * Loading skeleton for stamp grid.
  * Used during data fetching to provide visual feedback.
@@ -17,11 +19,11 @@ export function StampGridSkeleton({
 			aria-hidden="true"
 			role="presentation"
 		>
-			{Array.from({ length: count }, (_, i) => (
+			{Array.from({ length: count }, () => (
 				<div
-					key={`sk-${i}`}
+					key={nanoid()}
 					className="aspect-square rounded-xl bg-stone-100 animate-pulse"
-					aria-label="Loading stamp placeholder"
+					role="presentation"
 				/>
 			))}
 		</div>
