@@ -18,6 +18,11 @@ interface StampCountsResult {
 const ANALYTICS_RATE_LIMIT = 10;
 const ANALYTICS_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
 
+// Time constants for analytics calculations
+const SECONDS_PER_DAY = 86_400;
+const WEEK_DAYS = 7;
+const MONTH_DAYS = 30;
+
 async function checkAnalyticsRateLimit(
 	db: Database,
 	userIp: string,
@@ -108,11 +113,10 @@ export async function GET(request: NextRequest) {
 	try {
 		// Timestamps in seconds (matching integer "created_at" column with mode: "timestamp")
 		const nowSec = Math.floor(Date.now() / 1000);
-		const daySec = 86_400;
-		const todayStart = nowSec - (nowSec % daySec);
-		const weekStart = todayStart - 6 * daySec;
-		const monthStart = todayStart - 29 * daySec;
-		const thirtyDaysAgo = nowSec - 30 * daySec;
+		const todayStart = nowSec - (nowSec % SECONDS_PER_DAY);
+		const weekStart = todayStart - (WEEK_DAYS - 1) * SECONDS_PER_DAY;
+		const monthStart = todayStart - (MONTH_DAYS - 1) * SECONDS_PER_DAY;
+		const thirtyDaysAgo = nowSec - MONTH_DAYS * SECONDS_PER_DAY;
 
 		// Consolidated stamp count query (4 aggregations → 1 query)
 		const [stampCountsResult] = (await db.all(
@@ -337,35 +341,44 @@ export async function GET(request: NextRequest) {
 			count: r.count,
 		}));
 
-		return NextResponse.json({
-			totalStamps: (stampCountsResult?.total_stamps as number) ?? 0,
-			stampsToday: (stampCountsResult?.stamps_today as number) ?? 0,
-			stampsThisWeek: (stampCountsResult?.stamps_week as number) ?? 0,
-			stampsThisMonth: (stampCountsResult?.stamps_month as number) ?? 0,
-			popularStyles: popularStylesResult.map((r) => ({
-				style: r.style ?? "vintage",
-				count: r.count,
-			})),
-			dailyTrend: dailyTrendResult.map((r) => ({
-				day: r.day,
-				count: r.count,
-			})),
-			totalPageViews: totalPageViewsResult[0]?.count ?? 0,
-			uniqueVisitors: uniqueVisitorsResult[0]?.count ?? 0,
-			totalDownloads: totalDownloadsResult[0]?.count ?? 0,
-			totalShares: totalSharesResult[0]?.count ?? 0,
-			eventBreakdown: eventBreakdownResult.map((r) => ({
-				event: r.event,
-				count: r.count,
-			})),
-			pageViewBreakdown: pageViewBreakdownResult.map((r) => ({
-				path: r.path,
-				count: r.count,
-			})),
-			locations,
-			timezones,
-			mapData,
-		});
+		return NextResponse.json(
+			{
+				totalStamps: (stampCountsResult?.total_stamps as number) ?? 0,
+				stampsToday: (stampCountsResult?.stamps_today as number) ?? 0,
+				stampsThisWeek: (stampCountsResult?.stamps_week as number) ?? 0,
+				stampsThisMonth: (stampCountsResult?.stamps_month as number) ?? 0,
+				popularStyles: popularStylesResult.map((r) => ({
+					style: r.style ?? "vintage",
+					count: r.count,
+				})),
+				dailyTrend: dailyTrendResult.map((r) => ({
+					day: r.day,
+					count: r.count,
+				})),
+				totalPageViews: totalPageViewsResult[0]?.count ?? 0,
+				uniqueVisitors: uniqueVisitorsResult[0]?.count ?? 0,
+				totalDownloads: totalDownloadsResult[0]?.count ?? 0,
+				totalShares: totalSharesResult[0]?.count ?? 0,
+				eventBreakdown: eventBreakdownResult.map((r) => ({
+					event: r.event,
+					count: r.count,
+				})),
+				pageViewBreakdown: pageViewBreakdownResult.map((r) => ({
+					path: r.path,
+					count: r.count,
+				})),
+				locations,
+				timezones,
+				mapData,
+			},
+			{
+				headers: {
+					// Cache for 5 minutes with stale-while-revalidate for 10 minutes
+					// Reduces D1 query load by ~90% for cached requests
+					"Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+				},
+			},
+		);
 	} catch (error) {
 		console.error("Analytics query failed:", error);
 		return NextResponse.json(

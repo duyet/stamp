@@ -51,7 +51,7 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 						href={stamp.imageUrl}
 						download={`stamp-${stamp.id}.png`}
 						onClick={(e) => e.stopPropagation()}
-						className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition"
+						className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stamp-blue/50 focus-visible:ring-offset-1 rounded"
 					>
 						Download
 					</a>

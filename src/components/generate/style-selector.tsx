@@ -25,7 +25,7 @@ export function StyleSelector({
 					aria-pressed={currentStyle === key}
 				>
 					<div
-						className={`w-12 h-12 rounded transition-all duration-200 ${
+						className={`w-14 h-14 rounded-lg transition-all duration-200 ${
 							currentStyle === key
 								? "ring-2 ring-stone-900 dark:ring-stone-100 ring-offset-1 dark:ring-offset-stone-900 shadow-lg shadow-stamp-blue/20 scale-105"
 								: "opacity-50 hover:opacity-80"
