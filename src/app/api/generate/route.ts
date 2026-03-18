@@ -270,9 +270,13 @@ export async function POST(request: NextRequest) {
 		}
 
 		const creditCost = hd ? HD_CREDIT_COST : STANDARD_CREDIT_COST;
-		const { allowed, remaining } = userId
+		const creditResult = userId
 			? await checkAndDeductCredit(db, userId, creditCost)
 			: await checkRateLimit(db, userIp);
+
+		const { allowed, remaining } = creditResult;
+		const resetAt =
+			"resetAt" in creditResult ? creditResult.resetAt : undefined;
 
 		if (!allowed) {
 			return NextResponse.json(
@@ -281,6 +285,7 @@ export async function POST(request: NextRequest) {
 						? "Credit limit exceeded. Purchase more credits to continue."
 						: "Rate limit exceeded. Sign in for 100 stamps per day, or try again tomorrow.",
 					remaining: 0,
+					resetAt,
 				},
 				{ status: 429 },
 			);

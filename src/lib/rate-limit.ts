@@ -17,7 +17,7 @@ const MAX_GENERATIONS_PER_DAY = DAILY_CREDIT_LIMITS.ANONYMOUS;
 export async function checkRateLimit(
 	db: Database,
 	userIp: string,
-): Promise<{ allowed: boolean; remaining: number }> {
+): Promise<{ allowed: boolean; remaining: number; resetAt?: number }> {
 	const now = new Date();
 	const nowMs = now.getTime();
 	const windowStartMs = nowMs - RATE_LIMIT_WINDOW_MS;
@@ -56,8 +56,10 @@ export async function checkRateLimit(
 	if (existing) {
 		// Record exists but window expired or limit reached
 		if (existing.generationsCount >= MAX_GENERATIONS_PER_DAY) {
-			// Limit exhausted
-			return { allowed: false, remaining: 0 };
+			// Limit exhausted - calculate reset time from window start
+			const resetAt =
+				new Date(existing.windowStart).getTime() + RATE_LIMIT_WINDOW_MS;
+			return { allowed: false, remaining: 0, resetAt };
 		}
 		// Window expired - reset to 1
 		await db.$client

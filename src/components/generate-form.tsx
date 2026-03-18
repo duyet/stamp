@@ -10,6 +10,21 @@ import { GenerationResults } from "./generate/generation-results";
 import { PromptInput } from "./generate/prompt-input";
 import { StyleSelector } from "./generate/style-selector";
 
+/**
+ * Format countdown milliseconds to HH:MM:SS or MM:SS
+ */
+function formatCountdown(ms: number): string {
+	const totalSeconds = Math.ceil(ms / 1000);
+	const hours = Math.floor(totalSeconds / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
+	const seconds = totalSeconds % 60;
+
+	if (hours > 0) {
+		return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+	}
+	return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
 interface GeneratedStamp {
 	id: string;
 	imageUrl: string;
@@ -37,6 +52,8 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [isRateLimited, setIsRateLimited] = useState(false);
+	const [resetAt, setResetAt] = useState<number | null>(null);
+	const [countdown, setCountdown] = useState<number>(0);
 	const { isSignedIn } = useAuth();
 	const [hd, setHd] = useState(false);
 	const [reference, setReference] = useState<string | null>(null);
@@ -46,6 +63,29 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	useEffect(() => {
 		if (!isSignedIn) setHd(false);
 	}, [isSignedIn]);
+
+	// Countdown timer for rate limit
+	useEffect(() => {
+		if (!resetAt) {
+			setCountdown(0);
+			return;
+		}
+
+		// Initial calculation
+		const updateCountdown = () => {
+			const remaining = Math.max(0, resetAt - Date.now());
+			setCountdown(remaining);
+			if (remaining === 0) {
+				setResetAt(null);
+				setIsRateLimited(false);
+			}
+		};
+
+		updateCountdown();
+		const interval = setInterval(updateCountdown, 1000);
+
+		return () => clearInterval(interval);
+	}, [resetAt]);
 
 	async function handleVisibilityChange(
 		e: React.ChangeEvent<HTMLInputElement>,
@@ -96,10 +136,16 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				error?: string;
 				remaining?: number;
 				generationTimeMs?: number;
+				resetAt?: number;
 			};
 
 			if (!res.ok) {
-				if (res.status === 429) setIsRateLimited(true);
+				if (res.status === 429) {
+					setIsRateLimited(true);
+					if (data.resetAt) {
+						setResetAt(data.resetAt);
+					}
+				}
 				throw new Error(data.error ?? "Generation failed");
 			}
 
@@ -126,6 +172,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 			// Clear prompt after successful generation
 			setPrompt("");
 			setReference(null);
+			setResetAt(null); // Clear countdown on success
 		} catch (err) {
 			setError(
 				err instanceof Error
@@ -209,6 +256,11 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					<div className="flex items-start justify-between gap-3">
 						<div className="flex-1">
 							<p className="text-sm text-red-700 font-medium">{error}</p>
+							{isRateLimited && countdown > 0 && (
+								<p className="mt-1 text-xs text-stone-500">
+									Resets in {formatCountdown(countdown)}
+								</p>
+							)}
 							{isRateLimited && !isSignedIn && (
 								<div className="mt-2 pt-2 border-t border-red-100 flex items-center justify-between">
 									<p className="text-stone-600">
@@ -229,9 +281,13 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 							type="button"
 							onClick={() => handleSubmit()}
 							className="shrink-0 px-3 py-1.5 bg-stone-900 text-white text-xs font-medium rounded hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							disabled={loading}
+							disabled={loading || countdown > 0}
 						>
-							{loading ? "Retrying..." : "Try again"}
+							{loading
+								? "Retrying..."
+								: countdown > 0
+									? "Wait..."
+									: "Try again"}
 						</button>
 					</div>
 				</div>
