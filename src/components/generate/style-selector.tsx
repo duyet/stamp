@@ -33,7 +33,7 @@ export function StyleSelector({
 							className={`w-14 h-14 rounded-lg transition-all duration-200 ${
 								currentStyle === key
 									? "ring-2 ring-stone-900 dark:ring-stone-100 ring-offset-1 dark:ring-offset-stone-900 shadow-lg shadow-stamp-blue/20 scale-105"
-									: "opacity-50 hover:opacity-80"
+									: "opacity-50 hover:opacity-100 hover:scale-105 hover:shadow-md"
 							}`}
 						>
 							<Image
@@ -49,7 +49,7 @@ export function StyleSelector({
 							className={`text-[10px] mt-0.5 text-center transition-colors ${
 								currentStyle === key
 									? "text-stone-900 dark:text-stone-100 font-medium"
-									: "text-stone-400 dark:text-stone-600"
+									: "text-stone-400 dark:text-stone-600 hover:text-stone-700 dark:hover:text-stone-500"
 							}`}
 						>
 							{preset.name}

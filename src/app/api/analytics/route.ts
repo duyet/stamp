@@ -14,6 +14,12 @@ interface StampCountsResult {
 	stamps_month: number;
 }
 
+interface EventMetricsResult {
+	total_page_views: number;
+	total_downloads: number;
+	total_shares: number;
+}
+
 // Rate limit for expensive analytics queries (10 requests per 15 minutes)
 const ANALYTICS_RATE_LIMIT = 10;
 const ANALYTICS_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
@@ -130,13 +136,21 @@ export async function GET(request: NextRequest) {
 			`,
 		)) as [StampCountsResult];
 
+		// Consolidated event metrics query (3 aggregations → 1 query)
+		const [eventMetricsResult] = (await db.all(
+			sql`
+				SELECT
+					count(CASE WHEN event = 'page_view' THEN 1 END) as total_page_views,
+					count(CASE WHEN event = 'download' THEN 1 END) as total_downloads,
+					count(CASE WHEN event IN ('copy_link', 'share') THEN 1 END) as total_shares
+				FROM events
+			`,
+		)) as [EventMetricsResult];
+
 		const [
 			popularStylesResult,
 			dailyTrendResult,
-			totalPageViewsResult,
 			uniqueVisitorsResult,
-			totalDownloadsResult,
-			totalSharesResult,
 			eventBreakdownResult,
 			pageViewBreakdownResult,
 			locationCountryResult,
@@ -163,24 +177,9 @@ export async function GET(request: NextRequest) {
 				.orderBy(sql`(${stamps.createdAt} / 86400) * 86400`),
 
 			db
-				.select({ count: sql<number>`count(*)` })
-				.from(events)
-				.where(sql`${events.event} = 'page_view'`),
-
-			db
 				.select({ count: sql<number>`count(distinct ${events.userIp})` })
 				.from(events)
 				.where(sql`${events.userIp} is not null`),
-
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(events)
-				.where(sql`${events.event} = 'download'`),
-
-			db
-				.select({ count: sql<number>`count(*)` })
-				.from(events)
-				.where(sql`${events.event} = 'copy_link' or ${events.event} = 'share'`),
 
 			db
 				.select({
@@ -355,10 +354,10 @@ export async function GET(request: NextRequest) {
 					day: r.day,
 					count: r.count,
 				})),
-				totalPageViews: totalPageViewsResult[0]?.count ?? 0,
+				totalPageViews: (eventMetricsResult?.total_page_views as number) ?? 0,
 				uniqueVisitors: uniqueVisitorsResult[0]?.count ?? 0,
-				totalDownloads: totalDownloadsResult[0]?.count ?? 0,
-				totalShares: totalSharesResult[0]?.count ?? 0,
+				totalDownloads: (eventMetricsResult?.total_downloads as number) ?? 0,
+				totalShares: (eventMetricsResult?.total_shares as number) ?? 0,
 				eventBreakdown: eventBreakdownResult.map((r) => ({
 					event: r.event,
 					count: r.count,

@@ -56,8 +56,18 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 			);
 		}
 
-		// Prevent body scroll
-		document.body.style.overflow = "hidden";
+		// Prevent body scroll — iOS-safe method
+		// Store current scroll position to restore later
+		const scrollY = window.scrollY;
+		const bodyStyle = document.body.style;
+		const originalOverflow = bodyStyle.overflow;
+		const originalPosition = bodyStyle.position;
+
+		// Apply iOS-compatible scroll lock
+		bodyStyle.position = "fixed";
+		bodyStyle.top = `-${scrollY}px`;
+		bodyStyle.width = "100%";
+		bodyStyle.overflow = "hidden";
 
 		// Handle Escape key and Tab key for focus trap
 		const handleKey = (e: KeyboardEvent) => {
@@ -88,7 +98,18 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 
 		return () => {
 			document.removeEventListener("keydown", handleKey);
-			document.body.style.overflow = "";
+
+			// Restore scroll position and body styles
+			const scrollYBeforeRestore = -parseInt(bodyStyle.top || "0", 10);
+			bodyStyle.position = originalPosition;
+			bodyStyle.top = "";
+			bodyStyle.width = "";
+			bodyStyle.overflow = originalOverflow;
+
+			// Restore scroll position after next paint
+			requestAnimationFrame(() => {
+				window.scrollTo(0, scrollYBeforeRestore);
+			});
 		};
 	}, [onClose]);
 

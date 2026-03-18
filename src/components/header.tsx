@@ -14,10 +14,10 @@ export function Header() {
 				>
 					stamp.builders
 				</Link>
-				<div className="flex items-center gap-3 sm:gap-6 text-sm">
+				<div className="flex items-center gap-2 sm:gap-6 text-sm">
 					<Link
 						href="/generate"
-						className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors hidden sm:block link-hover-underline"
+						className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors link-hover-underline text-xs sm:text-sm"
 					>
 						Create
 					</Link>
@@ -32,7 +32,7 @@ export function Header() {
 					</Link>
 					<Link
 						href="/collections"
-						className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors link-hover-underline"
+						className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors link-hover-underline hidden sm:block"
 					>
 						Collections
 					</Link>
@@ -41,7 +41,7 @@ export function Header() {
 						<SignInButton mode="modal">
 							<button
 								type="button"
-								className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors link-hover-underline"
+								className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors link-hover-underline hidden sm:block"
 							>
 								Sign in
 							</button>

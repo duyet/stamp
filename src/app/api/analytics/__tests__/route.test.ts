@@ -64,14 +64,8 @@ describe("GET /api/analytics", () => {
 				{ day: 1710460800000, count: 3 },
 				{ day: 1710547200000, count: 5 },
 			],
-			// total page views
-			[{ count: 500 }],
 			// unique visitors
 			[{ count: 42 }],
-			// total downloads
-			[{ count: 15 }],
-			// total shares
-			[{ count: 8 }],
 			// event breakdown
 			[
 				{ event: "page_view", count: 500 },
@@ -99,15 +93,29 @@ describe("GET /api/analytics", () => {
 			return createSelectChain(result);
 		});
 
-		// Mock db.all() for consolidated query
-		const mockAll = vi.fn().mockResolvedValue([
-			{
-				total_stamps: 100,
-				stamps_today: 5,
-				stamps_week: 25,
-				stamps_month: 80,
-			},
-		]);
+		// Mock db.all() for consolidated queries (2 calls: stamp counts + event metrics)
+		let allCallCount = 0;
+		const mockAll = vi.fn().mockImplementation(() => {
+			if (allCallCount === 0) {
+				allCallCount++;
+				return Promise.resolve([
+					{
+						total_stamps: 100,
+						stamps_today: 5,
+						stamps_week: 25,
+						stamps_month: 80,
+					},
+				]);
+			}
+			// Event metrics consolidated query
+			return Promise.resolve([
+				{
+					total_page_views: 500,
+					total_downloads: 15,
+					total_shares: 8,
+				},
+			]);
+		});
 
 		vi.mocked(getDb).mockReturnValue({
 			$client: { prepare: mockPrepare },
@@ -145,14 +153,28 @@ describe("GET /api/analytics", () => {
 	it("returns defaults when queries return empty results", async () => {
 		const mockPrepare = createMockRateLimitPrepare();
 		const mockSelect = vi.fn().mockImplementation(() => createSelectChain([]));
-		const mockAll = vi.fn().mockResolvedValue([
-			{
-				total_stamps: 0,
-				stamps_today: 0,
-				stamps_week: 0,
-				stamps_month: 0,
-			},
-		]);
+		let allCallCount = 0;
+		const mockAll = vi.fn().mockImplementation(() => {
+			if (allCallCount === 0) {
+				allCallCount++;
+				return Promise.resolve([
+					{
+						total_stamps: 0,
+						stamps_today: 0,
+						stamps_week: 0,
+						stamps_month: 0,
+					},
+				]);
+			}
+			// Event metrics consolidated query
+			return Promise.resolve([
+				{
+					total_page_views: 0,
+					total_downloads: 0,
+					total_shares: 0,
+				},
+			]);
+		});
 
 		vi.mocked(getDb).mockReturnValue({
 			$client: { prepare: mockPrepare },
@@ -198,22 +220,14 @@ describe("GET /api/analytics", () => {
 		const mockPrepare = createMockRateLimitPrepare();
 		let callCount = 0;
 		const selectResults = [
-			[
-				{
-					total_stamps: 10,
-					stamps_today: 1,
-					stamps_week: 5,
-					stamps_month: 8,
-				},
-			],
 			[{ style: null, count: 3 }], // null style
 			[],
-			[{ count: 20 }],
-			[{ count: 5 }],
-			[{ count: 0 }], // downloads
-			[{ count: 0 }], // shares
+			[{ count: 20 }], // unique visitors
 			[], // event breakdown
 			[], // page view breakdown
+			[], // location country
+			[], // location city
+			[], // timezone
 		];
 
 		const mockSelect = vi.fn().mockImplementation(() => {
@@ -222,14 +236,28 @@ describe("GET /api/analytics", () => {
 			return createSelectChain(result);
 		});
 
-		const mockAll = vi.fn().mockResolvedValue([
-			{
-				total_stamps: 10,
-				stamps_today: 1,
-				stamps_week: 5,
-				stamps_month: 8,
-			},
-		]);
+		let allCallCount = 0;
+		const mockAll = vi.fn().mockImplementation(() => {
+			if (allCallCount === 0) {
+				allCallCount++;
+				return Promise.resolve([
+					{
+						total_stamps: 10,
+						stamps_today: 1,
+						stamps_week: 5,
+						stamps_month: 8,
+					},
+				]);
+			}
+			// Event metrics consolidated query
+			return Promise.resolve([
+				{
+					total_page_views: 20,
+					total_downloads: 0,
+					total_shares: 0,
+				},
+			]);
+		});
 
 		vi.mocked(getDb).mockReturnValue({
 			$client: { prepare: mockPrepare },
