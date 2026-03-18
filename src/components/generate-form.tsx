@@ -138,13 +138,13 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	}
 
 	return (
-		<div className="max-w-2xl mx-auto">
+		<div className="max-w-2xl mx-auto px-2 sm:px-0">
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();
 					handleSubmit();
 				}}
-				className="space-y-4"
+				className="space-y-5 sm:space-y-4"
 			>
 				{/* Reference image upload */}
 				<ImageUpload
