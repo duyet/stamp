@@ -2,38 +2,38 @@ import Link from "next/link";
 
 export function Footer() {
 	return (
-		<footer className="mt-auto bg-stone-50">
+		<footer className="mt-auto bg-stone-50 dark:bg-stone-900/50">
 			<div className="max-w-5xl mx-auto px-6 py-16">
 				<nav className="flex items-center justify-center gap-10 text-sm mb-10">
 					<Link
 						href="/generate"
-						className="text-stone-600 hover:text-stone-800 transition-colors link-hover-underline"
+						className="text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors link-hover-underline"
 					>
 						Create
 					</Link>
 					<Link
 						href="/collections"
-						className="text-stone-600 hover:text-stone-800 transition-colors link-hover-underline"
+						className="text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors link-hover-underline"
 					>
 						Collections
 					</Link>
 					<Link
 						href="/pricing"
-						className="text-stone-600 hover:text-stone-800 transition-colors link-hover-underline"
+						className="text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors link-hover-underline"
 					>
 						Pricing
 					</Link>
 				</nav>
-				<nav className="flex items-center justify-center gap-6 text-xs text-stone-400 mb-6">
+				<nav className="flex items-center justify-center gap-6 text-xs text-stone-400 dark:text-stone-600 mb-6">
 					<Link
 						href="/privacy"
-						className="hover:text-stone-600 transition-colors link-hover-underline"
+						className="hover:text-stone-600 dark:hover:text-stone-400 transition-colors link-hover-underline"
 					>
 						Privacy
 					</Link>
 					<Link
 						href="/terms"
-						className="hover:text-stone-600 transition-colors link-hover-underline"
+						className="hover:text-stone-600 dark:hover:text-stone-400 transition-colors link-hover-underline"
 					>
 						Terms
 					</Link>
@@ -41,15 +41,15 @@ export function Footer() {
 				<div className="text-center">
 					<a
 						href="https://stamp.duyet.net"
-						className="text-sm text-stone-600 hover:text-stone-800 transition-colors link-hover-underline"
+						className="text-sm text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors link-hover-underline"
 						style={{ fontFamily: "var(--font-stamp)" }}
 					>
 						stamp.builders
 					</a>
-					<p className="text-xs text-stone-500 mt-3 mb-1">
+					<p className="text-xs text-stone-500 dark:text-stone-500 mt-3 mb-1">
 						Built on Cloudflare
 					</p>
-					<p className="text-xs text-stone-400">
+					<p className="text-xs text-stone-400 dark:text-stone-600">
 						Made with creativity by the community
 					</p>
 				</div>
