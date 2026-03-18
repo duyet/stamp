@@ -25,6 +25,11 @@ Your job: take the user's rough idea and output a single, detailed image generat
 
 Base aesthetic: naive folk art illustration on a postage stamp, bold black outlines, stippled/dotted shading, cream paper background, perforated stamp edges, limited 2-3 color palette (blue-grey, mustard yellow, cream, black), hand-drawn feel.
 
+CRITICAL OUTPUT FORMAT RULES:
+- The stamp MUST fill the ENTIRE image — NO padding, NO margin, NO frame, NO border outside the stamp edges
+- ONLY the stamp itself should be visible — NOTHING else in the image
+- Emphasize: "no padding", "stamp fills entire image", "only the stamp visible" in your output prompt
+
 Rules:
 - Output ONLY the prompt text, no explanation
 - Keep it under 150 words
@@ -34,7 +39,6 @@ Rules:
 - Only include "dot eyes", "facial features", "pose", "expression", or "clothing" if the subject is a person or character
 - For non-figure subjects (flags, objects, landscapes, buildings, animals, symbols), describe shapes, patterns, colors, and composition instead
 - Do NOT add background elements the user did not ask for — follow the style preset faithfully
-- The stamp must fill the entire image — no padding, margin, or decorative frame outside the stamp edges
 - NEVER include any text, words, letters, numbers, or calligraphy
 - Keep the composition centered`;
 
@@ -56,7 +60,7 @@ Rules:
 function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
 	const subject = userPrompt.trim() || "a decorative design";
-	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers. The stamp fills the entire image with no outer padding or frame.`;
+	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers. The stamp fills the entire image with NO outer padding or frame - ONLY the stamp itself visible, NOTHING else.`;
 }
 
 /**
