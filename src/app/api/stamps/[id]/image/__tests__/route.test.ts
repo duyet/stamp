@@ -18,6 +18,7 @@ const URL = "http://localhost/api/stamps/abc123def456/image";
 describe("GET /api/stamps/[id]/image", () => {
 	const mockBucket = {
 		get: vi.fn(),
+		head: vi.fn(),
 	};
 
 	const mockDb = {
@@ -41,6 +42,7 @@ describe("GET /api/stamps/[id]/image", () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: "png",
 		});
+		mockBucket.head.mockResolvedValueOnce({}); // Object exists
 		mockBucket.get.mockResolvedValueOnce({
 			arrayBuffer: () => Promise.resolve(imageData),
 		});
@@ -62,6 +64,7 @@ describe("GET /api/stamps/[id]/image", () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: null,
 		});
+		mockBucket.head.mockResolvedValueOnce(null); // HEAD fails
 		mockBucket.get.mockResolvedValueOnce(null); // png not found
 		mockBucket.get.mockResolvedValueOnce({
 			// jpg found
@@ -97,6 +100,7 @@ describe("GET /api/stamps/[id]/image", () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: "png",
 		});
+		mockBucket.head.mockResolvedValueOnce({}); // Object exists
 		mockBucket.get.mockResolvedValueOnce({
 			arrayBuffer: () => Promise.resolve(new ArrayBuffer(4)),
 		});
@@ -110,6 +114,7 @@ describe("GET /api/stamps/[id]/image", () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: "png",
 		});
+		mockBucket.head.mockResolvedValueOnce({}); // Object exists
 		mockBucket.get.mockRejectedValue(new Error("R2 unavailable"));
 
 		const res = await GET(
@@ -127,6 +132,7 @@ describe("GET /api/stamps/[id]/image", () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: "png",
 		});
+		mockBucket.head.mockResolvedValueOnce({}); // Object exists
 		mockBucket.get.mockResolvedValueOnce({
 			arrayBuffer: () => Promise.resolve(imageBytes.buffer),
 		});

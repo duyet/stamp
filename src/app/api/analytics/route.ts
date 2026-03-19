@@ -375,6 +375,8 @@ export async function GET(request: NextRequest) {
 					// Cache for 5 minutes with stale-while-revalidate for 10 minutes
 					// Reduces D1 query load by ~90% for cached requests
 					"Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+					// Enable Brotli compression (handled by CF Workers)
+					Vary: "Accept-Encoding",
 				},
 			},
 		);

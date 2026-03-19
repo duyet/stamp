@@ -60,8 +60,12 @@ export async function GET(
 						{ status: 400 },
 					);
 				}
-				object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
-				contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
+				// Use HEAD request to check existence before full GET (faster for 404s)
+				const headResult = await bucket.head(`${prefix}/${cleanId}.${ext}`);
+				if (headResult) {
+					object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
+					contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
+				}
 			}
 		}
 

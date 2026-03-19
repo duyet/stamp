@@ -26,6 +26,7 @@ export default function CollectionsPage() {
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
 	const [retryKey, setRetryKey] = useState(0);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
+	const [visibleCount, setVisibleCount] = useState(20);
 	const { stamps, loading, error, setStamps } = useStamps(
 		GRID_LAYOUTS.MAX_STAMP_LIMIT,
 		retryKey,
@@ -40,6 +41,14 @@ export default function CollectionsPage() {
 		[stamps, selectedStyle],
 	);
 
+	// Paginate visible stamps
+	const visibleStamps = useMemo(
+		() => filteredStamps.slice(0, visibleCount),
+		[filteredStamps, visibleCount],
+	);
+
+	const hasMore = visibleCount < filteredStamps.length;
+
 	// Memoized empty state message for selected style
 	const emptyStateMessage = useMemo(() => {
 		if (selectedStyle === ALL_STYLES) {
@@ -53,6 +62,11 @@ export default function CollectionsPage() {
 	// Trigger refetch on retry
 	function handleRetry() {
 		setRetryKey((prev) => prev + 1);
+	}
+
+	// Load more stamps
+	function handleLoadMore() {
+		setVisibleCount((prev) => prev + 20);
 	}
 
 	// Handle regeneration from modal
@@ -146,15 +160,28 @@ export default function CollectionsPage() {
 					</div>
 				</div>
 			) : (
-				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-					{filteredStamps.map((stamp) => (
-						<StampCardMemo
-							key={stamp.id}
-							stamp={stamp}
-							onClick={() => setSelectedStamp(stamp)}
-						/>
-					))}
-				</div>
+				<>
+					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+						{visibleStamps.map((stamp) => (
+							<StampCardMemo
+								key={stamp.id}
+								stamp={stamp}
+								onClick={() => setSelectedStamp(stamp)}
+							/>
+						))}
+					</div>
+					{hasMore && (
+						<div className="flex justify-center mt-8">
+							<button
+								type="button"
+								onClick={handleLoadMore}
+								className="px-6 py-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-xl"
+							>
+								Load more stamps
+							</button>
+						</div>
+					)}
+				</>
 			)}
 
 			{/* Stamp overlay modal */}

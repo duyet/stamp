@@ -19,6 +19,8 @@ const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 	const [preview, setPreview] = useState<string | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
+	const [processing, setProcessing] = useState(false);
+	const [isDragging, setIsDragging] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	async function resizeImage(file: File): Promise<Blob> {
@@ -75,6 +77,7 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 			return;
 		}
 
+		setProcessing(true);
 		setPreview(URL.createObjectURL(file));
 		setErrorMsg(null);
 
@@ -97,6 +100,8 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 		} catch (err) {
 			setErrorMsg("Failed to process image. Please try another.");
 			console.error("Image resize error:", err);
+		} finally {
+			setProcessing(false);
 		}
 	}
 
@@ -110,12 +115,23 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 
 	function handleDrop(e: React.DragEvent) {
 		e.preventDefault();
+		setIsDragging(false);
 		const file = e.dataTransfer.files[0];
 		if (file) handleFile(file);
 	}
 
 	function handleDragOver(e: React.DragEvent) {
 		e.preventDefault();
+	}
+
+	function handleDragEnter(e: React.DragEvent) {
+		e.preventDefault();
+		setIsDragging(true);
+	}
+
+	function handleDragLeave(e: React.DragEvent) {
+		e.preventDefault();
+		setIsDragging(false);
 	}
 
 	return (
@@ -125,19 +141,23 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					type="button"
 					onDrop={handleDrop}
 					onDragOver={handleDragOver}
+					onDragEnter={handleDragEnter}
+					onDragLeave={handleDragLeave}
 					onClick={() => inputRef.current?.click()}
 					disabled={disabled}
-					className={`flex w-full items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 bg-transparent ${
+					className={`flex flex-col w-full items-center justify-center gap-2 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200 bg-transparent ${
 						disabled
 							? "border-stone-200 bg-stone-50 cursor-not-allowed opacity-50"
-							: "border-stone-300 hover:border-stone-400 hover:bg-stone-50"
+							: isDragging
+								? "border-stamp-blue bg-stamp-blue/5 scale-[1.02]"
+								: "border-stone-300 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800/50"
 					}`}
 				>
 					<UploadIcon />
-					<span className="text-xs text-stone-500">
-						Upload a reference photo
+					<span className="text-xs text-stone-500 dark:text-stone-400">
+						{isDragging ? "Drop your photo here" : "Upload a reference photo"}
 					</span>
-					<span className="text-[10px] text-stone-400">
+					<span className="text-[10px] text-stone-400 dark:text-stone-500">
 						JPG, PNG, WebP up to 5MB
 					</span>
 					<input
@@ -153,8 +173,13 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					/>
 				</button>
 			) : (
-				<div className="flex items-center gap-3 p-3 border border-stone-200 rounded-lg bg-stone-50">
-					<div className="w-16 h-16 rounded overflow-hidden shrink-0">
+				<div className="flex items-center gap-3 p-3 border border-stone-200 dark:border-stone-700 rounded-lg bg-stone-50 dark:bg-stone-800/50 animate-form-enter">
+					<div className="w-16 h-16 rounded overflow-hidden shrink-0 relative">
+						{processing && (
+							<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+								<div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+							</div>
+						)}
 						<Image
 							src={preview}
 							alt="Reference photo"
@@ -164,14 +189,16 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 							unoptimized
 						/>
 					</div>
-					<span className="text-xs text-stone-600">
-						Reference photo ready (HD required)
+					<span className="text-xs text-stone-600 dark:text-stone-400">
+						{processing
+							? "Processing..."
+							: "Reference photo ready (HD required)"}
 					</span>
 					<button
 						type="button"
 						onClick={handleClear}
-						className="shrink-0 p-1 text-stone-400 hover:text-stone-600 transition-colors"
-						disabled={disabled}
+						className="shrink-0 p-1 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						disabled={disabled || processing}
 					>
 						<CloseIcon />
 					</button>

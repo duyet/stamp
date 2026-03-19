@@ -45,12 +45,17 @@ export async function PATCH(
 			return NextResponse.json({ error: "Not authorized" }, { status: 403 });
 		}
 
-		await db
+		// Use RETURNING clause to get updated stamp in single query
+		const [updatedStamp] = await db
 			.update(stamps)
 			.set({ isPublic: body.isPublic })
-			.where(eq(stamps.id, id));
+			.where(eq(stamps.id, id))
+			.returning();
 
-		return NextResponse.json({ ok: true });
+		return NextResponse.json({
+			ok: true,
+			stamp: { id: updatedStamp.id, isPublic: updatedStamp.isPublic },
+		});
 	} catch (error) {
 		console.error("Failed to update visibility:", error);
 		return NextResponse.json({ error: "Failed to update." }, { status: 500 });

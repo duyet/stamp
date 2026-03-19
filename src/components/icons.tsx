@@ -113,6 +113,14 @@ export function ArrowDownIcon() {
 	);
 }
 
+export function ArrowUpIcon() {
+	return (
+		<svg {...iconProps} viewBox="0 0 24 24" strokeWidth={2} aria-hidden="true">
+			<path d="M5 10l7-7m0 0l7 7m-7-7v18" />
+		</svg>
+	);
+}
+
 export function Sun({ className }: { className?: string }) {
 	return (
 		<svg

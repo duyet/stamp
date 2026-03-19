@@ -64,6 +64,7 @@ export function PromptInput({
 					rows={1}
 					disabled={disabled}
 					aria-label="Describe your stamp"
+					aria-describedby="prompt-hint"
 					className="w-full pl-4 pr-14 py-3 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 text-sm leading-relaxed placeholder:text-stone-400 dark:placeholder:text-stone-600 focus:border-stone-900 dark:focus:border-stone-500 focus:ring-2 focus:ring-stone-900/10 dark:focus:ring-stone-500/20 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50 shadow-sm focus:shadow-md"
 				/>
 				<div className="absolute right-3 top-3">
@@ -82,6 +83,17 @@ export function PromptInput({
 						<UserButton appearance={{ elements: { avatarBox: "w-6 h-6" } }} />
 					</Show>
 				</div>
+			</div>
+			{/* Character counter and hint */}
+			<div className="flex items-center justify-between text-xs text-stone-400 dark:text-stone-500">
+				<span id="prompt-hint">
+					{value.length > 0 && referenceImage
+						? "Add details to enhance your photo"
+						: value.length > 0
+							? "Great! Press Enter or click Generate"
+							: "Be creative or pick a suggestion below"}
+				</span>
+				<span className="tabular-nums">{value.length}/500</span>
 			</div>
 
 			{/* Prompt suggestions */}

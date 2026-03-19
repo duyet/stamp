@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { Footer } from "@/components/footer";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
@@ -78,6 +79,7 @@ export default function RootLayout({
 						<main id="main-content" className="flex-1" tabIndex={-1}>
 							{children}
 						</main>
+						<ScrollToTop />
 						<Footer />
 					</ThemeProvider>
 				</ClerkProvider>

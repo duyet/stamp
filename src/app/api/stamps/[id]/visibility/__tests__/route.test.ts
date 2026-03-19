@@ -20,7 +20,11 @@ const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>
 describe("PATCH /api/stamps/[id]/visibility", () => {
 	const mockUpdate = vi.fn().mockReturnValue({
 		set: vi.fn().mockReturnValue({
-			where: vi.fn().mockResolvedValue(undefined),
+			where: vi.fn().mockReturnValue({
+				returning: vi
+					.fn()
+					.mockResolvedValue([{ id: "abc123def456", isPublic: false }]),
+			}),
 		}),
 	});
 
@@ -47,7 +51,11 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 		});
 		mockUpdate.mockReturnValue({
 			set: vi.fn().mockReturnValue({
-				where: vi.fn().mockResolvedValue(undefined),
+				where: vi.fn().mockReturnValue({
+					returning: vi
+						.fn()
+						.mockResolvedValue([{ id: "abc123def456", isPublic: false }]),
+				}),
 			}),
 		});
 	});
@@ -137,6 +145,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 		expect(res.status).toBe(200);
 		expect(data.ok).toBe(true);
+		expect(data.stamp).toEqual({ id: "abc123def456", isPublic: false });
 	});
 
 	it("allows toggle when userId matches creator (authenticated user)", async () => {
@@ -158,6 +167,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 		expect(res.status).toBe(200);
 		expect(data.ok).toBe(true);
+		expect(data.stamp).toEqual({ id: "abc123def456", isPublic: false });
 	});
 
 	it("returns 403 when userId does not match creator", async () => {

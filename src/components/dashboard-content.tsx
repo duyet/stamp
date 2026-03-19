@@ -276,8 +276,33 @@ export function DashboardContent() {
 			)}
 
 			{data.popularStyles.length === 0 && data.dailyTrend.length === 0 && (
-				<div className="text-center text-stone-600 py-16 text-sm">
-					No data yet. Generate some stamps first.
+				<div className="text-center py-20">
+					<div className="max-w-md mx-auto">
+						{/* Empty state illustration */}
+						<div className="mb-6 relative inline-block">
+							<div className="w-20 h-20 mx-auto relative opacity-30">
+								<div className="absolute inset-0 border-4 border-dashed border-stone-300 dark:border-stone-700 rounded-lg transform rotate-3" />
+								<div className="absolute inset-2 bg-stone-100 dark:bg-stone-800 rounded flex items-center justify-center">
+									<span className="text-3xl" role="img" aria-label="Empty">
+										📊
+									</span>
+								</div>
+							</div>
+						</div>
+						<p className="text-stone-700 dark:text-stone-300 mb-2 text-base font-medium">
+							No analytics yet
+						</p>
+						<p className="text-sm text-stone-500 dark:text-stone-600 mb-6">
+							Generate some stamps to see insights and trends appear here.
+						</p>
+						<button
+							type="button"
+							onClick={() => (window.location.href = "/generate")}
+							className="px-6 py-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-xl"
+						>
+							Create your first stamp
+						</button>
+					</div>
 				</div>
 			)}
 		</div>

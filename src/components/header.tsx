@@ -6,7 +6,7 @@ import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
 	return (
-		<header className="bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-stone-100 dark:border-stone-800">
+		<header className="bg-white/85 dark:bg-stone-900/85 backdrop-blur-md sticky top-0 z-50 border-b border-stone-100 dark:border-stone-800 supports-[backdrop-filter]:bg-white/75 supports-[backdrop-filter]:dark:bg-stone-900/75">
 			<nav className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
 				<Link
 					href="/"

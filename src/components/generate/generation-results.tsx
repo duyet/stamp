@@ -38,7 +38,7 @@ export function GenerationResults({
 	const { isFavorite, toggleFavorite } = useFavorites();
 
 	return (
-		<div className="mt-10">
+		<div className="mt-10 animate-form-enter">
 			{/* Controls for latest stamp */}
 			<div className="text-center mb-4 space-y-2">
 				<div className="inline-flex">
@@ -67,7 +67,15 @@ export function GenerationResults({
 				{results.map((r, idx) => (
 					<div
 						key={r.id}
-						className={`text-center ${idx === 0 ? "animate-stamp-appear" : ""}`}
+						className={`text-center ${idx === 0 ? "animate-stamp-appear" : idx === 1 ? "animate-form-enter" : ""}`}
+						style={
+							idx > 1
+								? {
+										animation: `form-enter 0.4s ease-out ${idx * 0.05}s forwards`,
+										opacity: 0,
+									}
+								: undefined
+						}
 					>
 						<div className="stamp-border stamp-modal-shadow inline-block relative">
 							<button
