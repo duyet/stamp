@@ -141,6 +141,7 @@ export function HomeContent() {
 										sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 16vw, 10vw"
 										className="object-cover"
 										loading="lazy"
+										unoptimized
 									/>
 									<div className="absolute inset-0 bg-stamp-navy/0 group-hover:bg-stamp-navy/10 transition-colors duration-200" />
 								</div>

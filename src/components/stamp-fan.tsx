@@ -41,6 +41,7 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 								height={130}
 								className="w-full h-full object-cover"
 								priority={idx < 3}
+								unoptimized
 							/>
 						</button>
 					) : (
