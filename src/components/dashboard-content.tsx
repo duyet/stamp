@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { DashboardLocations } from "@/components/dashboard-locations";
 import { DashboardMap } from "@/components/dashboard-map";
 import { StyleShowcase } from "@/components/dashboard-style-showcase";
 import { DashboardTimezoneTimeline } from "@/components/dashboard-timezone-timeline";
 import { HorizontalBarChart } from "@/components/horizontal-bar-chart";
-import { StampGrid } from "@/components/stamp-grid";
+import { StampGridMemo } from "@/components/stamp-grid";
 import { StatCard } from "@/components/stat-card";
 import { DASHBOARD } from "@/lib/constants";
 import { formatDateShort } from "@/lib/date-utils";
@@ -60,7 +60,7 @@ interface Analytics {
 	mapData: MapData[];
 }
 
-export function DashboardContent() {
+function DashboardContent() {
 	const [data, setData] = useState<Analytics | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [styleStamps, setStyleStamps] = useState<
@@ -309,6 +309,10 @@ export function DashboardContent() {
 	);
 }
 
+// Memoize DashboardContent to prevent unnecessary re-renders
+// Only re-renders when analytics data changes
+export const DashboardContentMemo = memo(DashboardContent);
+
 export function RecentStampsSection() {
 	return (
 		<section className="py-12">
@@ -326,7 +330,7 @@ export function RecentStampsSection() {
 					View all &rarr;
 				</Link>
 			</div>
-			<StampGrid />
+			<StampGridMemo />
 		</section>
 	);
 }

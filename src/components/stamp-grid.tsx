@@ -2,12 +2,13 @@
 
 import { nanoid } from "nanoid";
 import Link from "next/link";
+import { memo } from "react";
 import { StampIcon } from "@/components/icons";
 import { StampCardMemo } from "@/components/stamp-card";
 import { useStamps } from "@/hooks/use-stamps";
 import { STAMPS_PER_PAGE } from "@/lib/constants";
 
-export function StampGrid() {
+function StampGrid() {
 	const { stamps, loading } = useStamps(STAMPS_PER_PAGE);
 
 	if (loading) {
@@ -57,3 +58,7 @@ export function StampGrid() {
 		</div>
 	);
 }
+
+// Memoize StampGrid to prevent unnecessary re-renders
+// Only re-renders when stamps data or loading state changes
+export const StampGridMemo = memo(StampGrid);

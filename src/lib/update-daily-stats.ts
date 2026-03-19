@@ -86,7 +86,9 @@ export async function updateDailyStats(db: Database): Promise<void> {
 				},
 			});
 
-		console.log(`[DailyStats] Updated stats for ${today}`);
+		if (process.env.NODE_ENV === "development") {
+			console.log(`[DailyStats] Updated stats for ${today}`);
+		}
 	} catch (error) {
 		console.error("[DailyStats] Failed to update:", error);
 		throw error;

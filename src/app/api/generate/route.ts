@@ -178,9 +178,11 @@ export async function POST(request: NextRequest) {
 		if (pending && now - pending.timestamp < DEDUP_WINDOW_MS) {
 			// Duplicate request detected - return the existing stamp ID
 			// This prevents generating multiple identical stamps from double-clicks
-			console.log(
-				`[Generate] Deduped request ${requestId.slice(0, 8)}... → existing stamp ${pending.stampId}`,
-			);
+			if (process.env.NODE_ENV === "development") {
+				console.log(
+					`[Generate] Deduped request ${requestId.slice(0, 8)}... → existing stamp ${pending.stampId}`,
+				);
+			}
 
 			// Still deduct credits since we're "generating" (just returning cached result)
 			// The user did intent to generate, and we're providing the result
@@ -263,9 +265,11 @@ export async function POST(request: NextRequest) {
 		const slowThreshold = 30000; // 30 seconds
 		const isSlow = generationTimeMs > slowThreshold;
 
-		console.log(
-			`[Generate] stamp=${stampId} model=${model} style=${style} hd=${hd} time=${generationTimeMs}ms${isSlow ? " SLOW!" : ""} prompt_length=${prompt?.length ?? 0}`,
-		);
+		if (process.env.NODE_ENV === "development" || isSlow) {
+			console.log(
+				`[Generate] stamp=${stampId} model=${model} style=${style} hd=${hd} time=${generationTimeMs}ms${isSlow ? " SLOW!" : ""} prompt_length=${prompt?.length ?? 0}`,
+			);
+		}
 
 		if (isSlow) {
 			console.warn(
@@ -386,18 +390,22 @@ export async function POST(request: NextRequest) {
 
 					await addTags(agentStateKey, conv.id, tags);
 
-					console.log(
-						`[AgentState] logged stamp=${stampId} conv=${conv.id} tags=${tags.join(",")} ${Date.now() - agentStateStart}ms`,
-					);
+					if (process.env.NODE_ENV === "development") {
+						console.log(
+							`[AgentState] logged stamp=${stampId} conv=${conv.id} tags=${tags.join(",")} ${Date.now() - agentStateStart}ms`,
+						);
+					}
 				} catch (err: unknown) {
 					console.error(
 						`[AgentState] FAILED stamp=${stampId} error=${sanitizeErrorForLogging(err)}`,
 					);
 				}
 			} else {
-				console.warn(
-					"[AgentState] AGENTSTATE_API_KEY not set, skipping conversation log",
-				);
+				if (process.env.NODE_ENV === "development") {
+					console.warn(
+						"[AgentState] AGENTSTATE_API_KEY not set, skipping conversation log",
+					);
+				}
 			}
 		});
 
