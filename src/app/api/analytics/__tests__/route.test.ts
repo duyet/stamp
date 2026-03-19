@@ -51,46 +51,63 @@ describe("GET /api/analytics", () => {
 		// Mock $client.prepare for rate limiting
 		const mockPrepare = createMockRateLimitPrepare();
 
-		// All possible query results - mock will return these cyclically
-		// Using cyclic approach since Promise.all calls queries in parallel
-		const allResults = [
-			// popular styles
-			[
-				{ style: "vintage", count: 50 },
-				{ style: "modern", count: 30 },
-			],
-			// daily trend
-			[
-				{ day: 1710460800000, count: 3 },
-				{ day: 1710547200000, count: 5 },
-			],
-			// unique visitors
-			[{ count: 42 }],
-			// event breakdown
-			[
-				{ event: "page_view", count: 500 },
-				{ event: "download", count: 15 },
-			],
-			// page view breakdown
-			[
-				{ path: "/", count: 300 },
-				{ path: "/generate", count: 150 },
-			],
-			// location country
-			[{ countrycode: "US", count: 25 }],
-			// location city
-			[{ countrycode: "US", city: "New York", count: 10 }],
-			// timezone
-			[{ timezone: "America/New_York", hour: 14, count: 5 }],
-			// map data
-			[{ countrycode: "US", count: 25 }],
-		];
-
-		let resultIndex = 0;
+		// Mock daily_stats query (returns empty to test fallback path)
+		let selectCallCount = 0;
 		const mockSelect = vi.fn().mockImplementation(() => {
-			const result = allResults[resultIndex % allResults.length];
-			resultIndex++;
-			return createSelectChain(result);
+			selectCallCount++;
+			// Call 1: daily_stats query (returns empty → fallback)
+			if (selectCallCount === 1) {
+				return createSelectChain([]);
+			}
+			// Call 2: daily trend (fallback, runs BEFORE Promise.all)
+			if (selectCallCount === 2) {
+				return createSelectChain([
+					{ day: 1710460800000, count: 3 },
+					{ day: 1710547200000, count: 5 },
+				]);
+			}
+			// Call 3: popular styles (first in Promise.all)
+			if (selectCallCount === 3) {
+				return createSelectChain([
+					{ style: "vintage", count: 50 },
+					{ style: "modern", count: 30 },
+				]);
+			}
+			// Call 4: unique visitors (in Promise.all, uses daily_stats SUM)
+			if (selectCallCount === 4) {
+				return createSelectChain([{ count: 42 }]);
+			}
+			// Call 5: event breakdown
+			if (selectCallCount === 5) {
+				return createSelectChain([
+					{ event: "page_view", count: 500 },
+					{ event: "download", count: 15 },
+				]);
+			}
+			// Call 6: page view breakdown
+			if (selectCallCount === 6) {
+				return createSelectChain([
+					{ path: "/", count: 300 },
+					{ path: "/generate", count: 150 },
+				]);
+			}
+			// Call 7: location country
+			if (selectCallCount === 7) {
+				return createSelectChain([{ countrycode: "US", count: 25 }]);
+			}
+			// Call 8: location city
+			if (selectCallCount === 8) {
+				return createSelectChain([
+					{ countrycode: "US", city: "New York", count: 10 },
+				]);
+			}
+			// Call 9: timezone
+			if (selectCallCount === 9) {
+				return createSelectChain([
+					{ timezone: "America/New_York", hour: 14, count: 5 },
+				]);
+			}
+			return createSelectChain([]);
 		});
 
 		// Mock db.all() for consolidated queries (2 calls: stamp counts + event metrics)
@@ -220,9 +237,10 @@ describe("GET /api/analytics", () => {
 		const mockPrepare = createMockRateLimitPrepare();
 		let callCount = 0;
 		const selectResults = [
-			[{ style: null, count: 3 }], // null style
-			[],
-			[{ count: 20 }], // unique visitors
+			[], // daily_stats (empty → fallback)
+			[], // daily trend (fallback)
+			[{ style: null, count: 3 }], // null style (popular styles)
+			[{ count: 20 }], // unique visitors (fallback)
 			[], // event breakdown
 			[], // page view breakdown
 			[], // location country

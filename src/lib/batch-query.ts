@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import type { Database } from "@/db";
 import { stamps } from "@/db/schema";
 
@@ -17,11 +17,9 @@ export async function batchFetchStamps(
 	if (ids.length === 0) return new Map();
 
 	// Batch query: fetch all stamps in single DB call
+	// Using inArray helper prevents SQL injection from user-provided IDs
 	const results = await db.query.stamps.findMany({
-		where:
-			ids.length > 0
-				? sql`${stamps.id} IN ${sql.raw(`('${ids.join("','")}')`)}`
-				: undefined,
+		where: inArray(stamps.id, ids),
 		columns: {
 			id: true,
 			imageUrl: true,
