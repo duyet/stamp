@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface ConfettiProps {
 	active: boolean;
@@ -18,11 +18,16 @@ const COLORS = [
 ];
 
 /**
- * Confetti celebration effect for generation complete
+ * Confetti celebration effect for generation complete.
+ * Triggers once when active becomes true, not on re-renders.
  */
 export function Confetti({ active, pieceCount = 50 }: ConfettiProps) {
+	const hasTriggered = useRef(false);
+
 	useEffect(() => {
-		if (!active) return;
+		// Only trigger once when active becomes true
+		if (!active || hasTriggered.current) return;
+		hasTriggered.current = true;
 
 		// Create confetti pieces
 		const pieces: HTMLElement[] = [];
