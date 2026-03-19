@@ -13,6 +13,7 @@ import { useStamps } from "@/hooks/use-stamps";
 export function HomeContent() {
 	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(30);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
+	const [magneticOffset, setMagneticOffset] = useState({ x: 0, y: 0 });
 
 	function handleGenerated(stamp: {
 		id: string;
@@ -57,6 +58,30 @@ export function HomeContent() {
 		});
 	}
 
+	function handleMagneticMove(e: React.MouseEvent<HTMLButtonElement>) {
+		const button = e.currentTarget;
+		const rect = button.getBoundingClientRect();
+		const x = e.clientX - rect.left - rect.width / 2;
+		const y = e.clientY - rect.top - rect.height / 2;
+
+		// Limit movement to 10px max with spring damping
+		const maxMove = 10;
+		const moveX = (x / rect.width) * maxMove * 2;
+		const moveY = (y / rect.height) * maxMove * 2;
+
+		const newX = Math.max(-maxMove, Math.min(maxMove, moveX));
+		const newY = Math.max(-maxMove, Math.min(maxMove, moveY));
+
+		// Only update if values actually changed (prevents unnecessary re-renders)
+		if (newX !== magneticOffset.x || newY !== magneticOffset.y) {
+			setMagneticOffset({ x: newX, y: newY });
+		}
+	}
+
+	function handleMagneticLeave() {
+		setMagneticOffset({ x: 0, y: 0 });
+	}
+
 	return (
 		<div className="max-w-5xl mx-auto px-6 animate-page-fade-in">
 			{/* Hero — stamp fan + compact title */}
@@ -97,7 +122,12 @@ export function HomeContent() {
 							behavior: "smooth",
 						});
 					}}
+					onMouseMove={handleMagneticMove}
+					onMouseLeave={handleMagneticLeave}
 					className="group relative inline-flex items-center gap-2 px-10 py-4 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full font-semibold text-lg overflow-hidden hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-2xl hover:shadow-stamp-blue/30 hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 button-shine-effect"
+					style={{
+						transform: `translate(${magneticOffset.x}px, ${magneticOffset.y}px)`,
+					}}
 				>
 					<span className="relative z-10">Create your stamp</span>
 					<span className="relative z-10 group-hover:translate-y-1 transition-transform duration-300">
@@ -126,11 +156,12 @@ export function HomeContent() {
 						</Link>
 					</div>
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-						{recentStamps.map((stamp) => (
+						{recentStamps.map((stamp, index) => (
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-300 ease-out hover:shadow-2xl hover:shadow-stamp-blue/20 hover:-translate-y-2 hover:scale-[1.02] hover:rotate-1"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden transition-all duration-300 ease-out hover:shadow-2xl hover:shadow-stamp-blue/20 hover:-translate-y-2 hover:scale-[1.02] hover:rotate-1 animate-fade-in-up"
+								style={{ animationDelay: `${index * 100}ms` }}
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">

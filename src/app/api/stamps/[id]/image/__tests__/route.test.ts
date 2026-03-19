@@ -18,7 +18,6 @@ const URL = "http://localhost/api/stamps/abc123def456/image";
 describe("GET /api/stamps/[id]/image", () => {
 	const mockBucket = {
 		get: vi.fn(),
-		head: vi.fn(),
 	};
 
 	const mockDb = {
@@ -42,7 +41,6 @@ describe("GET /api/stamps/[id]/image", () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: "png",
 		});
-		mockBucket.head.mockResolvedValueOnce({}); // Object exists
 		mockBucket.get.mockResolvedValueOnce({
 			arrayBuffer: () => Promise.resolve(imageData),
 		});
@@ -59,25 +57,20 @@ describe("GET /api/stamps/[id]/image", () => {
 		expect(mockBucket.get).toHaveBeenCalledWith("stamps/abc123def456.png");
 	});
 
-	it("falls back to extension probing when no imageExt in DB", async () => {
-		const imageData = new ArrayBuffer(8);
+	it("returns 404 when DB has no imageExt and object not found", async () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: null,
 		});
-		mockBucket.head.mockResolvedValueOnce(null); // HEAD fails
-		mockBucket.get.mockResolvedValueOnce(null); // png not found
-		mockBucket.get.mockResolvedValueOnce({
-			// jpg found
-			arrayBuffer: () => Promise.resolve(imageData),
-		});
+		mockBucket.get.mockResolvedValue(null);
 
 		const res = await GET(
 			createGetRequest(URL),
 			createRouteParams({ id: "abc123def456" }),
 		);
+		const data = (await res.json()) as Record<string, unknown>;
 
-		expect(res.status).toBe(200);
-		expect(res.headers.get("Content-Type")).toBe("image/jpeg");
+		expect(res.status).toBe(404);
+		expect(data.error).toContain("Image not found");
 	});
 
 	it("returns 404 when neither png nor jpg exists", async () => {
@@ -100,7 +93,6 @@ describe("GET /api/stamps/[id]/image", () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: "png",
 		});
-		mockBucket.head.mockResolvedValueOnce({}); // Object exists
 		mockBucket.get.mockResolvedValueOnce({
 			arrayBuffer: () => Promise.resolve(new ArrayBuffer(4)),
 		});
@@ -110,12 +102,13 @@ describe("GET /api/stamps/[id]/image", () => {
 		expect(mockBucket.get).toHaveBeenCalledWith("stamps/xyz789abc012.png");
 	});
 
-	it("returns 500 on R2 error", async () => {
+	it("returns 500 on R2 arrayBuffer error", async () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: "png",
 		});
-		mockBucket.head.mockResolvedValueOnce({}); // Object exists
-		mockBucket.get.mockRejectedValue(new Error("R2 unavailable"));
+		mockBucket.get.mockResolvedValueOnce({
+			arrayBuffer: () => Promise.reject(new Error("R2 unavailable")),
+		});
 
 		const res = await GET(
 			createGetRequest(URL),
@@ -132,7 +125,6 @@ describe("GET /api/stamps/[id]/image", () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: "png",
 		});
-		mockBucket.head.mockResolvedValueOnce({}); // Object exists
 		mockBucket.get.mockResolvedValueOnce({
 			arrayBuffer: () => Promise.resolve(imageBytes.buffer),
 		});
@@ -159,6 +151,7 @@ describe("GET /api/stamps/[id]/image", () => {
 
 		expect(res.status).toBe(200);
 		expect(mockDb.query.stamps.findFirst).not.toHaveBeenCalled();
-		expect(mockBucket.get).toHaveBeenCalledWith("references/abc123.png");
+		// Reference images try webp first (newer format) before falling back to png
+		expect(mockBucket.get).toHaveBeenCalledWith("references/abc123.webp");
 	});
 });

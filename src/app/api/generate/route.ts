@@ -27,7 +27,7 @@ const pendingRequests = new Map<
 	string,
 	{ stampId: string; timestamp: number }
 >();
-const DEDUP_WINDOW_MS = 5000; // 5 seconds
+const DEDUP_WINDOW_MS = 30000; // 30 seconds - extended to prevent duplicate generations from slow clients
 const MAX_PENDING_SIZE = 1000;
 
 // Export for testing
