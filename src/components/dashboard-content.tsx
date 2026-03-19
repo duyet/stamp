@@ -311,7 +311,9 @@ function DashboardContent() {
 
 // Memoize DashboardContent to prevent unnecessary re-renders
 // Only re-renders when analytics data changes
-export const DashboardContentMemo = memo(DashboardContent);
+export const DashboardContentMemo = memo(function DashboardContentMemo() {
+	return <DashboardContent />;
+});
 
 export function RecentStampsSection() {
 	return (

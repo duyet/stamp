@@ -343,7 +343,17 @@ export async function POST(request: NextRequest) {
 					createdAt: Date.now(),
 				});
 			} catch (err: unknown) {
-				console.error("Failed to track generation event:", err);
+				const errorContext = {
+					operation: "track_generation_event",
+					stampId: stampId,
+					userId: userId ?? "anonymous",
+					error: err instanceof Error ? err.message : String(err),
+					timestamp: Date.now(),
+				};
+				console.error(
+					"[Analytics] Failed to track:",
+					JSON.stringify(errorContext, null, 2),
+				);
 			}
 
 			// AgentState conversation logging
@@ -396,8 +406,16 @@ export async function POST(request: NextRequest) {
 						);
 					}
 				} catch (err: unknown) {
+					const errorContext = {
+						operation: "log_agentstate_conversation",
+						stampId: stampId,
+						userId: userId ?? "anonymous",
+						error: err instanceof Error ? err.message : String(err),
+						timestamp: Date.now(),
+					};
 					console.error(
 						`[AgentState] FAILED stamp=${stampId} error=${sanitizeErrorForLogging(err)}`,
+						JSON.stringify(errorContext, null, 2),
 					);
 				}
 			} else {
