@@ -61,12 +61,16 @@ export async function GET(
 					);
 				}
 				// Direct GET using exact extension from DB
-				// DB always stores the correct extension, so no fallback needed
-				// This saves ~75ms per request by avoiding 2-3 redundant R2 GET attempts
 				object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
 				if (object) {
 					contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
 				}
+			}
+
+			// Fallback for stamps without imageExt in DB (legacy data)
+			if (!object) {
+				object = await bucket.get(`${prefix}/${cleanId}.png`);
+				if (object) contentType = "image/png";
 			}
 		} else {
 			// Reference images: try webp first (newer format), then png (legacy)
