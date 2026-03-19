@@ -60,10 +60,10 @@ export async function GET(
 						{ status: 400 },
 					);
 				}
-				// Use HEAD request to check existence before full GET (faster for 404s)
-				const headResult = await bucket.head(`${prefix}/${cleanId}.${ext}`);
-				if (headResult) {
-					object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
+				// Direct GET - skip HEAD to reduce R2 operations from 2 to 1
+				// R2 GET returns null for missing objects, so we can handle 404s directly
+				object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
+				if (object) {
 					contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
 				}
 			}
