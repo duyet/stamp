@@ -2,15 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { ArrowDownIcon } from "@/components/icons";
-import { StampFan } from "@/components/stamp-fan";
+import { StampFanMemo } from "@/components/stamp-fan";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 
-export function HomeContent() {
+function HomeContentInner() {
 	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(30);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
 
@@ -69,7 +69,7 @@ export function HomeContent() {
 				</div>
 
 				<div className="flex justify-center mb-5">
-					<StampFan
+					<StampFanMemo
 						images={recentStamps.slice(0, 5).map((s) => s.imageUrl)}
 						onClickStamp={(idx) => {
 							const stamp = recentStamps[idx];
@@ -78,16 +78,19 @@ export function HomeContent() {
 					/>
 				</div>
 				<h1
-					className="text-5xl md:text-7xl font-bold tracking-tight mb-4 hero-gradient animate-gradient-shift"
+					className="text-6xl md:text-8xl font-black tracking-tight mb-5 hero-gradient animate-gradient-shift drop-shadow-lg"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
-					Stamps, builders
+					Create. Collect. Connect.
 				</h1>
-				<p className="text-lg text-stone-600 dark:text-stone-400 max-w-md mx-auto leading-relaxed mb-8 font-medium">
-					Describe anything and get a unique AI-generated postage stamp in
-					seconds.{" "}
+				<p className="text-xl md:text-2xl text-stone-700 dark:text-stone-300 max-w-2xl mx-auto leading-relaxed mb-10 font-semibold">
+					Describe anything. Get a{" "}
 					<span className="text-stamp-blue dark:text-stamp-blue font-bold">
-						Free to create.
+						unique AI-generated stamp
+					</span>{" "}
+					in seconds.{" "}
+					<span className="inline-block animate-pulse-slow">
+						✨ Forever yours.
 					</span>
 				</p>
 				<button
@@ -97,9 +100,9 @@ export function HomeContent() {
 							behavior: "smooth",
 						});
 					}}
-					className="group relative inline-flex items-center gap-2 px-10 py-4 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full font-semibold text-lg overflow-hidden hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-2xl hover:shadow-stamp-blue/30 hover:-translate-y-1 hover:scale-105 active:scale-95 transition-all duration-300 button-shine-effect"
+					className="group relative inline-flex items-center gap-3 px-12 py-5 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full font-bold text-xl overflow-hidden hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-2xl hover:shadow-stamp-blue/40 hover:-translate-y-2 hover:scale-110 active:scale-95 transition-all duration-300 button-shine-effect"
 				>
-					<span className="relative z-10">Create your stamp</span>
+					<span className="relative z-10">Start Creating</span>
 					<span className="relative z-10 group-hover:translate-y-1 transition-transform duration-300">
 						<ArrowDownIcon />
 					</span>
@@ -172,3 +175,6 @@ export function HomeContent() {
 		</div>
 	);
 }
+
+// Memoize to prevent unnecessary re-renders
+export const HomeContent = memo(HomeContentInner);

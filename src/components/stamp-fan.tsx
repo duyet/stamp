@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { memo } from "react";
 
 interface StampFanProps {
 	images?: string[];
@@ -65,6 +66,16 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 		</div>
 	);
 }
+
+// Memoize to prevent unnecessary re-renders when images array hasn't changed
+export const StampFanMemo = memo(StampFan, (prev, next) => {
+	// Only re-render if images array references or length changed
+	return (
+		prev.images === next.images &&
+		prev.images?.length === next.images?.length &&
+		prev.onClickStamp === next.onClickStamp
+	);
+});
 
 function StipplePattern({ id, color }: { id: string; color: string }) {
 	return (

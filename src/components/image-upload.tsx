@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CloseIcon, UploadIcon } from "@/components/icons";
 import { IMAGE_CONSTANTS } from "@/lib/constants";
 
@@ -22,6 +22,13 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 	const [processing, setProcessing] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	// Cleanup blob URL on unmount or when preview changes
+	useEffect(() => {
+		return () => {
+			if (preview) URL.revokeObjectURL(preview);
+		};
+	}, [preview]);
 
 	async function resizeImage(file: File): Promise<Blob> {
 		return new Promise((resolve, reject) => {
@@ -106,7 +113,6 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 	}
 
 	function handleClear() {
-		if (preview) URL.revokeObjectURL(preview);
 		setPreview(null);
 		setErrorMsg(null);
 		onSelected(null);
