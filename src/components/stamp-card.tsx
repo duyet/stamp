@@ -55,7 +55,7 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 						href={stamp.imageUrl}
 						download={`stamp-${stamp.id}.png`}
 						onClick={(e) => e.stopPropagation()}
-						className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stamp-blue/50 focus-visible:ring-offset-1 rounded"
+						className="text-xs text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stamp-blue/50 focus-visible:ring-offset-1 rounded inline-flex items-center justify-center min-h-[44px] px-2"
 					>
 						Download
 					</a>
@@ -83,7 +83,7 @@ function StampCard({ stamp, onClick }: StampCardProps) {
 	}
 
 	return (
-		<div className="group relative rounded-xl overflow-hidden transition-all duration-300 ease-out hover:shadow-xl hover:shadow-stamp-blue/10 hover:-translate-y-1 hover:scale-[1.01]">
+		<div className="group relative rounded-xl overflow-hidden transition-all duration-300 ease-out hover:shadow-xl hover:shadow-stamp-blue/10 hover:-translate-y-1 hover:scale-[1.03]">
 			{content}
 		</div>
 	);

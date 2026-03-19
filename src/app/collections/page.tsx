@@ -16,9 +16,9 @@ type StyleFilter = StampStyle | typeof ALL_STYLES;
 
 // Filter button className helper to eliminate duplication
 const getFilterButtonClass = (isActive: boolean) =>
-	`px-4 py-2 rounded-full text-sm font-medium transition ${
+	`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
 		isActive
-			? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900"
+			? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-md"
 			: "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
 	}`;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import type { StampStyle } from "@/lib/stamp-prompts";
@@ -45,6 +45,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [hd, setHd] = useState(false);
 	const [reference, setReference] = useState<string | null>(null);
 	const [results, setResults] = useState<GeneratedStamp[]>([]);
+	const promptInputRef = useRef<{ triggerError: () => void } | null>(null);
 
 	// Reset HD when user signs out
 	useEffect(() => {
@@ -97,6 +98,12 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	}
 
 	async function handleSubmit() {
+		// Validate: need either prompt or reference image
+		if (!prompt.trim() && !reference) {
+			promptInputRef.current?.triggerError();
+			return;
+		}
+
 		setLoading(true);
 		setError(null);
 		setIsRateLimited(false);
@@ -194,6 +201,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 				{/* Prompt input with suggestions */}
 				<PromptInput
+					ref={promptInputRef}
 					value={prompt}
 					onChange={setPrompt}
 					onStyleChange={setStyle}
