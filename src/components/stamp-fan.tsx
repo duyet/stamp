@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { memo } from "react";
 
 interface StampFanProps {
 	images?: string[];
@@ -25,7 +24,7 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 	];
 
 	return (
-		<div className="stamp-fan group cursor-pointer select-none">
+		<div className="stamp-fan group cursor-pointer select-none" aria-hidden>
 			{positions.map((pos, idx) => (
 				<div key={pos} className={`stamp-fan-card ${pos}`}>
 					{images[idx] && onClickStamp ? (
@@ -33,28 +32,26 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 							type="button"
 							className="stamp-border w-full h-full"
 							onClick={() => onClickStamp(idx)}
-							aria-label={`View stamp ${idx + 1}`}
 						>
 							<Image
 								src={images[idx]}
-								alt={`Stamp preview ${idx + 1}`}
+								alt=""
 								width={130}
 								height={130}
-								className="w-full h-full object-cover"
-								priority={idx < 3}
 								unoptimized
+								className="w-full h-full object-cover"
 							/>
 						</button>
 					) : (
-						<div className="stamp-border" aria-hidden="true">
+						<div className="stamp-border">
 							{images[idx] ? (
 								<Image
 									src={images[idx]}
 									alt=""
 									width={130}
 									height={130}
+									unoptimized
 									className="w-full h-full object-cover"
-									priority={idx < 3}
 								/>
 							) : (
 								fallbacks[idx]
@@ -66,16 +63,6 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 		</div>
 	);
 }
-
-// Memoize to prevent unnecessary re-renders when images array hasn't changed
-export const StampFanMemo = memo(StampFan, (prev, next) => {
-	// Only re-render if images array references or length changed
-	return (
-		prev.images === next.images &&
-		prev.images?.length === next.images?.length &&
-		prev.onClickStamp === next.onClickStamp
-	);
-});
 
 function StipplePattern({ id, color }: { id: string; color: string }) {
 	return (
