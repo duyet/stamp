@@ -18,8 +18,8 @@ type StyleFilter = StampStyle | typeof ALL_STYLES;
 const getFilterButtonClass = (isActive: boolean) =>
 	`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
 		isActive
-			? "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-md"
-			: "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
+			? "bg-stone-900 text-white shadow-md"
+			: "bg-stone-100 text-stone-700 hover:bg-stone-200"
 	}`;
 
 export default function CollectionsPage() {
@@ -82,14 +82,12 @@ export default function CollectionsPage() {
 		<div className="max-w-5xl mx-auto px-6 py-20 animate-page-fade-in">
 			<div className="text-center mb-8">
 				<h1
-					className="text-4xl font-bold text-stamp-navy dark:text-stone-100 tracking-tight mb-3"
+					className="text-4xl font-bold text-stamp-navy tracking-tight mb-3"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Collections
 				</h1>
-				<p className="text-stone-600 dark:text-stone-400">
-					Stamps created by the community
-				</p>
+				<p className="text-stone-600">Stamps created by the community</p>
 			</div>
 
 			{/* Style filter buttons */}
@@ -117,7 +115,7 @@ export default function CollectionsPage() {
 			{error ? (
 				<div className="text-center py-20">
 					<div className="max-w-md mx-auto">
-						<p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+						<p className="text-red-600 mb-4">{error}</p>
 						<Button onClick={handleRetry} size="sm">
 							<RefreshIcon />
 							Try again
@@ -132,25 +130,23 @@ export default function CollectionsPage() {
 						{/* Empty state stamp illustration */}
 						<div className="mb-6 relative inline-block">
 							<div className="w-24 h-24 mx-auto relative opacity-40">
-								<div className="absolute inset-0 border-4 border-dashed border-stone-300 dark:border-stone-700 rounded-lg transform rotate-6" />
-								<div className="absolute inset-2 bg-stone-100 dark:bg-stone-800 rounded flex items-center justify-center">
+								<div className="absolute inset-0 border-4 border-dashed border-stone-300 rounded-lg transform rotate-6" />
+								<div className="absolute inset-2 bg-stone-100 rounded flex items-center justify-center">
 									<span className="text-4xl" role="img" aria-label="Empty">
 										📮
 									</span>
 								</div>
-								<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-200 dark:bg-stone-800 rounded-full" />
-								<div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-200 dark:bg-stone-800 rounded-full" />
-								<div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-stone-200 dark:bg-stone-800 rounded-full" />
-								<div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-stone-200 dark:bg-stone-800 rounded-full" />
+								<div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-200 rounded-full" />
+								<div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-stone-200 rounded-full" />
+								<div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-stone-200 rounded-full" />
+								<div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-stone-200 rounded-full" />
 							</div>
 						</div>
 
-						<p className="text-stone-600 dark:text-stone-400 mb-2 text-base font-medium">
+						<p className="text-stone-600 mb-2 text-base font-medium">
 							No stamps found.
 						</p>
-						<p className="text-sm text-stone-500 dark:text-stone-600 mb-6">
-							{emptyStateMessage}
-						</p>
+						<p className="text-sm text-stone-500 mb-6">{emptyStateMessage}</p>
 						<Button
 							variant="cta"
 							onClick={() => (window.location.href = "/generate")}
@@ -175,7 +171,7 @@ export default function CollectionsPage() {
 							<button
 								type="button"
 								onClick={handleLoadMore}
-								className="px-6 py-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-xl"
+								className="px-6 py-3 bg-stone-900 text-white rounded-full text-sm font-medium hover:bg-stone-800 active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-xl"
 							>
 								Load more stamps
 							</button>

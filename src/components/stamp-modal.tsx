@@ -123,7 +123,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 			aria-label={`Stamp: ${stamp.prompt}`}
 		>
 			{/* Backdrop - darker to hide background */}
-			<div className="absolute inset-0 bg-stone-950/95 dark:bg-black/95 backdrop-blur-xl animate-modal-fade" />
+			<div className="absolute inset-0 bg-stone-950/95 backdrop-blur-xl animate-modal-fade" />
 
 			{/* Content - full screen overlay */}
 			<div
@@ -138,7 +138,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					ref={closeButtonRef}
 					type="button"
 					onClick={onClose}
-					className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/90 dark:bg-stone-800/90 text-stone-600 dark:text-stone-300 hover:bg-white dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-white transition-all duration-200 shadow-lg"
+					className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/90 text-stone-600 hover:bg-white hover:text-stone-900 transition-all duration-200 shadow-lg"
 					aria-label="Close modal"
 				>
 					<CloseIcon />
@@ -164,18 +164,18 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					{/* Description + style badge */}
 					<div className="text-center space-y-2 px-2">
 						<p
-							className="text-stone-100 dark:text-stone-200 text-[15px] leading-relaxed"
+							className="text-stone-100 text-[15px] leading-relaxed"
 							style={{ fontFamily: "var(--font-stamp)" }}
 						>
 							{stamp.description || stamp.prompt}
 						</p>
 						{stamp.description && stamp.description !== stamp.prompt && (
-							<p className="text-[11px] text-stone-400 dark:text-stone-500">
+							<p className="text-[11px] text-stone-400">
 								Prompt: {stamp.prompt}
 							</p>
 						)}
 						{stamp.style && (
-							<span className="inline-block text-[11px] tracking-wider uppercase text-stone-300 dark:text-stone-400 bg-white/10 dark:bg-white/5 rounded-full px-3 py-0.5">
+							<span className="inline-block text-[11px] tracking-wider uppercase text-stone-300 bg-white/10 rounded-full px-3 py-0.5">
 								{stamp.style}
 							</span>
 						)}
@@ -184,18 +184,18 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					{/* Enhanced prompt disclosure */}
 					{stamp.enhancedPrompt && (
 						<details className="group mx-auto max-w-sm">
-							<summary className="flex items-center justify-center gap-1.5 cursor-pointer text-[11px] tracking-wider uppercase text-stone-400 dark:text-stone-500 hover:text-stone-200 dark:hover:text-stone-300 transition select-none list-none [&::-webkit-details-marker]:hidden">
+							<summary className="flex items-center justify-center gap-1.5 cursor-pointer text-[11px] tracking-wider uppercase text-stone-400 hover:text-stone-200 transition select-none list-none [&::-webkit-details-marker]:hidden">
 								<ChevronIcon className="w-3 h-3 transition-transform duration-200 group-open:rotate-90" />
 								Enhanced prompt
 							</summary>
-							<p className="mt-2 text-xs text-stone-300 dark:text-stone-400 leading-relaxed text-center px-2">
+							<p className="mt-2 text-xs text-stone-300 leading-relaxed text-center px-2">
 								{stamp.enhancedPrompt}
 							</p>
 						</details>
 					)}
 
 					{/* Divider */}
-					<div className="border-t border-white/10 dark:border-white/5 mx-8" />
+					<div className="border-t border-white/10 mx-8" />
 
 					{/* Actions */}
 					<div className="flex justify-center gap-2 flex-wrap">
@@ -204,7 +204,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 								type="button"
 								onClick={handleRegenerate}
 								disabled={regenerating}
-								className="inline-flex items-center gap-2 px-5 py-2 bg-white/10 dark:bg-white/5 text-stone-200 dark:text-stone-300 border border-white/20 dark:border-white/10 rounded-full text-sm hover:bg-white/20 dark:hover:bg-white/10 hover:border-white/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+								className="inline-flex items-center gap-2 px-5 py-2 bg-white/10 text-stone-200 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								{regenerating ? (
 									<>
@@ -221,14 +221,14 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 						)}
 						<Link
 							href={`/stamps/${stamp.id}`}
-							className="inline-flex items-center gap-2 px-5 py-2 text-stone-200 dark:text-stone-300 bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-full text-sm hover:bg-white/20 dark:hover:bg-white/10 hover:border-white/30 transition-all duration-200"
+							className="inline-flex items-center gap-2 px-5 py-2 text-stone-200 bg-white/10 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200"
 						>
 							View page
 						</Link>
 						<a
 							href={stamp.imageUrl}
 							download={`stamp-${stamp.id}.png`}
-							className="inline-flex items-center gap-2 px-5 py-2 bg-white dark:bg-stone-200 text-stone-900 dark:text-stone-900 rounded-full text-sm hover:bg-stone-100 dark:hover:bg-white transition-all duration-200 shadow-lg"
+							className="inline-flex items-center gap-2 px-5 py-2 bg-white text-stone-900 rounded-full text-sm hover:bg-stone-100 transition-all duration-200 shadow-lg"
 						>
 							<DownloadIcon />
 							Download
@@ -236,7 +236,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 						<button
 							type="button"
 							onClick={() => copy(`${window.location.origin}${stamp.imageUrl}`)}
-							className="inline-flex items-center gap-2 px-5 py-2 text-stone-200 dark:text-stone-300 bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-full text-sm hover:bg-white/20 dark:hover:bg-white/10 hover:border-white/30 transition-all duration-200"
+							className="inline-flex items-center gap-2 px-5 py-2 text-stone-200 bg-white/10 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200"
 						>
 							{copied ? (
 								<>
@@ -257,11 +257,9 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 						<div
 							role="alert"
 							aria-live="polite"
-							className="mx-auto max-w-sm p-2 bg-red-900/30 dark:bg-red-900/50 border border-red-500/50 dark:border-red-700/50 rounded-lg text-xs"
+							className="mx-auto max-w-sm p-2 bg-red-900/30 border border-red-500/50 rounded-lg text-xs"
 						>
-							<p className="text-red-200 dark:text-red-300">
-								{regenerateError}
-							</p>
+							<p className="text-red-200">{regenerateError}</p>
 						</div>
 					)}
 				</div>

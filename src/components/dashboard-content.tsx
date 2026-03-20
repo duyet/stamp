@@ -211,7 +211,7 @@ function DashboardContent() {
 					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
 						Generations per day (last 30 days)
 					</h2>
-					<div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-6">
+					<div className="bg-white rounded-xl border border-stone-200 p-6">
 						<div className="flex items-end gap-1 h-32">
 							{data.dailyTrend.map((d) => (
 								<div
@@ -220,7 +220,7 @@ function DashboardContent() {
 									title={`${formatDateShort(d.day)}: ${d.count}`}
 								>
 									<div
-										className="w-full bg-stone-800 dark:bg-stone-200 rounded-t opacity-40 group-hover:opacity-80 transition-opacity"
+										className="w-full bg-stone-800 rounded-t opacity-40 group-hover:opacity-80 transition-opacity"
 										style={{
 											height: `${Math.max(DASHBOARD.MIN_BAR_HEIGHT, Math.round((d.count / maxDayCount) * DASHBOARD.MAX_BAR_HEIGHT))}px`,
 										}}
@@ -228,7 +228,7 @@ function DashboardContent() {
 								</div>
 							))}
 						</div>
-						<div className="flex justify-between mt-2 text-xs text-stone-600 dark:text-stone-400">
+						<div className="flex justify-between mt-2 text-xs text-stone-600">
 							{data.dailyTrend.length > 0 && (
 								<>
 									<span>{formatDateShort(data.dailyTrend[0].day)}</span>
@@ -281,24 +281,24 @@ function DashboardContent() {
 						{/* Empty state illustration */}
 						<div className="mb-6 relative inline-block">
 							<div className="w-20 h-20 mx-auto relative opacity-30">
-								<div className="absolute inset-0 border-4 border-dashed border-stone-300 dark:border-stone-700 rounded-lg transform rotate-3" />
-								<div className="absolute inset-2 bg-stone-100 dark:bg-stone-800 rounded flex items-center justify-center">
+								<div className="absolute inset-0 border-4 border-dashed border-stone-300 rounded-lg transform rotate-3" />
+								<div className="absolute inset-2 bg-stone-100 rounded flex items-center justify-center">
 									<span className="text-3xl" role="img" aria-label="Empty">
 										📊
 									</span>
 								</div>
 							</div>
 						</div>
-						<p className="text-stone-700 dark:text-stone-300 mb-2 text-base font-medium">
+						<p className="text-stone-700 mb-2 text-base font-medium">
 							No analytics yet
 						</p>
-						<p className="text-sm text-stone-500 dark:text-stone-600 mb-6">
+						<p className="text-sm text-stone-500 mb-6">
 							Generate some stamps to see insights and trends appear here.
 						</p>
 						<button
 							type="button"
 							onClick={() => (window.location.href = "/generate")}
-							className="px-6 py-3 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full text-sm font-medium hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-xl"
+							className="px-6 py-3 bg-stone-900 text-white rounded-full text-sm font-medium hover:bg-stone-800 active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-xl"
 						>
 							Create your first stamp
 						</button>
