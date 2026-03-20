@@ -2,8 +2,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { Footer } from "@/components/footer";
-import { ScrollToTop } from "@/components/scroll-to-top";
-import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -59,29 +57,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html lang="en">
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased min-h-screen flex flex-col`}
 			>
 				<ClerkProvider>
-					<ThemeProvider
-						attribute="class"
-						defaultTheme="system"
-						enableSystem
-						disableTransitionOnChange
-					>
-						<a
-							href="#main-content"
-							className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-stone-900 dark:focus:bg-stone-100 focus:text-white dark:focus:text-stone-900 focus:rounded-lg focus:shadow-lg"
-						>
-							Skip to main content
-						</a>
-						<main id="main-content" className="flex-1" tabIndex={-1}>
-							{children}
-						</main>
-						<ScrollToTop />
-						<Footer />
-					</ThemeProvider>
+					<main className="flex-1">{children}</main>
+					<Footer />
 				</ClerkProvider>
 			</body>
 		</html>
