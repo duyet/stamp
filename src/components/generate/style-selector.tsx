@@ -16,9 +16,9 @@ export function StyleSelector({
 	return (
 		<div className="relative group">
 			{/* Left fade indicator */}
-			<div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-stone-900 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+			<div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
 			{/* Right fade indicator */}
-			<div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-stone-900 to-transparent pointer-events-none opacity-100 transition-opacity duration-300 z-10" />
+			<div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none opacity-100 transition-opacity duration-300 z-10" />
 			<div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 p-2">
 				{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
 					<button
@@ -32,7 +32,7 @@ export function StyleSelector({
 						<div
 							className={`w-14 h-14 rounded-lg transition-all duration-200 ${
 								currentStyle === key
-									? "ring-2 ring-stone-900 dark:ring-stone-100 ring-offset-1 dark:ring-offset-stone-900 shadow-lg shadow-stamp-blue/20 scale-105"
+									? "ring-2 ring-stone-900 ring-offset-1 shadow-lg shadow-stamp-blue/20 scale-105"
 									: "opacity-50 hover:opacity-100 hover:scale-105 hover:shadow-md"
 							}`}
 						>
@@ -48,8 +48,8 @@ export function StyleSelector({
 						<p
 							className={`text-[10px] mt-0.5 text-center transition-colors ${
 								currentStyle === key
-									? "text-stone-900 dark:text-stone-100 font-medium"
-									: "text-stone-400 dark:text-stone-600 hover:text-stone-700 dark:hover:text-stone-500"
+									? "text-stone-900 font-medium"
+									: "text-stone-400 hover:text-stone-700"
 							}`}
 						>
 							{preset.name}
