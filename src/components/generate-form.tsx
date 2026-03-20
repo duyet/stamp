@@ -2,7 +2,7 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Confetti } from "@/components/confetti";
+
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import type { StampStyle } from "@/lib/stamp-prompts";
@@ -253,9 +253,6 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					isPublic={isPublic}
 				/>
 			)}
-
-			{/* Celebration effect */}
-			<Confetti active={results.length > 0} pieceCount={60} />
 		</div>
 	);
 }

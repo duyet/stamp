@@ -52,18 +52,18 @@ export function GenerateLoading({ reference = false }: GenerateLoadingProps) {
 	const progress = ((stageIndex + 1) / stages.length) * 100;
 
 	return (
-		<div className="mt-6 p-6 bg-stone-50 dark:bg-stone-800/50 rounded-xl border border-stone-200 dark:border-stone-700 animate-form-enter">
+		<div className="mt-6 p-6 bg-stone-50 rounded-xl border border-stone-200 animate-form-enter">
 			<div className="flex items-center justify-center gap-3 mb-4">
-				<div className="animate-spin h-5 w-5 border-2 border-stone-900 dark:border-stone-100 border-t-transparent rounded-full" />
-				<div className="text-sm text-stone-600 dark:text-stone-400 font-medium">
+				<div className="animate-spin h-5 w-5 border-2 border-stone-900 border-t-transparent rounded-full" />
+				<div className="text-sm text-stone-600 font-medium">
 					{currentStage.text}
 				</div>
 			</div>
 
 			{/* Progress bar */}
-			<div className="w-full bg-stone-200 dark:bg-stone-700 rounded-full h-2 overflow-hidden">
+			<div className="w-full bg-stone-200 rounded-full h-2 overflow-hidden">
 				<div
-					className="bg-stamp-blue dark:bg-stamp-blue h-full rounded-full transition-all duration-500 ease-out"
+					className="bg-stamp-blue h-full rounded-full transition-all duration-500 ease-out"
 					style={{ width: `${progress}%` }}
 				/>
 			</div>
@@ -74,9 +74,7 @@ export function GenerateLoading({ reference = false }: GenerateLoadingProps) {
 					<div
 						key={stage.id}
 						className={`h-1.5 rounded-full transition-all duration-300 ${
-							index <= stageIndex
-								? "bg-stamp-blue dark:bg-stamp-blue w-6"
-								: "bg-stone-300 dark:bg-stone-600 w-3"
+							index <= stageIndex ? "bg-stamp-blue w-6" : "bg-stone-300 w-3"
 						}`}
 					/>
 				))}
