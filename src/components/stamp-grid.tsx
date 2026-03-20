@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import Link from "next/link";
 import { memo } from "react";
 import { StampIcon } from "@/components/icons";
-import { StampCardMemo } from "@/components/stamp-card";
+import { StampCard } from "@/components/stamp-card";
 import { useStamps } from "@/hooks/use-stamps";
 import { STAMPS_PER_PAGE } from "@/lib/constants";
 
@@ -53,7 +53,7 @@ function StampGrid() {
 	return (
 		<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 			{stamps.map((stamp) => (
-				<StampCardMemo key={stamp.id} stamp={stamp} />
+				<StampCard key={stamp.id} stamp={stamp} />
 			))}
 		</div>
 	);

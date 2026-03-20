@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/button";
 import { RefreshIcon } from "@/components/icons";
-import { StampCardMemo } from "@/components/stamp-card";
+import { StampCard } from "@/components/stamp-card";
 import { StampGridSkeleton } from "@/components/stamp-grid-skeleton";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
@@ -163,7 +163,7 @@ export default function CollectionsPage() {
 				<>
 					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 						{visibleStamps.map((stamp) => (
-							<StampCardMemo
+							<StampCard
 								key={stamp.id}
 								stamp={stamp}
 								onClick={() => setSelectedStamp(stamp)}
