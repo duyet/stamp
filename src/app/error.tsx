@@ -14,7 +14,7 @@ export default function Error({
 	return (
 		<div className="min-h-screen flex items-center justify-center px-4">
 			<div className="text-center max-w-md">
-				<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-stone-100 dark:bg-stone-800 mb-6 shadow-sm text-stone-400 dark:text-stone-600">
+				<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-stone-100 mb-6 shadow-sm text-stone-400">
 					<svg
 						viewBox="0 0 24 24"
 						fill="none"
@@ -28,23 +28,23 @@ export default function Error({
 						<circle cx="16" cy="8" r="1.5" />
 					</svg>
 				</div>
-				<h2 className="text-2xl font-semibold text-stone-900 dark:text-stone-100 mb-3">
+				<h2 className="text-2xl font-semibold text-stone-900 mb-3">
 					Something went wrong
 				</h2>
-				<p className="text-stone-600 dark:text-stone-400 text-base mb-8">
+				<p className="text-stone-600 text-base mb-8">
 					{error.message || "An unexpected error occurred."}
 				</p>
 				<div className="flex flex-col sm:flex-row gap-3 justify-center">
 					<Button onClick={reset}>Try again</Button>
 					<Link
 						href="/"
-						className="inline-flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-all duration-200"
+						className="inline-flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-all duration-200"
 					>
 						Go home
 					</Link>
 				</div>
 				{error.digest && (
-					<p className="text-xs text-stone-500 dark:text-stone-600 mt-6">
+					<p className="text-xs text-stone-500 mt-6">
 						Error code: {error.digest}
 					</p>
 				)}

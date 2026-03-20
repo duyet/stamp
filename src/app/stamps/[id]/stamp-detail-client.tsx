@@ -132,7 +132,7 @@ export function StampDetailClient({
 						)}
 
 						{/* Metadata */}
-						<div className="mb-8 text-sm text-stone-500 dark:text-stone-400">
+						<div className="mb-8 text-sm text-stone-500">
 							<p>Created: {formatDateLong(displayStamp.createdAt)}</p>
 						</div>
 

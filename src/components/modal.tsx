@@ -102,7 +102,7 @@ export function Modal({ isOpen, onClose, children, ariaLabel }: ModalProps) {
 		>
 			{/* Backdrop - warmer with subtle gradient */}
 			<div
-				className="absolute inset-0 bg-gradient-to-br from-white/95 via-stone-50/95 to-stone-100/95 dark:from-stone-900/95 dark:via-stone-900/92 dark:to-stone-800/95 backdrop-blur-xl animate-modal-fade"
+				className="absolute inset-0 bg-gradient-to-br from-white/95 via-stone-50/95 to-stone-100/95 backdrop-blur-xl animate-modal-fade"
 				aria-hidden="true"
 			/>
 

@@ -33,20 +33,18 @@ export function ErrorState({
 		<div
 			role="alert"
 			aria-live="polite"
-			className={`p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg ${className}`}
+			className={`p-4 bg-red-50 border border-red-200 rounded-lg ${className}`}
 		>
 			<div className="flex items-start justify-between gap-3">
 				<div className="flex-1">
-					<p className="text-sm text-red-700 dark:text-red-400 font-medium">
-						{message}
-					</p>
+					<p className="text-sm text-red-700 font-medium">{message}</p>
 					{additionalContent}
 				</div>
 				{onRetry && (
 					<button
 						type="button"
 						onClick={onRetry}
-						className="shrink-0 px-3 py-1.5 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-medium rounded hover:bg-stone-800 dark:hover:bg-stone-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						className="shrink-0 px-3 py-1.5 bg-stone-900 text-white text-xs font-medium rounded hover:bg-stone-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 						disabled={disabled}
 					>
 						{loading ? "Retrying..." : countdown > 0 ? "Wait..." : "Try again"}

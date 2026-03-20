@@ -156,14 +156,14 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 							? "border-stone-200 bg-stone-50 cursor-not-allowed opacity-50"
 							: isDragging
 								? "border-stamp-blue bg-stamp-blue/5 scale-[1.02]"
-								: "border-stone-300 dark:border-stone-700 hover:border-stone-400 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800/50"
+								: "border-stone-300 hover:border-stone-400 hover:bg-stone-50"
 					}`}
 				>
 					<UploadIcon />
-					<span className="text-xs text-stone-500 dark:text-stone-400">
+					<span className="text-xs text-stone-500">
 						{isDragging ? "Drop your photo here" : "Upload a reference photo"}
 					</span>
-					<span className="text-[10px] text-stone-400 dark:text-stone-500">
+					<span className="text-[10px] text-stone-400">
 						JPG, PNG, WebP up to 5MB
 					</span>
 					<input
@@ -179,7 +179,7 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					/>
 				</button>
 			) : (
-				<div className="flex items-center gap-3 p-3 border border-stone-200 dark:border-stone-700 rounded-lg bg-stone-50 dark:bg-stone-800/50 animate-form-enter">
+				<div className="flex items-center gap-3 p-3 border border-stone-200 rounded-lg bg-stone-50 animate-form-enter">
 					<div className="w-16 h-16 rounded overflow-hidden shrink-0 relative">
 						{processing && (
 							<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
@@ -195,7 +195,7 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 							unoptimized
 						/>
 					</div>
-					<span className="text-xs text-stone-600 dark:text-stone-400">
+					<span className="text-xs text-stone-600">
 						{processing
 							? "Processing..."
 							: "Reference photo ready (HD required)"}
@@ -203,7 +203,7 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					<button
 						type="button"
 						onClick={handleClear}
-						className="shrink-0 p-1 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						className="shrink-0 p-1 text-stone-400 hover:text-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 						disabled={disabled || processing}
 					>
 						<CloseIcon />
