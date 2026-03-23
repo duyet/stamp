@@ -48,7 +48,6 @@ export function HomeContent() {
 
 	return (
 		<div className="max-w-5xl mx-auto px-6">
-			{/* Hero */}
 			<section className="pt-16 pb-20 text-center">
 				<div className="flex justify-center mb-10">
 					<StampFan
@@ -61,31 +60,29 @@ export function HomeContent() {
 				</div>
 
 				<h1
-					className="text-4xl md:text-5xl font-bold text-stamp-navy tracking-tight"
+					className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					Stamps, builders
 				</h1>
 			</section>
 
-			{/* Generate form */}
 			<section id="generate" className="pb-16 scroll-mt-8">
 				<GenerateForm onGenerated={handleGenerated} />
 			</section>
 
-			{/* Latest stamps — full width breakout */}
 			{recentStamps.length > 0 && (
 				<section className="mb-16 relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6">
 					<div className="flex items-baseline justify-between mb-8 max-w-5xl mx-auto">
 						<h2
-							className="text-2xl font-semibold text-stamp-navy"
+							className="text-2xl font-semibold text-gray-900"
 							style={{ fontFamily: "var(--font-stamp)" }}
 						>
 							Latest stamps
 						</h2>
 						<Link
 							href="/collections"
-							className="text-sm text-stone-600 hover:text-stamp-navy transition-colors"
+							className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
 						>
 							View all &rarr;
 						</Link>
@@ -95,7 +92,7 @@ export function HomeContent() {
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer rounded-xl overflow-hidden transition"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">
@@ -108,7 +105,7 @@ export function HomeContent() {
 										className="object-cover"
 									/>
 								</div>
-								<p className="px-3 py-2.5 text-xs text-stone-600 truncate">
+								<p className="px-3 py-2.5 text-xs text-gray-600 truncate">
 									{stamp.description || stamp.prompt}
 								</p>
 							</button>
@@ -117,17 +114,15 @@ export function HomeContent() {
 				</section>
 			)}
 
-			{/* Free tier note */}
 			<section className="py-16 text-center">
 				<p
-					className="text-sm text-stone-600"
+					className="text-sm text-gray-600"
 					style={{ fontFamily: "var(--font-stamp)" }}
 				>
 					20 free stamps per day. Sign in for 100.
 				</p>
 			</section>
 
-			{/* Stamp overlay modal */}
 			{selectedStamp && (
 				<StampModal
 					stamp={selectedStamp}
