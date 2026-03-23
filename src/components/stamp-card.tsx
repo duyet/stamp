@@ -11,29 +11,31 @@ interface StampCardProps {
 export function StampCard({ stamp, onClick }: StampCardProps) {
 	const content = (
 		<>
-			<div className="relative aspect-square">
-				<Image
-					src={stamp.imageUrl}
-					alt={stamp.prompt}
-					fill
-					unoptimized
-					sizes="(max-width: 768px) 50vw, 25vw"
-					className="object-cover"
-				/>
+			<div className="stamp-border group-hover:scale-105 transition-transform duration-200">
+				<div className="relative aspect-square">
+					<Image
+						src={stamp.imageUrl}
+						alt={stamp.prompt}
+						fill
+						unoptimized
+						sizes="(max-width: 768px) 50vw, 25vw"
+						className="object-cover"
+					/>
+				</div>
 			</div>
 			<div className="p-3">
-				<p className="text-sm text-stone-700 truncate">
+				<p className="text-sm text-gray-700 truncate">
 					{stamp.description || stamp.prompt}
 				</p>
 				<div className="mt-2 flex items-center justify-between">
-					<span className="text-xs text-stone-500 capitalize">
+					<span className="text-xs text-gray-500 capitalize">
 						{stamp.style}
 					</span>
 					<a
 						href={stamp.imageUrl}
 						download={`stamp-${stamp.id}.png`}
 						onClick={(e) => e.stopPropagation()}
-						className="text-xs text-stone-500 hover:text-stone-800 transition"
+						className="text-xs text-gray-500 hover:text-gray-800 transition"
 					>
 						Download
 					</a>
