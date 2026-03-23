@@ -175,7 +175,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 							</p>
 						)}
 						{stamp.style && (
-							<span className="inline-block text-[11px] tracking-wider uppercase text-stone-300 bg-white/10 rounded-full px-3 py-0.5">
+							<span className="inline-block text-[11px] tracking-wider uppercase text-gray-300 bg-white/10 rounded-full px-3 py-0.5">
 								{stamp.style}
 							</span>
 						)}
@@ -184,11 +184,11 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					{/* Enhanced prompt disclosure */}
 					{stamp.enhancedPrompt && (
 						<details className="group mx-auto max-w-sm">
-							<summary className="flex items-center justify-center gap-1.5 cursor-pointer text-[11px] tracking-wider uppercase text-stone-400 hover:text-stone-200 transition select-none list-none [&::-webkit-details-marker]:hidden">
+							<summary className="flex items-center justify-center gap-1.5 cursor-pointer text-[11px] tracking-wider uppercase text-gray-400 hover:text-gray-200 transition select-none list-none [&::-webkit-details-marker]:hidden">
 								<ChevronIcon className="w-3 h-3 transition-transform duration-200 group-open:rotate-90" />
 								Enhanced prompt
 							</summary>
-							<p className="mt-2 text-xs text-stone-300 leading-relaxed text-center px-2">
+							<p className="mt-2 text-xs text-gray-300 leading-relaxed text-center px-2">
 								{stamp.enhancedPrompt}
 							</p>
 						</details>
@@ -204,7 +204,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 								type="button"
 								onClick={handleRegenerate}
 								disabled={regenerating}
-								className="inline-flex items-center gap-2 px-5 py-2 bg-white/10 text-stone-200 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+								className="inline-flex items-center gap-2 px-5 py-2 bg-white/10 text-gray-200 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
 							>
 								{regenerating ? (
 									<>
