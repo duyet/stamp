@@ -236,7 +236,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 						<button
 							type="button"
 							onClick={() => copy(`${window.location.origin}${stamp.imageUrl}`)}
-							className="inline-flex items-center gap-2 px-5 py-2 text-stone-200 bg-white/10 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200"
+							className="inline-flex items-center gap-2 px-5 py-2 text-gray-200 bg-white/10 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200"
 						>
 							{copied ? (
 								<>
