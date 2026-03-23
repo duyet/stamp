@@ -1,33 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-	/* Vintage identity — warm, easy on the eyes */
-	--color-cream: #faf9f7;
-	--color-stamp-blue: #4a6fa5;
-	--color-stamp-navy: #1c1917;
-	--color-stamp-yellow: #b8860b;
-	--color-stamp-red: #a3423a;
-	--color-stamp-green: #3d7a4a;
+	/* Vintage identity — monochrome, aged paper */
+	--color-stamp-navy: #1a1a1a;
+	--color-stamp-blue: #555555;
+	--color-stamp-yellow: #999999;
+	--color-stamp-red: #666666;
+	--color-stamp-green: #777777;
 	--font-stamp: var(--font-serif, "Georgia", serif);
 
-	/* System — warm stone tones */
-	--color-background: #fafaf9;
-	--color-text-primary: #1c1917;
-	--color-text-secondary: #57534e;
-	--color-text-muted: #78716c;
-	--color-border: #e7e5e4;
-	--color-surface: #f5f5f4;
+	/* System — black & white vintage */
+	--color-background: #f8f7f4;
+	--color-text-primary: #1a1a1a;
+	--color-text-secondary: #4a4a4a;
+	--color-text-muted: #888888;
+	--color-border: #d4d4d4;
+	--color-surface: #f0efec;
 }
 
 body {
 	background-color: var(--color-background);
 	color: var(--color-text-primary);
-	font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+	font-family: var(--font-serif, "Georgia", serif);
 }
 
 /* Stamp perforated edge effect */
 .stamp-border {
-	filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.08));
+	filter: drop-shadow(1px 2px 6px rgba(0, 0, 0, 0.12));
 	background: white;
 	padding: 12px;
 	mask:
