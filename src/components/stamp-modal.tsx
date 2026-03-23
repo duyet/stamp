@@ -123,7 +123,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 			aria-label={`Stamp: ${stamp.prompt}`}
 		>
 			{/* Backdrop - darker to hide background */}
-			<div className="absolute inset-0 bg-stone-950/95 backdrop-blur-xl animate-modal-fade" />
+			<div className="absolute inset-0 bg-black/90 backdrop-blur-xl animate-modal-fade" />
 
 			{/* Content - full screen overlay */}
 			<div
@@ -138,7 +138,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					ref={closeButtonRef}
 					type="button"
 					onClick={onClose}
-					className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/90 text-stone-600 hover:bg-white hover:text-stone-900 transition-all duration-200 shadow-lg"
+					className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/90 text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-200 shadow-lg"
 					aria-label="Close modal"
 				>
 					<CloseIcon />
@@ -164,13 +164,13 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					{/* Description + style badge */}
 					<div className="text-center space-y-2 px-2">
 						<p
-							className="text-stone-100 text-[15px] leading-relaxed"
-							style={{ fontFamily: "var(--font-stamp)" }}
+							className="text-gray-100 text-[15px] leading-relaxed"
+							style={{ fontFamily: "var(--font-stamp, Georgia, serif)" }}
 						>
 							{stamp.description || stamp.prompt}
 						</p>
 						{stamp.description && stamp.description !== stamp.prompt && (
-							<p className="text-[11px] text-stone-400">
+							<p className="text-[11px] text-gray-400">
 								Prompt: {stamp.prompt}
 							</p>
 						)}
