@@ -221,14 +221,14 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 						)}
 						<Link
 							href={`/stamps/${stamp.id}`}
-							className="inline-flex items-center gap-2 px-5 py-2 text-stone-200 bg-white/10 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200"
+							className="inline-flex items-center gap-2 px-5 py-2 text-gray-200 bg-white/10 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200"
 						>
 							View page
 						</Link>
 						<a
 							href={stamp.imageUrl}
 							download={`stamp-${stamp.id}.png`}
-							className="inline-flex items-center gap-2 px-5 py-2 bg-white text-stone-900 rounded-full text-sm hover:bg-stone-100 transition-all duration-200 shadow-lg"
+							className="inline-flex items-center gap-2 px-5 py-2 bg-white text-gray-900 rounded-full text-sm hover:bg-gray-100 transition-all duration-200 shadow-lg"
 						>
 							<DownloadIcon />
 							Download
