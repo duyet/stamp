@@ -32,7 +32,7 @@ export function StyleSelector({
 						<div
 							className={`w-14 h-14 rounded-lg transition-all duration-200 ${
 								currentStyle === key
-									? "ring-2 ring-stone-900 ring-offset-1 shadow-lg shadow-stamp-blue/20 scale-105"
+									? "ring-2 ring-gray-900 ring-offset-1 shadow-lg scale-105"
 									: "opacity-50 hover:opacity-100 hover:scale-105 hover:shadow-md"
 							}`}
 						>
@@ -48,8 +48,8 @@ export function StyleSelector({
 						<p
 							className={`text-[10px] mt-0.5 text-center transition-colors ${
 								currentStyle === key
-									? "text-stone-900 font-medium"
-									: "text-stone-400 hover:text-stone-700"
+									? "text-gray-900 font-medium"
+									: "text-gray-400 hover:text-gray-700"
 							}`}
 						>
 							{preset.name}

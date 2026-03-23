@@ -52,7 +52,7 @@ export function GenerationResults({
 						label="Public collection"
 					/>
 				</div>
-				<p className="text-xs text-stone-400">
+				<p className="text-xs text-gray-400">
 					{remaining} remaining today
 					{generationTimeMs && (
 						<span className="ml-1">
@@ -81,7 +81,7 @@ export function GenerationResults({
 							<button
 								type="button"
 								onClick={() => toggleFavorite(r.id)}
-								className="absolute -top-3 -right-3 z-10 p-2.5 bg-white rounded-full shadow-md hover:bg-stone-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+								className="absolute -top-3 -right-3 z-10 p-2.5 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
 								aria-label={
 									isFavorite(r.id)
 										? "Remove from favorites"
@@ -103,7 +103,7 @@ export function GenerationResults({
 							<a
 								href={r.imageUrl}
 								download={`stamp-${r.id}.png`}
-								className="inline-flex items-center gap-1 px-4 py-2 bg-stamp-navy text-white rounded-full text-xs hover:bg-stone-800 transition min-h-[44px]"
+								className="inline-flex items-center gap-1 px-4 py-2 bg-gray-900 text-white rounded-full text-xs hover:bg-gray-800 transition min-h-[44px]"
 							>
 								<DownloadIcon />
 								Download
@@ -113,7 +113,7 @@ export function GenerationResults({
 								onClick={() =>
 									onCopy(`${window.location.origin}/api/stamps/${r.id}/image`)
 								}
-								className="inline-flex items-center gap-1 px-4 py-2 text-stone-600 bg-white border border-stone-200 rounded-full text-xs hover:bg-stone-50 transition min-h-[44px]"
+								className="inline-flex items-center gap-1 px-4 py-2 text-gray-600 bg-white border border-gray-200 rounded-full text-xs hover:bg-gray-50 transition min-h-[44px]"
 							>
 								{copied ? (
 									<>

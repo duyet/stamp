@@ -96,7 +96,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 						disabled={disabled}
 						aria-label="Describe your stamp"
 						aria-describedby="prompt-hint"
-						className={`w-full pl-4 pr-14 py-3 rounded-lg border border-stone-300 bg-white text-stone-900 text-sm leading-relaxed placeholder:text-stone-400 focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50 shadow-sm focus:shadow-md ${
+						className={`w-full pl-4 pr-14 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm leading-relaxed placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50 shadow-sm focus:shadow-md ${
 							isShaking ? "animate-shake" : ""
 						}`}
 					/>
@@ -105,7 +105,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 							<SignInButton mode="modal">
 								<button
 									type="button"
-									className="text-stone-300 hover:text-stone-500 transition-colors"
+									className="text-gray-300 hover:text-gray-500 transition-colors"
 									aria-label="Sign in"
 								>
 									<AvatarIcon />
@@ -118,7 +118,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 					</div>
 				</div>
 				{/* Character counter and hint */}
-				<div className="flex items-center justify-between text-xs text-stone-400">
+				<div className="flex items-center justify-between text-xs text-gray-400">
 					<span id="prompt-hint">
 						{value.length > 0 && referenceImage
 							? "Add details to enhance your photo"
@@ -140,8 +140,8 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									onClick={() => setActiveGroupIndex(groupIndex)}
 									className={`rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition ${
 										activeGroupIndex === groupIndex
-											? "bg-stone-900 text-white shadow-md"
-											: "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
+											? "bg-gray-900 text-white shadow-md"
+											: "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
 									}`}
 								>
 									{group.label ?? "Ideas"}
@@ -169,7 +169,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									}
 								}}
 								disabled={loading}
-								className="shrink-0 rounded-full px-3 py-1 text-xs text-stone-600 border border-stone-200 hover:text-stone-900 hover:border-stone-400 hover:bg-stone-50 cursor-pointer transition-all duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20 hover:scale-105 hover:shadow-sm"
+								className="shrink-0 rounded-full px-3 py-1 text-xs text-gray-600 border border-gray-200 hover:text-gray-900 hover:border-gray-400 hover:bg-gray-50 cursor-pointer transition-all duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 hover:scale-105 hover:shadow-sm"
 							>
 								{example}
 							</button>
