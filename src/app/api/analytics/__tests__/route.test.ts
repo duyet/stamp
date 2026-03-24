@@ -51,63 +51,88 @@ describe("GET /api/analytics", () => {
 		// Mock $client.prepare for rate limiting
 		const mockPrepare = createMockRateLimitPrepare();
 
-		// All possible query results - mock will return these cyclically
-		// Using cyclic approach since Promise.all calls queries in parallel
-		const allResults = [
-			// popular styles
-			[
-				{ style: "vintage", count: 50 },
-				{ style: "modern", count: 30 },
-			],
-			// daily trend
-			[
-				{ day: 1710460800000, count: 3 },
-				{ day: 1710547200000, count: 5 },
-			],
-			// total page views
-			[{ count: 500 }],
-			// unique visitors
-			[{ count: 42 }],
-			// total downloads
-			[{ count: 15 }],
-			// total shares
-			[{ count: 8 }],
-			// event breakdown
-			[
-				{ event: "page_view", count: 500 },
-				{ event: "download", count: 15 },
-			],
-			// page view breakdown
-			[
-				{ path: "/", count: 300 },
-				{ path: "/generate", count: 150 },
-			],
-			// location country
-			[{ countrycode: "US", count: 25 }],
-			// location city
-			[{ countrycode: "US", city: "New York", count: 10 }],
-			// timezone
-			[{ timezone: "America/New_York", hour: 14, count: 5 }],
-			// map data
-			[{ countrycode: "US", count: 25 }],
-		];
-
-		let resultIndex = 0;
+		// Mock daily_stats query (returns empty to test fallback path)
+		let selectCallCount = 0;
 		const mockSelect = vi.fn().mockImplementation(() => {
-			const result = allResults[resultIndex % allResults.length];
-			resultIndex++;
-			return createSelectChain(result);
+			selectCallCount++;
+			// Call 1: daily_stats query (returns empty → fallback)
+			if (selectCallCount === 1) {
+				return createSelectChain([]);
+			}
+			// Call 2: daily trend (fallback, runs BEFORE Promise.all)
+			if (selectCallCount === 2) {
+				return createSelectChain([
+					{ day: 1710460800000, count: 3 },
+					{ day: 1710547200000, count: 5 },
+				]);
+			}
+			// Call 3: popular styles (first in Promise.all)
+			if (selectCallCount === 3) {
+				return createSelectChain([
+					{ style: "vintage", count: 50 },
+					{ style: "modern", count: 30 },
+				]);
+			}
+			// Call 4: unique visitors (in Promise.all, uses daily_stats SUM)
+			if (selectCallCount === 4) {
+				return createSelectChain([{ count: 42 }]);
+			}
+			// Call 5: event breakdown
+			if (selectCallCount === 5) {
+				return createSelectChain([
+					{ event: "page_view", count: 500 },
+					{ event: "download", count: 15 },
+				]);
+			}
+			// Call 6: page view breakdown
+			if (selectCallCount === 6) {
+				return createSelectChain([
+					{ path: "/", count: 300 },
+					{ path: "/generate", count: 150 },
+				]);
+			}
+			// Call 7: location country
+			if (selectCallCount === 7) {
+				return createSelectChain([{ countrycode: "US", count: 25 }]);
+			}
+			// Call 8: location city
+			if (selectCallCount === 8) {
+				return createSelectChain([
+					{ countrycode: "US", city: "New York", count: 10 },
+				]);
+			}
+			// Call 9: timezone
+			if (selectCallCount === 9) {
+				return createSelectChain([
+					{ timezone: "America/New_York", hour: 14, count: 5 },
+				]);
+			}
+			return createSelectChain([]);
 		});
 
-		// Mock db.all() for consolidated query
-		const mockAll = vi.fn().mockResolvedValue([
-			{
-				total_stamps: 100,
-				stamps_today: 5,
-				stamps_week: 25,
-				stamps_month: 80,
-			},
-		]);
+		// Mock db.all() for consolidated queries (2 calls: stamp counts + event metrics)
+		let allCallCount = 0;
+		const mockAll = vi.fn().mockImplementation(() => {
+			if (allCallCount === 0) {
+				allCallCount++;
+				return Promise.resolve([
+					{
+						total_stamps: 100,
+						stamps_today: 5,
+						stamps_week: 25,
+						stamps_month: 80,
+					},
+				]);
+			}
+			// Event metrics consolidated query
+			return Promise.resolve([
+				{
+					total_page_views: 500,
+					total_downloads: 15,
+					total_shares: 8,
+				},
+			]);
+		});
 
 		vi.mocked(getDb).mockReturnValue({
 			$client: { prepare: mockPrepare },
@@ -145,14 +170,28 @@ describe("GET /api/analytics", () => {
 	it("returns defaults when queries return empty results", async () => {
 		const mockPrepare = createMockRateLimitPrepare();
 		const mockSelect = vi.fn().mockImplementation(() => createSelectChain([]));
-		const mockAll = vi.fn().mockResolvedValue([
-			{
-				total_stamps: 0,
-				stamps_today: 0,
-				stamps_week: 0,
-				stamps_month: 0,
-			},
-		]);
+		let allCallCount = 0;
+		const mockAll = vi.fn().mockImplementation(() => {
+			if (allCallCount === 0) {
+				allCallCount++;
+				return Promise.resolve([
+					{
+						total_stamps: 0,
+						stamps_today: 0,
+						stamps_week: 0,
+						stamps_month: 0,
+					},
+				]);
+			}
+			// Event metrics consolidated query
+			return Promise.resolve([
+				{
+					total_page_views: 0,
+					total_downloads: 0,
+					total_shares: 0,
+				},
+			]);
+		});
 
 		vi.mocked(getDb).mockReturnValue({
 			$client: { prepare: mockPrepare },
@@ -198,22 +237,15 @@ describe("GET /api/analytics", () => {
 		const mockPrepare = createMockRateLimitPrepare();
 		let callCount = 0;
 		const selectResults = [
-			[
-				{
-					total_stamps: 10,
-					stamps_today: 1,
-					stamps_week: 5,
-					stamps_month: 8,
-				},
-			],
-			[{ style: null, count: 3 }], // null style
-			[],
-			[{ count: 20 }],
-			[{ count: 5 }],
-			[{ count: 0 }], // downloads
-			[{ count: 0 }], // shares
+			[], // daily_stats (empty → fallback)
+			[], // daily trend (fallback)
+			[{ style: null, count: 3 }], // null style (popular styles)
+			[{ count: 20 }], // unique visitors (fallback)
 			[], // event breakdown
 			[], // page view breakdown
+			[], // location country
+			[], // location city
+			[], // timezone
 		];
 
 		const mockSelect = vi.fn().mockImplementation(() => {
@@ -222,14 +254,28 @@ describe("GET /api/analytics", () => {
 			return createSelectChain(result);
 		});
 
-		const mockAll = vi.fn().mockResolvedValue([
-			{
-				total_stamps: 10,
-				stamps_today: 1,
-				stamps_week: 5,
-				stamps_month: 8,
-			},
-		]);
+		let allCallCount = 0;
+		const mockAll = vi.fn().mockImplementation(() => {
+			if (allCallCount === 0) {
+				allCallCount++;
+				return Promise.resolve([
+					{
+						total_stamps: 10,
+						stamps_today: 1,
+						stamps_week: 5,
+						stamps_month: 8,
+					},
+				]);
+			}
+			// Event metrics consolidated query
+			return Promise.resolve([
+				{
+					total_page_views: 20,
+					total_downloads: 0,
+					total_shares: 0,
+				},
+			]);
+		});
 
 		vi.mocked(getDb).mockReturnValue({
 			$client: { prepare: mockPrepare },

@@ -121,7 +121,12 @@ export async function checkAndDeductCredit(
 				createdAt: now,
 			})
 			.catch((err) => {
-				console.error("[Credits] Failed to record transaction:", err);
+				console.error("[Credits] Failed to record transaction:", {
+					userId,
+					amount: -cost,
+					balance: newPurchasedBalance,
+					error: err,
+				});
 			});
 
 		return {

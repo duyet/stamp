@@ -2,46 +2,36 @@
 
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
 	return (
-		<header className="bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-stone-100 dark:border-stone-800">
-			<nav className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between">
+		<header className="bg-white sticky top-0 z-50 border-b border-gray-200">
+			<nav className="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
 				<Link
 					href="/"
-					className="text-base font-medium text-stone-900 dark:text-stone-100 shrink-0"
+					className="text-base text-black shrink-0"
+					style={{ fontFamily: "var(--font-stamp, Georgia, serif)" }}
 				>
 					stamp.builders
 				</Link>
 				<div className="flex items-center gap-3 sm:gap-6 text-sm">
 					<Link
 						href="/generate"
-						className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors hidden sm:block link-hover-underline"
+						className="text-gray-600 hover:text-black transition-colors"
 					>
 						Create
 					</Link>
 					<Link
-						href="/pricing"
-						className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors flex items-center gap-1.5 link-hover-underline"
-					>
-						<span className="hidden sm:inline">Pricing</span>
-						<span className="text-xs font-medium bg-stamp-green/15 text-stamp-green px-1.5 py-0.5 rounded-full">
-							Free
-						</span>
-					</Link>
-					<Link
 						href="/collections"
-						className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors link-hover-underline"
+						className="text-gray-600 hover:text-black transition-colors"
 					>
 						Collections
 					</Link>
-					<ThemeToggle />
 					<Show when="signed-out">
 						<SignInButton mode="modal">
 							<button
 								type="button"
-								className="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors link-hover-underline"
+								className="text-gray-600 hover:text-black transition-colors"
 							>
 								Sign in
 							</button>

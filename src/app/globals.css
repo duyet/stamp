@@ -1,60 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-	/* Dark mode strategy */
-	--color-scheme: light;
-
-	/* Vintage identity — warm, easy on the eyes */
-	--color-cream: #faf9f7;
-	--color-stamp-blue: #4a6fa5;
-	--color-stamp-navy: #1c1917;
-	--color-stamp-yellow: #b8860b;
-	--color-stamp-red: #a3423a;
-	--color-stamp-green: #3d7a4a;
+	/* Vintage identity — monochrome, aged paper */
+	--color-stamp-navy: #1a1a1a;
+	--color-stamp-blue: #555555;
+	--color-stamp-yellow: #999999;
+	--color-stamp-red: #666666;
+	--color-stamp-green: #777777;
 	--font-stamp: var(--font-serif, "Georgia", serif);
 
-	/* System — warm stone tones (light mode) */
-	--color-background: #fafaf9;
-	--color-text-primary: #1c1917;
-	--color-text-secondary: #57534e;
-	--color-text-muted: #78716c;
-	--color-border: #e7e5e4;
-	--color-surface: #f5f5f4;
-
-	/* Dark mode — deep slate tones */
-	--color-background-dark: #0c0a09;
-	--color-text-primary-dark: #fafaf9;
-	--color-text-secondary-dark: #a8a29e;
-	--color-text-muted-dark: #78716c;
-	--color-border-dark: #292524;
-	--color-surface-dark: #1c1917;
-}
-
-/* Dark mode overrides */
-.dark {
-	color-scheme: dark;
-	--color-background: var(--color-background-dark);
-	--color-text-primary: var(--color-text-primary-dark);
-	--color-text-secondary: var(--color-text-secondary-dark);
-	--color-text-muted: var(--color-text-muted-dark);
-	--color-border: var(--color-border-dark);
-	--color-surface: var(--color-surface-dark);
-}
-
-.dark body {
-	background-color: var(--color-background);
-	color: var(--color-text-primary);
+	/* System — black & white vintage */
+	--color-background: #f8f7f4;
+	--color-text-primary: #1a1a1a;
+	--color-text-secondary: #4a4a4a;
+	--color-text-muted: #888888;
+	--color-border: #d4d4d4;
+	--color-surface: #f0efec;
 }
 
 body {
 	background-color: var(--color-background);
 	color: var(--color-text-primary);
-	font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+	font-family: var(--font-serif, "Georgia", serif);
 }
 
 /* Stamp perforated edge effect */
 .stamp-border {
-	filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.08));
+	filter: drop-shadow(1px 2px 6px rgba(0, 0, 0, 0.12));
 	background: white;
 	padding: 12px;
 	mask:
@@ -75,97 +47,68 @@ body {
 	width: 420px;
 	height: 280px;
 	margin: 0 auto;
-	animation: fan-float 6s ease-in-out infinite;
-}
-
-@keyframes fan-float {
-	0%, 100% {
-		transform: translateY(0);
-	}
-	50% {
-		transform: translateY(-8px);
-	}
 }
 
 .stamp-fan-card {
 	position: absolute;
 	width: 170px;
 	height: 170px;
-	transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+	transition: all 0.4s ease-out;
 	transform-origin: bottom center;
 }
 
-/* Stacked state (default) with subtle shimmer */
+/* Stacked state (default) */
 .stamp-fan-far-left {
 	left: 45px;
 	top: 40px;
 	transform: rotate(-14deg);
 	z-index: 1;
-	animation: card-glow 4s ease-in-out infinite 0s;
 }
 .stamp-fan-left {
 	left: 75px;
 	top: 28px;
 	transform: rotate(-7deg);
 	z-index: 2;
-	animation: card-glow 4s ease-in-out infinite 0.3s;
 }
 .stamp-fan-center {
 	left: 125px;
 	top: 15px;
 	transform: rotate(0deg);
 	z-index: 5;
-	animation: card-glow 4s ease-in-out infinite 0.6s;
 }
 .stamp-fan-right {
 	left: 175px;
 	top: 28px;
 	transform: rotate(7deg);
 	z-index: 2;
-	animation: card-glow 4s ease-in-out infinite 0.9s;
 }
 .stamp-fan-far-right {
 	left: 200px;
 	top: 40px;
 	transform: rotate(14deg);
 	z-index: 1;
-	animation: card-glow 4s ease-in-out infinite 1.2s;
 }
 
-@keyframes card-glow {
-	0%, 100% {
-		filter: brightness(1);
-	}
-	50% {
-		filter: brightness(1.03);
-	}
-}
-
-/* Expanded state (hover) — fan out like a card spread with staggered timing */
+/* Expanded state (hover) — fan out like a card spread */
 .stamp-fan:hover .stamp-fan-far-left {
-	transform: rotate(-28deg) translateX(-85px) translateY(-15px) scale(1.05);
-	transition-delay: 0s;
+	transform: rotate(-24deg) translateX(-70px) translateY(-10px);
 }
 .stamp-fan:hover .stamp-fan-left {
-	transform: rotate(-14deg) translateX(-42px) translateY(-18px) scale(1.08);
-	transition-delay: 0.05s;
+	transform: rotate(-12deg) translateX(-35px) translateY(-14px);
 }
 .stamp-fan:hover .stamp-fan-center {
-	transform: rotate(0deg) translateY(-25px) scale(1.12);
-	transition-delay: 0.1s;
+	transform: rotate(0deg) translateY(-20px);
 }
 .stamp-fan:hover .stamp-fan-right {
-	transform: rotate(14deg) translateX(42px) translateY(-18px) scale(1.08);
-	transition-delay: 0.15s;
+	transform: rotate(12deg) translateX(35px) translateY(-14px);
 }
 .stamp-fan:hover .stamp-fan-far-right {
-	transform: rotate(28deg) translateX(85px) translateY(-15px) scale(1.05);
-	transition-delay: 0.2s;
+	transform: rotate(24deg) translateX(70px) translateY(-10px);
 }
 
-/* Subtle lift shadow on hover with glow */
+/* Subtle lift shadow on hover */
 .stamp-fan:hover .stamp-fan-card .stamp-border {
-	filter: drop-shadow(2px 8px 16px rgba(74, 111, 165, 0.25));
+	filter: drop-shadow(1px 3px 8px rgba(0, 0, 0, 0.12));
 }
 
 /* Modal stamp — large drop shadow */
@@ -231,102 +174,4 @@ body {
 }
 .animate-form-enter {
 	animation: form-enter 0.4s ease-out forwards;
-}
-
-/* Hero gradient text effect - bold animated gradient */
-.hero-gradient {
-	background: linear-gradient(
-		90deg,
-		#1e3a8a 0%,
-		#4f46e5 25%,
-		#7c3aed 50%,
-		#db2777 75%,
-		#ea580c 100%
-	);
-	background-size: 200% 100%;
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	background-clip: text;
-}
-
-/* Animated link underline */
-.link-hover-underline {
-	position: relative;
-}
-.link-hover-underline::after {
-	content: "";
-	position: absolute;
-	width: 0;
-	height: 1px;
-	bottom: -1px;
-	left: 0;
-	background-color: currentColor;
-	transition: width 0.2s ease-in-out;
-}
-.link-hover-underline:hover::after {
-	width: 100%;
-}
-
-/* Smooth page fade-in */
-@keyframes page-fade-in {
-	from {
-		opacity: 0;
-		transform: translateY(4px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-.animate-page-fade-in {
-	animation: page-fade-in 0.3s ease-out forwards;
-}
-
-/* Accessible focus ring - scoped to interactive elements only */
-button:focus-visible,
-a:focus-visible,
-[tabindex]:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-	outline: 2px solid #4a6fa5;
-	outline-offset: 2px;
-	border-radius: 4px;
-}
-
-/* Remove default outline for mouse users, keep for keyboard */
-button:focus:not(:focus-visible),
-a:focus:not(:focus-visible),
-[tabindex]:focus:not(:focus-visible),
-input:focus:not(:focus-visible),
-textarea:focus:not(:focus-visible),
-select:focus:not(:focus-visible) {
-	outline: none;
-}
-
-/* Slow pulse animation for ambient effects */
-@keyframes pulse-slow {
-	0%, 100% {
-		opacity: 0.5;
-	}
-	50% {
-		opacity: 0.8;
-	}
-}
-.animate-pulse-slow {
-	animation: pulse-slow 4s ease-in-out infinite;
-}
-
-/* Gradient shift animation for hero text */
-@keyframes gradient-shift {
-	0%, 100% {
-		background-position: 0% 50%;
-	}
-	50% {
-		background-position: 100% 50%;
-	}
-}
-.animate-gradient-shift {
-	background-size: 200% 100%;
-	animation: gradient-shift 3s ease infinite;
 }

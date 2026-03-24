@@ -100,9 +100,9 @@ export function Modal({ isOpen, onClose, children, ariaLabel }: ModalProps) {
 			onClick={onClose}
 			aria-hidden="true"
 		>
-			{/* Backdrop */}
+			{/* Backdrop - warmer with subtle gradient */}
 			<div
-				className="absolute inset-0 bg-white/92 dark:bg-stone-900/92 backdrop-blur-xl animate-modal-fade"
+				className="absolute inset-0 bg-gradient-to-br from-white/95 via-stone-50/95 to-stone-100/95 backdrop-blur-xl animate-modal-fade"
 				aria-hidden="true"
 			/>
 

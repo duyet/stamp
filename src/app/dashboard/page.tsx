@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import {
-	DashboardContent,
+	DashboardContentMemo,
 	RecentStampsSection,
 } from "@/components/dashboard-content";
 
@@ -22,7 +22,7 @@ export default function DashboardPage() {
 					stamp.builders — analytics &amp; insights
 				</p>
 			</div>
-			<DashboardContent />
+			<DashboardContentMemo />
 			<RecentStampsSection />
 		</div>
 	);

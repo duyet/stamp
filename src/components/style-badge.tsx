@@ -20,7 +20,7 @@ export function StyleBadge({
 }: StyleBadgeProps) {
 	return (
 		<span
-			className={`inline-block tracking-wider uppercase text-stone-500 bg-stone-100/80 rounded-full ${sizeClasses[variant]} ${className}`}
+			className={`inline-block tracking-wider uppercase text-stone-600 bg-stone-100/80 rounded-full ${sizeClasses[variant]} ${className}`}
 		>
 			{style}
 		</span>

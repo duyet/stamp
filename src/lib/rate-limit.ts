@@ -22,29 +22,24 @@ export async function checkRateLimit(
 	const nowMs = now.getTime();
 	const windowStartMs = nowMs - RATE_LIMIT_WINDOW_MS;
 
-	// Try atomic UPDATE with WHERE clause first
+	// Try atomic UPDATE with RETURNING clause
 	// Only increments if current count is below limit AND window is still valid
-	// The meta.changes property tells us if the UPDATE succeeded
+	// Returns the updated generations_count directly, eliminating the need for a separate SELECT
 	const updateResult = await db.$client
 		.prepare(
-			`UPDATE rate_limits SET generations_count = generations_count + 1 WHERE user_ip = ? AND generations_count < ? AND window_start >= ?`,
+			`UPDATE rate_limits SET generations_count = generations_count + 1 WHERE user_ip = ? AND generations_count < ? AND window_start >= ? RETURNING generations_count`,
 		)
 		.bind(userIp, MAX_GENERATIONS_PER_DAY, new Date(windowStartMs))
-		.run();
+		.first<{ generations_count: number }>();
 
-	// Check if UPDATE succeeded (meta.changes > 0 means rows were modified)
-	if (updateResult.meta.changes > 0) {
+	// Check if UPDATE succeeded (updateResult exists means rows were modified)
+	if (updateResult) {
 		// UPDATE succeeded - existing record was incremented within limit
-		// Fetch current state to get accurate remaining count
-		const current = await db.query.rateLimits.findFirst({
-			where: eq(rateLimits.userIp, userIp),
-		});
-		if (current) {
-			return {
-				allowed: true,
-				remaining: MAX_GENERATIONS_PER_DAY - current.generationsCount,
-			};
-		}
+		// Use the returned generations_count to calculate remaining
+		return {
+			allowed: true,
+			remaining: MAX_GENERATIONS_PER_DAY - updateResult.generations_count,
+		};
 	}
 
 	// UPDATE didn't affect any rows - either no record exists or window expired

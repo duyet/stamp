@@ -38,7 +38,7 @@ export function GenerationResults({
 	const { isFavorite, toggleFavorite } = useFavorites();
 
 	return (
-		<div className="mt-10">
+		<div className="mt-10 animate-form-enter">
 			{/* Controls for latest stamp */}
 			<div className="text-center mb-4 space-y-2">
 				<div className="inline-flex">
@@ -52,7 +52,7 @@ export function GenerationResults({
 						label="Public collection"
 					/>
 				</div>
-				<p className="text-xs text-stone-400">
+				<p className="text-xs text-gray-400">
 					{remaining} remaining today
 					{generationTimeMs && (
 						<span className="ml-1">
@@ -67,13 +67,21 @@ export function GenerationResults({
 				{results.map((r, idx) => (
 					<div
 						key={r.id}
-						className={`text-center ${idx === 0 ? "animate-stamp-appear" : ""}`}
+						className={`text-center ${idx === 0 ? "animate-stamp-appear" : idx === 1 ? "animate-form-enter" : ""}`}
+						style={
+							idx > 1
+								? {
+										animation: `form-enter 0.4s ease-out ${idx * 0.05}s forwards`,
+										opacity: 0,
+									}
+								: undefined
+						}
 					>
 						<div className="stamp-border stamp-modal-shadow inline-block relative">
 							<button
 								type="button"
 								onClick={() => toggleFavorite(r.id)}
-								className="absolute -top-3 -right-3 z-10 p-2 bg-white rounded-full shadow-md hover:bg-stone-50 transition-colors"
+								className="absolute -top-3 -right-3 z-10 p-2.5 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
 								aria-label={
 									isFavorite(r.id)
 										? "Remove from favorites"
@@ -95,7 +103,7 @@ export function GenerationResults({
 							<a
 								href={r.imageUrl}
 								download={`stamp-${r.id}.png`}
-								className="inline-flex items-center gap-1 px-3 py-1 bg-stamp-navy text-white rounded-full text-[10px] hover:bg-stone-800 transition"
+								className="inline-flex items-center gap-1 px-4 py-2 bg-gray-900 text-white rounded-full text-xs hover:bg-gray-800 transition min-h-[44px]"
 							>
 								<DownloadIcon />
 								Download
@@ -105,7 +113,7 @@ export function GenerationResults({
 								onClick={() =>
 									onCopy(`${window.location.origin}/api/stamps/${r.id}/image`)
 								}
-								className="inline-flex items-center gap-1 px-3 py-1 text-stone-600 bg-white border border-stone-200 rounded-full text-[10px] hover:bg-stone-50 transition"
+								className="inline-flex items-center gap-1 px-4 py-2 text-gray-600 bg-white border border-gray-200 rounded-full text-xs hover:bg-gray-50 transition min-h-[44px]"
 							>
 								{copied ? (
 									<>

@@ -92,6 +92,22 @@ export function createMockRateLimitDb(
 						}
 						return { meta: { changes: 0 } };
 					}),
+					first: vi.fn().mockImplementation(() => {
+						// Simulate RETURNING clause
+						if (
+							sql.includes("UPDATE rate_limits") &&
+							sql.includes("RETURNING generations_count")
+						) {
+							if (currentState && currentState.generationsCount < 20) {
+								currentState.generationsCount += 1;
+								return Promise.resolve({
+									generations_count: currentState.generationsCount,
+								});
+							}
+							return Promise.resolve(null);
+						}
+						return Promise.resolve(null);
+					}),
 				};
 			}),
 		};
@@ -183,7 +199,7 @@ export function createMockCreditsDb(
 			};
 		});
 
-	// Mock D1 client for raw SQL (prepare().bind().run())
+	// Mock D1 client for raw SQL (prepare().bind().run()/.first())
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
 		// Simulate atomic UPDATE by modifying state directly
 		return {
@@ -218,6 +234,80 @@ export function createMockCreditsDb(
 							return { meta: { changes } };
 						}
 						return { meta: { changes: 0 } };
+					}),
+					first: vi.fn().mockImplementation(() => {
+						// Simulate INSERT ... ON CONFLICT ... RETURNING
+						if (
+							sql.includes("INSERT INTO user_credits") &&
+							sql.includes("ON CONFLICT")
+						) {
+							// For new user
+							if (!currentState) {
+								const newRecord = {
+									daily_limit: args[1] as number,
+									daily_used: 1,
+									daily_reset_at: args[2] as number,
+									purchased_credits: 0,
+								};
+								currentState = {
+									userId: args[0] as string,
+									dailyLimit: newRecord.daily_limit,
+									dailyUsed: newRecord.daily_used,
+									dailyResetAt: newRecord.daily_reset_at,
+									purchasedCredits: newRecord.purchased_credits,
+									createdAt: args[3] as number,
+									updatedAt: args[4] as number,
+								};
+								return Promise.resolve(newRecord);
+							}
+
+							// For existing user - simulate the complex CASE logic
+							// Args: userId, dailyLimit, now+window, now, now, windowStart, cost, cost, cost, cost, cost, cost, windowStart, now+window, now
+							const windowStart = args[5] as number;
+							const cost = args[6] as number;
+							const now = args[16] as number;
+
+							// Simulate the SQL CASE logic
+							let newDailyUsed = currentState.dailyUsed;
+							let newPurchased = currentState.purchasedCredits;
+							let newResetAt = currentState.dailyResetAt;
+
+							// Auto-reset check: WHEN user_credits.daily_reset_at < ?
+							if (currentState.dailyResetAt < windowStart) {
+								newDailyUsed = 1;
+								newResetAt = now + 86400000;
+							}
+							// Daily increment check: WHEN user_credits.daily_used + ? <= user_credits.daily_limit
+							else if (
+								currentState.dailyUsed + cost <=
+								currentState.dailyLimit
+							) {
+								newDailyUsed = currentState.dailyUsed + cost;
+							}
+							// Purchased decrement check happens in second CASE
+							// WHEN user_credits.daily_used + ? > user_credits.daily_limit AND user_credits.purchased_credits >= ?
+							else if (
+								currentState.dailyUsed + cost > currentState.dailyLimit &&
+								currentState.purchasedCredits >= cost
+							) {
+								newPurchased = currentState.purchasedCredits - cost;
+							}
+
+							// Update state
+							currentState.dailyUsed = newDailyUsed;
+							currentState.purchasedCredits = newPurchased;
+							currentState.dailyResetAt = newResetAt;
+							currentState.updatedAt = now;
+
+							// Return in snake_case (matching SQL RETURNING clause)
+							return Promise.resolve({
+								daily_limit: currentState.dailyLimit,
+								daily_used: currentState.dailyUsed,
+								daily_reset_at: currentState.dailyResetAt,
+								purchased_credits: currentState.purchasedCredits,
+							});
+						}
+						return Promise.resolve(null);
 					}),
 				};
 			}),

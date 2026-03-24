@@ -6,11 +6,11 @@ import { LoadingSpinner } from "./loading-spinner";
 
 const VARIANT_STYLES = {
 	primary:
-		"bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg hover:bg-stone-800 dark:hover:bg-stone-200 active:scale-[0.98]",
-	pill: "rounded-full text-sm hover:scale-105",
-	cta: "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-lg hover:-translate-y-0.5",
+		"bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-lg hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] button-shine-effect",
+	pill: "rounded-full text-sm hover:scale-105 hover:shadow-md",
+	cta: "bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-full hover:bg-stone-800 dark:hover:bg-stone-200 hover:shadow-xl hover:-translate-y-1 hover:scale-105 button-shine-effect",
 	ghost:
-		"text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800",
+		"text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 hover:scale-105",
 } as const;
 
 const SIZE_STYLES = {
@@ -35,7 +35,7 @@ export function Button({
 	...props
 }: ButtonProps) {
 	const baseStyles =
-		"inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed";
+		"inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed button-ripple";
 
 	return (
 		<button

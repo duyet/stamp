@@ -2,7 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { Footer } from "@/components/footer";
-import { ThemeProvider } from "@/components/theme-provider";
+import { Header } from "@/components/header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -58,20 +58,14 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" suppressHydrationWarning>
+		<html lang="en">
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased min-h-screen flex flex-col`}
 			>
 				<ClerkProvider>
-					<ThemeProvider
-						attribute="class"
-						defaultTheme="system"
-						enableSystem
-						disableTransitionOnChange
-					>
-						<main className="flex-1">{children}</main>
-						<Footer />
-					</ThemeProvider>
+					<Header />
+					<main className="flex-1">{children}</main>
+					<Footer />
 				</ClerkProvider>
 			</body>
 		</html>

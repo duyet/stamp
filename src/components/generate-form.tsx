@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import type { StampStyle } from "@/lib/stamp-prompts";
@@ -45,6 +46,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	const [hd, setHd] = useState(false);
 	const [reference, setReference] = useState<string | null>(null);
 	const [results, setResults] = useState<GeneratedStamp[]>([]);
+	const promptInputRef = useRef<{ triggerError: () => void } | null>(null);
 
 	// Reset HD when user signs out
 	useEffect(() => {
@@ -74,29 +76,35 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		return () => clearInterval(interval);
 	}, [resetAt]);
 
-	async function handleVisibilityChange(
-		e: React.ChangeEvent<HTMLInputElement>,
-	) {
-		if (!results[0]) return;
-		const newValue = e.target.checked;
-		setIsPublic(newValue);
-		try {
-			const res = await fetch(`/api/stamps/${results[0].id}/visibility`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ isPublic: newValue }),
-			});
-			if (!res.ok) {
+	const handleVisibilityChange = useCallback(
+		async (e: React.ChangeEvent<HTMLInputElement>) => {
+			if (!results[0]) return;
+			const newValue = e.target.checked;
+			setIsPublic(newValue);
+			try {
+				const res = await fetch(`/api/stamps/${results[0].id}/visibility`, {
+					method: "PATCH",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ isPublic: newValue }),
+				});
+				if (!res.ok) {
+					throw new Error("Failed to update visibility");
+				}
+			} catch {
 				setIsPublic(!newValue);
 				setError("Failed to update visibility. Please try again.");
 			}
-		} catch {
-			setIsPublic(!newValue);
-			setError("Failed to update visibility. Please try again.");
-		}
-	}
+		},
+		[results],
+	);
 
-	async function handleSubmit() {
+	const handleSubmit = useCallback(async () => {
+		// Validate: need either prompt or reference image
+		if (!prompt.trim() && !reference) {
+			promptInputRef.current?.triggerError();
+			return;
+		}
+
 		setLoading(true);
 		setError(null);
 		setIsRateLimited(false);
@@ -169,7 +177,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 		} finally {
 			setLoading(false);
 		}
-	}
+	}, [prompt, style, isPublic, hd, reference, results, onGenerated]);
 
 	return (
 		<div className="max-w-2xl mx-auto px-2 sm:px-0">
@@ -185,7 +193,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					onSelected={(data) => {
 						setReference(data ? data.referenceImageData : null);
 						// Auto-enable HD when reference is selected
-						if (data && !hd) {
+						if (data) {
 							setHd(true);
 						}
 					}}
@@ -194,6 +202,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 
 				{/* Prompt input with suggestions */}
 				<PromptInput
+					ref={promptInputRef}
 					value={prompt}
 					onChange={setPrompt}
 					onStyleChange={setStyle}
@@ -227,7 +236,7 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 					isRateLimited={isRateLimited}
 					countdown={countdown}
 					isSignedIn={isSignedIn}
-					onRetry={() => handleSubmit()}
+					onRetry={handleSubmit}
 					loading={loading}
 				/>
 			)}

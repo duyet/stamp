@@ -113,6 +113,14 @@ export function ArrowDownIcon() {
 	);
 }
 
+export function ArrowUpIcon() {
+	return (
+		<svg {...iconProps} viewBox="0 0 24 24" strokeWidth={2} aria-hidden="true">
+			<path d="M5 10l7-7m0 0l7 7m-7-7v18" />
+		</svg>
+	);
+}
+
 export function Sun({ className }: { className?: string }) {
 	return (
 		<svg
@@ -144,6 +152,30 @@ export function Moon({ className }: { className?: string }) {
 			aria-hidden="true"
 		>
 			<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+		</svg>
+	);
+}
+
+export function StampIcon() {
+	return (
+		<svg
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth={1.5}
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<rect x="3" y="3" width="18" height="18" rx="2" />
+			<circle cx="8" cy="8" r="1.5" />
+			<circle cx="16" cy="8" r="1.5" />
+			<circle cx="8" cy="16" r="1.5" />
+			<circle cx="16" cy="16" r="1.5" />
+			<circle cx="12" cy="8" r="1.5" />
+			<circle cx="12" cy="16" r="1.5" />
+			<circle cx="8" cy="12" r="1.5" />
+			<circle cx="16" cy="12" r="1.5" />
 		</svg>
 	);
 }

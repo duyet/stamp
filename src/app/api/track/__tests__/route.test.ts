@@ -123,15 +123,19 @@ describe("POST /api/track", () => {
 		expect(valuesCall.userIp).toBeNull();
 	});
 
-	it("returns 500 on database error", async () => {
+	it("returns 200 even on database error (fire-and-forget)", async () => {
 		mockDb.insert.mockReturnValue({
 			values: vi.fn().mockRejectedValue(new Error("DB failure")),
 		});
 
 		const res = await POST(req({ event: "page_view" }));
-		const data = (await res.json()) as Record<string, unknown>;
 
-		expect(res.status).toBe(500);
-		expect(data.error).toContain("Failed to track event");
+		// Since tracking is now fire-and-forget, errors don't affect the response
+		expect(res.status).toBe(200);
+		const data = (await res.json()) as { ok: boolean };
+		expect(data.ok).toBe(true);
+
+		// Wait a tick for the async error to be logged
+		await new Promise((resolve) => setTimeout(resolve, 0));
 	});
 });

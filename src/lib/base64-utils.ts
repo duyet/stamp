@@ -8,10 +8,12 @@
  * Handles large arrays without stack overflow
  */
 export function uint8ArrayToBase64(bytes: Uint8Array): string {
-	const binaryString = Array.from(bytes, (byte) =>
-		String.fromCharCode(byte),
-	).join("");
-	return btoa(binaryString);
+	// Use direct loop to avoid intermediate array allocation for large images
+	let binary = "";
+	for (let i = 0; i < bytes.length; i++) {
+		binary += String.fromCharCode(bytes[i]);
+	}
+	return btoa(binary);
 }
 
 /**

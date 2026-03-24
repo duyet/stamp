@@ -82,3 +82,67 @@ export const STAMP_STYLES = [
 
 /** Stamp style type */
 export type StampStyle = (typeof STAMP_STYLES)[number];
+
+/**
+ * UI color constants for dark mode consistency
+ */
+export const TEXT_COLORS = {
+	/** Primary text color */
+	primary: "text-stone-600 dark:text-stone-400",
+	/** Secondary text color */
+	secondary: "text-stone-500 dark:text-stone-400",
+	/** Dark text color */
+	dark: "text-stone-700 dark:text-stone-300",
+	/** Heading color */
+	heading: "text-stamp-navy dark:text-stone-100",
+	/** Muted text color */
+	muted: "text-stone-400 dark:text-stone-500",
+	/** Inverted text (dark mode) */
+	inverted: "text-stone-900 dark:text-stone-100",
+} as const;
+
+/**
+ * Background color constants for dark mode consistency
+ */
+export const BG_COLORS = {
+	/** Surface background (cards, inputs) */
+	surface: "bg-white dark:bg-stone-900",
+	/** Container background */
+	container: "bg-stone-100 dark:bg-stone-800/50",
+	/** Subtle background */
+	subtle: "bg-stone-50 dark:bg-stone-800/50",
+	/** Full-screen overlay */
+	overlay: "bg-stone-950/95 dark:bg-black/95",
+	/** Inverted background (for buttons in dark mode) */
+	inverted: "bg-stone-900 dark:bg-stone-100",
+	/** Border color */
+	border: "border-stone-200 dark:border-stone-700",
+	/** Subtle border */
+	borderSubtle: "border-stone-100 dark:border-stone-800",
+} as const;
+
+/**
+ * Dashboard-specific constants
+ */
+export const DASHBOARD = {
+	/** Number of days to show in daily trend chart */
+	DAILY_TREND_DAYS: 30,
+	/** Maximum bar height in pixels for trend chart */
+	MAX_BAR_HEIGHT: 112,
+	/** Minimum bar height in pixels for trend chart */
+	MIN_BAR_HEIGHT: 4,
+	/** Number of stat cards per row in overview section */
+	STATS_PER_ROW: 4,
+	/** Number of popular styles to showcase */
+	POPULAR_STYLES_LIMIT: 6,
+} as const;
+
+/**
+ * Grid layout constants
+ */
+export const GRID_LAYOUTS = {
+	/** Default skeleton card count for stamp grids */
+	DEFAULT_SKELETON_COUNT: 8,
+	/** Maximum number of stamps to show in collections */
+	MAX_STAMP_LIMIT: 100,
+} as const;
