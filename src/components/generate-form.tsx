@@ -1,5 +1,3 @@
-"use client";
-
 import { useAuth } from "@clerk/tanstack-react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 

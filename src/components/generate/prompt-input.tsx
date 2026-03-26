@@ -1,5 +1,3 @@
-"use client";
-
 import { Show, SignInButton, UserButton } from "@clerk/tanstack-react-start";
 import {
 	forwardRef,

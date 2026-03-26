@@ -1,5 +1,3 @@
-"use client";
-
 import { useAuth, useClerk } from "@clerk/tanstack-react-start";
 
 import { LoadingSpinner } from "@/components/loading-spinner";
