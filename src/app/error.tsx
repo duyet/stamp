@@ -11,6 +11,8 @@ export default function Error({
 	error: Error & { digest?: string };
 	reset: () => void;
 }) {
+	console.error("Error boundary caught:", error);
+
 	return (
 		<div className="min-h-screen flex items-center justify-center px-4">
 			<div className="text-center max-w-md">
@@ -32,7 +34,7 @@ export default function Error({
 					Something went wrong
 				</h2>
 				<p className="text-stone-600 text-base mb-8">
-					{error.message || "An unexpected error occurred."}
+					An unexpected error occurred. Please try again.
 				</p>
 				<div className="flex flex-col sm:flex-row gap-3 justify-center">
 					<Button onClick={reset}>Try again</Button>
