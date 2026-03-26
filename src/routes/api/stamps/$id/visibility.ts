@@ -2,9 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { canModifyStamp } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getClientIp } from "@/lib/get-client-ip";
+
+function jsonResponse(data: unknown, status = 200): Response {
+	return withSecurityHeaders(
+		new Response(JSON.stringify(data), {
+			status,
+			headers: { "Content-Type": "application/json" },
+		}),
+	);
+}
 
 export async function PATCH(request: Request, id: string): Promise<Response> {
 	try {
@@ -12,22 +22,13 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 
 		// Validate ID format (nanoid 12 chars)
 		if (!id || id.length !== 12) {
-			return new Response(JSON.stringify({ error: "Invalid stamp ID" }), {
-				status: 400,
-				headers: { "Content-Type": "application/json" },
-			});
+			return jsonResponse({ error: "Invalid stamp ID" }, 400);
 		}
 
 		const body = (await request.json()) as { isPublic: unknown };
 
 		if (typeof body.isPublic !== "boolean") {
-			return new Response(
-				JSON.stringify({ error: "isPublic must be a boolean" }),
-				{
-					status: 400,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
+			return jsonResponse({ error: "isPublic must be a boolean" }, 400);
 		}
 
 		// Get auth state (userId for logged-in users, IP for anonymous)
@@ -39,18 +40,12 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 		});
 
 		if (!stamp) {
-			return new Response(JSON.stringify({ error: "Stamp not found" }), {
-				status: 404,
-				headers: { "Content-Type": "application/json" },
-			});
+			return jsonResponse({ error: "Stamp not found" }, 404);
 		}
 
 		// Authorization: Only the creator can toggle visibility
 		if (!canModifyStamp(stamp, { userId, userIp })) {
-			return new Response(JSON.stringify({ error: "Not authorized" }), {
-				status: 403,
-				headers: { "Content-Type": "application/json" },
-			});
+			return jsonResponse({ error: "Not authorized" }, 403);
 		}
 
 		// Use RETURNING clause to get updated stamp in single query
@@ -60,21 +55,13 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 			.where(eq(stamps.id, id))
 			.returning();
 
-		return new Response(
-			JSON.stringify({
-				ok: true,
-				stamp: { id: updatedStamp.id, isPublic: updatedStamp.isPublic },
-			}),
-			{
-				headers: { "Content-Type": "application/json" },
-			},
-		);
+		return jsonResponse({
+			ok: true,
+			stamp: { id: updatedStamp.id, isPublic: updatedStamp.isPublic },
+		});
 	} catch (error) {
 		console.error("Failed to update visibility:", error);
-		return new Response(JSON.stringify({ error: "Failed to update." }), {
-			status: 500,
-			headers: { "Content-Type": "application/json" },
-		});
+		return jsonResponse({ error: "Failed to update." }, 500);
 	}
 }
 

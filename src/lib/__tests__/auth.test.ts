@@ -51,6 +51,15 @@ describe("isAdmin", () => {
 		expect(isAdmin("user_abc")).toBe(true);
 		expect(isAdmin("")).toBe(false);
 	});
+
+	it("trims whitespace around admin IDs", () => {
+		vi.mocked(getEnv).mockReturnValue({
+			ADMIN_USER_IDS: " user_abc , user_xyz ",
+		} as never);
+		expect(isAdmin("user_abc")).toBe(true);
+		expect(isAdmin("user_xyz")).toBe(true);
+		expect(isAdmin(" user_abc ")).toBe(false);
+	});
 });
 
 describe("canModifyStamp", () => {

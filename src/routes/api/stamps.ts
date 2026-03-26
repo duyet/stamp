@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { STAMP_STYLES } from "@/lib/constants";
 
 interface StampsApiResponse {
@@ -106,19 +107,23 @@ export async function GET(request: Request): Promise<Response> {
 
 		// Cache for 60 seconds, stale for 300 seconds (5 min)
 		// This allows quick page loads while still getting fresh data
-		return new Response(JSON.stringify(responseData), {
-			headers: {
-				"Content-Type": "application/json",
-				"Cache-Control":
-					"public, max-age=60, stale-while-revalidate=300, stale-if-error=86400",
-			},
-		});
+		return withSecurityHeaders(
+			new Response(JSON.stringify(responseData), {
+				headers: {
+					"Content-Type": "application/json",
+					"Cache-Control":
+						"public, max-age=60, stale-while-revalidate=300, stale-if-error=86400",
+				},
+			}),
+		);
 	} catch (error) {
 		console.error("Failed to fetch stamps:", error);
-		return new Response(JSON.stringify({ error: "Failed to fetch stamps." }), {
-			status: 500,
-			headers: { "Content-Type": "application/json" },
-		});
+		return withSecurityHeaders(
+			new Response(JSON.stringify({ error: "Failed to fetch stamps." }), {
+				status: 500,
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
 	}
 }
 

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { getClientIp } from "@/lib/get-client-ip";
 
 export const ALLOWED_EVENTS = [
@@ -24,10 +25,12 @@ function jsonResponse(
 	status = 200,
 	headers?: Record<string, string>,
 ): Response {
-	return new Response(JSON.stringify(data), {
-		status,
-		headers: { "Content-Type": "application/json", ...headers },
-	});
+	return withSecurityHeaders(
+		new Response(JSON.stringify(data), {
+			status,
+			headers: { "Content-Type": "application/json", ...headers },
+		}),
+	);
 }
 
 export async function POST(request: Request): Promise<Response> {

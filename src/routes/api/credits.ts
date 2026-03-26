@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getDb } from "@/db";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { getAuthUserId } from "@/lib/clerk";
 import { getCreditsInfo } from "@/lib/credits";
 
@@ -8,10 +9,12 @@ function jsonResponse(
 	status = 200,
 	headers?: Record<string, string>,
 ): Response {
-	return new Response(JSON.stringify(data), {
-		status,
-		headers: { "Content-Type": "application/json", ...headers },
-	});
+	return withSecurityHeaders(
+		new Response(JSON.stringify(data), {
+			status,
+			headers: { "Content-Type": "application/json", ...headers },
+		}),
+	);
 }
 
 export async function GET(_request: Request): Promise<Response> {

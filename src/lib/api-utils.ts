@@ -2,6 +2,22 @@
  * API utilities for consistent response handling
  */
 
+const SECURITY_HEADERS: Record<string, string> = {
+	"X-Content-Type-Options": "nosniff",
+	"X-Frame-Options": "DENY",
+	"Referrer-Policy": "strict-origin-when-cross-origin",
+};
+
+/**
+ * Add standard security headers to an existing Response.
+ */
+export function withSecurityHeaders(response: Response): Response {
+	for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+		response.headers.set(key, value);
+	}
+	return response;
+}
+
 /**
  * Create a standardized error response
  * Provides consistent error format across all API routes

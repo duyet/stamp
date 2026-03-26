@@ -2,10 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { eq, isNull } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { capitalize } from "@/lib/text-utils";
+
+function jsonResponse(data: unknown, status = 200): Response {
+	return withSecurityHeaders(
+		new Response(JSON.stringify(data), {
+			status,
+			headers: { "Content-Type": "application/json" },
+		}),
+	);
+}
 
 export async function POST(_request: Request): Promise<Response> {
 	try {
@@ -15,29 +25,17 @@ export async function POST(_request: Request): Promise<Response> {
 		// Require authentication
 		const { userId } = await getAuthUserId();
 		if (!userId) {
-			return new Response(JSON.stringify({ error: "Unauthorized" }), {
-				status: 401,
-				headers: { "Content-Type": "application/json" },
-			});
+			return jsonResponse({ error: "Unauthorized" }, 401);
 		}
 
 		// Fail-closed admin check: no admin list configured = 403
 		if (!isAdmin(userId)) {
-			return new Response(JSON.stringify({ error: "Forbidden" }), {
-				status: 403,
-				headers: { "Content-Type": "application/json" },
-			});
+			return jsonResponse({ error: "Forbidden" }, 403);
 		}
 
 		const ai = env.AI;
 		if (!ai) {
-			return new Response(
-				JSON.stringify({ error: "AI binding not configured." }),
-				{
-					status: 503,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
+			return jsonResponse({ error: "AI binding not configured." }, 503);
 		}
 
 		const stampsWithoutDescription = await db
@@ -79,18 +77,10 @@ export async function POST(_request: Request): Promise<Response> {
 			);
 		}
 
-		return new Response(JSON.stringify({ updated, total }), {
-			headers: { "Content-Type": "application/json" },
-		});
+		return jsonResponse({ updated, total });
 	} catch (error) {
 		console.error("Backfill descriptions failed:", error);
-		return new Response(
-			JSON.stringify({ error: "Failed to backfill descriptions." }),
-			{
-				status: 500,
-				headers: { "Content-Type": "application/json" },
-			},
-		);
+		return jsonResponse({ error: "Failed to backfill descriptions." }, 500);
 	}
 }
 

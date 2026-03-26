@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getDb } from "@/db";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { getEnv } from "@/lib/env";
 
 export const Route = createFileRoute("/api/health")({
@@ -37,18 +38,20 @@ export const Route = createFileRoute("/api/health")({
 
 				const allOk = results.d1 && results.r2 && results.ai;
 
-				return new Response(
-					JSON.stringify({
-						status: allOk ? "ok" : "degraded",
-						...results,
-					}),
-					{
-						status: allOk ? 200 : 503,
-						headers: {
-							"Content-Type": "application/json",
-							"Cache-Control": "no-store",
+				return withSecurityHeaders(
+					new Response(
+						JSON.stringify({
+							status: allOk ? "ok" : "degraded",
+							...results,
+						}),
+						{
+							status: allOk ? 200 : 503,
+							headers: {
+								"Content-Type": "application/json",
+								"Cache-Control": "no-store",
+							},
 						},
-					},
+					),
 				);
 			},
 		},

@@ -11,7 +11,10 @@ import { getEnv } from "@/lib/env";
 export function isAdmin(userId: string): boolean {
 	const env = getEnv();
 	const raw = (env.ADMIN_USER_IDS as string | undefined) ?? "";
-	const adminIds = raw.split(",").filter(Boolean);
+	const adminIds = raw
+		.split(",")
+		.map((s) => s.trim())
+		.filter(Boolean);
 
 	// Fail-closed: no admin list configured = no admins
 	if (adminIds.length === 0) {

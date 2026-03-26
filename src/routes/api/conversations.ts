@@ -1,13 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { listConversations, searchConversations } from "@/lib/agentstate";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 
 function jsonResponse(data: unknown, status = 200): Response {
-	return new Response(JSON.stringify(data), {
-		status,
-		headers: { "Content-Type": "application/json" },
-	});
+	return withSecurityHeaders(
+		new Response(JSON.stringify(data), {
+			status,
+			headers: { "Content-Type": "application/json" },
+		}),
+	);
 }
 
 export async function GET(request: Request): Promise<Response> {
@@ -24,7 +27,11 @@ export async function GET(request: Request): Promise<Response> {
 
 	const url = new URL(request.url);
 	const query = url.searchParams.get("q");
-	const limit = Number(url.searchParams.get("limit") || "20");
+	const rawLimit = Number(url.searchParams.get("limit") || "20");
+	const limit = Math.max(
+		1,
+		Math.min(Number.isFinite(rawLimit) ? rawLimit : 20, 100),
+	);
 	const cursor = url.searchParams.get("cursor") ?? undefined;
 
 	try {

@@ -5,6 +5,7 @@ import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { addTags, createConversation } from "@/lib/agentstate";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { getAuthUserId } from "@/lib/clerk";
 import {
 	checkAndDeductCredit,
@@ -36,10 +37,12 @@ export function clearPendingRequests() {
 }
 
 function jsonResponse(data: unknown, status = 200, headers?: HeadersInit) {
-	return new Response(JSON.stringify(data), {
-		status,
-		headers: { "Content-Type": "application/json", ...headers },
-	});
+	return withSecurityHeaders(
+		new Response(JSON.stringify(data), {
+			status,
+			headers: { "Content-Type": "application/json", ...headers },
+		}),
+	);
 }
 
 export async function POST(request: Request): Promise<Response> {

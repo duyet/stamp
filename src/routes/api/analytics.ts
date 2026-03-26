@@ -3,6 +3,7 @@ import { desc, gte, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { dailyStats, events, stamps } from "@/db/schema";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
@@ -165,10 +166,12 @@ function jsonResponse(
 	status = 200,
 	headers?: Record<string, string>,
 ): Response {
-	return new Response(JSON.stringify(data), {
-		status,
-		headers: { "Content-Type": "application/json", ...headers },
-	});
+	return withSecurityHeaders(
+		new Response(JSON.stringify(data), {
+			status,
+			headers: { "Content-Type": "application/json", ...headers },
+		}),
+	);
 }
 
 // Build country name map for location stats

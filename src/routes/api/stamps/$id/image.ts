@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
+import { withSecurityHeaders } from "@/lib/api-utils";
 import { getEnv } from "@/lib/env";
 
 const CONTENT_TYPE_MAP: Record<string, string> = {
@@ -16,13 +17,18 @@ const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const MAX_ID_LENGTH = 100;
 
 export async function GET(id: string): Promise<Response> {
+	const jsonError = (msg: string, status: number) =>
+		withSecurityHeaders(
+			new Response(JSON.stringify({ error: msg }), {
+				status,
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+
 	try {
 		// Validate ID format to prevent injection attacks
 		if (!ID_PATTERN.test(id) || id.length > MAX_ID_LENGTH) {
-			return new Response(JSON.stringify({ error: "Invalid ID format" }), {
-				status: 400,
-				headers: { "Content-Type": "application/json" },
-			});
+			return jsonError("Invalid ID format", 400);
 		}
 
 		const env = getEnv();
@@ -36,10 +42,7 @@ export async function GET(id: string): Promise<Response> {
 
 		// Validate cleanId is not empty after prefix removal
 		if (!cleanId || !ID_PATTERN.test(cleanId)) {
-			return new Response(JSON.stringify({ error: "Invalid ID format" }), {
-				status: 400,
-				headers: { "Content-Type": "application/json" },
-			});
+			return jsonError("Invalid ID format", 400);
 		}
 
 		let object: R2ObjectBody | null = null;
@@ -56,13 +59,7 @@ export async function GET(id: string): Promise<Response> {
 				const ext = stamp.imageExt;
 				// Validate extension is in allowlist
 				if (!(VALID_EXTENSIONS as readonly string[]).includes(ext)) {
-					return new Response(
-						JSON.stringify({ error: "Invalid image extension" }),
-						{
-							status: 400,
-							headers: { "Content-Type": "application/json" },
-						},
-					);
+					return jsonError("Invalid image extension", 400);
 				}
 				// Direct GET using exact extension from DB
 				object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
@@ -90,26 +87,22 @@ export async function GET(id: string): Promise<Response> {
 		}
 
 		if (!object) {
-			return new Response(JSON.stringify({ error: "Image not found" }), {
-				status: 404,
-				headers: { "Content-Type": "application/json" },
-			});
+			return jsonError("Image not found", 404);
 		}
 
 		const body = await object.arrayBuffer();
 
-		return new Response(body, {
-			headers: {
-				"Content-Type": contentType,
-				"Cache-Control": "public, max-age=31536000, immutable",
-			},
-		});
+		return withSecurityHeaders(
+			new Response(body, {
+				headers: {
+					"Content-Type": contentType,
+					"Cache-Control": "public, max-age=31536000, immutable",
+				},
+			}),
+		);
 	} catch (error) {
 		console.error("Failed to serve image:", error);
-		return new Response(JSON.stringify({ error: "Failed to load image." }), {
-			status: 500,
-			headers: { "Content-Type": "application/json" },
-		});
+		return jsonError("Failed to load image.", 500);
 	}
 }
 
