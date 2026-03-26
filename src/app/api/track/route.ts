@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
+import { getClientIp } from "@/lib/get-client-ip";
 
 export const ALLOWED_EVENTS = [
 	"page_view",
@@ -41,10 +42,7 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const userIp =
-			request.headers.get("cf-connecting-ip") ||
-			request.headers.get("x-forwarded-for") ||
-			null;
+		const userIp = getClientIp(request.headers, null);
 
 		// Fire-and-forget: respond immediately, track in background
 		// This reduces tracking latency from ~50-100ms to ~5ms

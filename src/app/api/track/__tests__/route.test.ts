@@ -107,12 +107,12 @@ describe("POST /api/track", () => {
 		expect(valuesCall.userIp).toBe("1.2.3.4");
 	});
 
-	it("falls back to x-forwarded-for", async () => {
+	it("ignores x-forwarded-for (spoofable)", async () => {
 		await POST(req({ event: "page_view" }, { "x-forwarded-for": "5.6.7.8" }));
 
 		const valuesCall =
 			mockDb.insert.mock.results[0]?.value.values.mock.calls[0][0];
-		expect(valuesCall.userIp).toBe("5.6.7.8");
+		expect(valuesCall.userIp).toBeNull();
 	});
 
 	it("sets null IP when no headers present", async () => {
