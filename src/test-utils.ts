@@ -62,9 +62,10 @@ export function createMockRateLimitDb(
 		});
 
 	// Mock D1 client for raw SQL
+	const WINDOW_MS = 24 * 60 * 60 * 1000;
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
 		return {
-			bind: vi.fn().mockImplementation((..._args: unknown[]) => {
+			bind: vi.fn().mockImplementation((...args: unknown[]) => {
 				return {
 					run: vi.fn().mockImplementation(() => {
 						// Simulate atomic UPDATE for rate limit
@@ -72,8 +73,6 @@ export function createMockRateLimitDb(
 							sql.includes("UPDATE rate_limits") &&
 							sql.includes("generations_count = generations_count + 1")
 						) {
-							// Check if within limit (20 is max per day)
-							// If count is already at limit, don't increment
 							if (currentState && currentState.generationsCount < 20) {
 								currentState.generationsCount += 1;
 								return { meta: { changes: 1 } };
@@ -83,18 +82,57 @@ export function createMockRateLimitDb(
 						return { meta: { changes: 0 } };
 					}),
 					first: vi.fn().mockImplementation(() => {
-						// Simulate RETURNING clause
+						// Simulate UPDATE ... RETURNING for atomic increment
 						if (
 							sql.includes("UPDATE rate_limits") &&
 							sql.includes("RETURNING generations_count")
 						) {
-							if (currentState && currentState.generationsCount < 20) {
-								currentState.generationsCount += 1;
-								return Promise.resolve({
-									generations_count: currentState.generationsCount,
-								});
+							if (currentState) {
+								// Check window validity: the WHERE clause compares window_start >= windowStartDate
+								const windowStartMs = Date.now() - WINDOW_MS;
+								const stateWindowMs = currentState.windowStart.getTime();
+								if (
+									stateWindowMs >= windowStartMs &&
+									currentState.generationsCount < 20
+								) {
+									currentState.generationsCount += 1;
+									return Promise.resolve({
+										generations_count: currentState.generationsCount,
+									});
+								}
 							}
 							return Promise.resolve(null);
+						}
+						// Simulate INSERT ... ON CONFLICT DO UPDATE ... RETURNING
+						if (
+							sql.includes("INSERT INTO rate_limits") &&
+							sql.includes("ON CONFLICT")
+						) {
+							if (!currentState) {
+								// New record
+								const ip = args[0] as string;
+								currentState = {
+									userIp: ip,
+									generationsCount: 1,
+									windowStart: args[2] as Date,
+								};
+								return Promise.resolve({
+									generations_count: 1,
+									window_start: currentState.windowStart.toISOString(),
+								});
+							}
+							// Existing record — simulate CASE logic
+							const windowStartThreshold = args[3] as Date;
+							if (currentState.windowStart < windowStartThreshold) {
+								// Window expired — reset
+								currentState.generationsCount = 1;
+								currentState.windowStart = args[5] as Date;
+							}
+							// Window still valid — no change (count stays same)
+							return Promise.resolve({
+								generations_count: currentState.generationsCount,
+								window_start: currentState.windowStart.toISOString(),
+							});
 						}
 						return Promise.resolve(null);
 					}),
@@ -226,6 +264,22 @@ export function createMockCreditsDb(
 						return { meta: { changes: 0 } };
 					}),
 					first: vi.fn().mockImplementation(() => {
+						// Simulate atomic addCredits: UPDATE ... purchased_credits + ? ... RETURNING
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("purchased_credits = purchased_credits +") &&
+							sql.includes("RETURNING purchased_credits")
+						) {
+							const amount = args[0] as number;
+							if (currentState) {
+								currentState.purchasedCredits += amount;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
 						// Simulate INSERT ... ON CONFLICT ... RETURNING
 						if (
 							sql.includes("INSERT INTO user_credits") &&

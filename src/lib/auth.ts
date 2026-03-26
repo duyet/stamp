@@ -42,7 +42,10 @@ export function canModifyStamp(
 		return true;
 	}
 
-	// Anonymous: check IP (less secure, but necessary for anonymous users)
+	// Anonymous fallback: IP-based ownership check.
+	// TODO(security): IP matching is weak — users behind the same NAT/VPN/proxy
+	// share an IP and can modify each other's stamps. Consider adding a session
+	// token cookie for anonymous users to provide per-browser ownership.
 	if (
 		!requester.userId &&
 		stamp.userIp &&

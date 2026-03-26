@@ -60,14 +60,15 @@ describe("checkRateLimit edge cases", () => {
 	});
 
 	it("handles IPv6 addresses", async () => {
-		const { db, insertValues } = createMockRateLimitDb(null);
+		const { db, mockPrepare } = createMockRateLimitDb(null);
 		const ipv6 = "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
 
 		const result = await checkRateLimit(db, ipv6);
 
 		expect(result.allowed).toBe(true);
-		expect(insertValues).toHaveBeenCalledWith(
-			expect.objectContaining({ userIp: ipv6 }),
+		// Uses atomic INSERT ... ON CONFLICT via raw SQL
+		expect(mockPrepare).toHaveBeenCalledWith(
+			expect.stringContaining("INSERT INTO rate_limits"),
 		);
 	});
 

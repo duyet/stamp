@@ -149,14 +149,20 @@ export async function addCredits(
 	amount: number,
 	type: string,
 ): Promise<void> {
-	const credits = await getUserCredits(db, userId);
+	// Ensure user record exists (handles auto-reset)
+	await getUserCredits(db, userId);
 	const now = Date.now();
-	const newPurchased = credits.purchasedCredits + amount;
 
-	await db
-		.update(userCredits)
-		.set({ purchasedCredits: newPurchased, updatedAt: now })
-		.where(eq(userCredits.userId, userId));
+	// Atomic increment — prevents TOCTOU where concurrent addCredits calls
+	// both read the same balance and one write silently overwrites the other.
+	const result = await db.$client
+		.prepare(
+			`UPDATE user_credits SET purchased_credits = purchased_credits + ?, updated_at = ? WHERE user_id = ? RETURNING purchased_credits`,
+		)
+		.bind(amount, now, userId)
+		.first<{ purchased_credits: number }>();
+
+	const newPurchased = result?.purchased_credits ?? amount;
 
 	await db.insert(creditTransactions).values({
 		id: nanoid(12),
