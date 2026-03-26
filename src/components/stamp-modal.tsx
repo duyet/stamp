@@ -146,6 +146,9 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					<div className="relative aspect-square w-full max-w-[500px] max-h-[50vh]">
 						<img
 							src={stamp.imageUrl}
+							loading="lazy"
+							width={500}
+							height={500}
 							alt={stamp.prompt}
 							className="object-cover w-full h-full absolute inset-0"
 						/>

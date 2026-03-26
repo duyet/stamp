@@ -6,11 +6,12 @@ import { StampGridSkeleton } from "@/components/stamp-grid-skeleton";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
-import { GRID_LAYOUTS } from "@/lib/constants";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
 const ALL_STYLES = "all" as const;
 type StyleFilter = StampStyle | typeof ALL_STYLES;
+
+const PAGE_SIZE = 20;
 
 // Filter button className helper to eliminate duplication
 const getFilterButtonClass = (isActive: boolean) =>
@@ -24,11 +25,8 @@ export default function CollectionsPage() {
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
 	const [retryKey, setRetryKey] = useState(0);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
-	const [visibleCount, setVisibleCount] = useState(20);
-	const { stamps, loading, error, setStamps } = useStamps(
-		GRID_LAYOUTS.MAX_STAMP_LIMIT,
-		retryKey,
-	);
+	const { stamps, loading, loadingMore, error, setStamps, hasMore, loadMore } =
+		useStamps(PAGE_SIZE, retryKey);
 
 	// Memoized filter to avoid re-computation on every render
 	const filteredStamps = useMemo(
@@ -38,14 +36,6 @@ export default function CollectionsPage() {
 				: stamps.filter((s) => s.style === selectedStyle),
 		[stamps, selectedStyle],
 	);
-
-	// Paginate visible stamps
-	const visibleStamps = useMemo(
-		() => filteredStamps.slice(0, visibleCount),
-		[filteredStamps, visibleCount],
-	);
-
-	const hasMore = visibleCount < filteredStamps.length;
 
 	// Memoized empty state message for selected style
 	const emptyStateMessage = useMemo(() => {
@@ -60,11 +50,6 @@ export default function CollectionsPage() {
 	// Trigger refetch on retry
 	function handleRetry() {
 		setRetryKey((prev) => prev + 1);
-	}
-
-	// Load more stamps
-	function handleLoadMore() {
-		setVisibleCount((prev) => prev + 20);
 	}
 
 	// Handle regeneration from modal
@@ -140,7 +125,7 @@ export default function CollectionsPage() {
 			) : (
 				<>
 					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-						{visibleStamps.map((stamp) => (
+						{filteredStamps.map((stamp) => (
 							<StampCard
 								key={stamp.id}
 								stamp={stamp}
@@ -152,10 +137,11 @@ export default function CollectionsPage() {
 						<div className="flex justify-center mt-8">
 							<button
 								type="button"
-								onClick={handleLoadMore}
-								className="px-6 py-3 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 active:scale-[0.98] transition-all duration-200"
+								onClick={loadMore}
+								disabled={loadingMore}
+								className="px-6 py-3 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
 							>
-								Load more stamps
+								{loadingMore ? "Loading..." : "Load more stamps"}
 							</button>
 						</div>
 					)}

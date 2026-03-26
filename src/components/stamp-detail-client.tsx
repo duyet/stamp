@@ -58,6 +58,8 @@ export function StampDetailClient({
 							<div className="relative aspect-square">
 								<img
 									src={displayStamp.imageUrl}
+									width={500}
+									height={500}
 									alt={displayStamp.prompt}
 									className="object-cover w-full h-full absolute inset-0"
 								/>

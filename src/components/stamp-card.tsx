@@ -13,6 +13,9 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 					<img
 						src={stamp.imageUrl}
 						alt={stamp.prompt}
+						loading="lazy"
+						width={300}
+						height={300}
 						className="object-cover w-full h-full absolute inset-0"
 					/>
 				</div>

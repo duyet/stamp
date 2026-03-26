@@ -96,6 +96,9 @@ export function HomeContent() {
 									<img
 										src={stamp.imageUrl}
 										alt={stamp.prompt}
+										loading="lazy"
+										width={150}
+										height={150}
 										className="object-cover w-full h-full absolute inset-0"
 									/>
 								</div>
