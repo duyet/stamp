@@ -1,5 +1,5 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
-import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
 import { getClientIp } from "@/lib/get-client-ip";
@@ -19,7 +19,18 @@ export const ALLOWED_EVENTS_SET = new Set<string>(ALLOWED_EVENTS);
 
 const MAX_METADATA_LENGTH = 1024;
 
-export async function POST(request: NextRequest) {
+function jsonResponse(
+	data: unknown,
+	status = 200,
+	headers?: Record<string, string>,
+): Response {
+	return new Response(JSON.stringify(data), {
+		status,
+		headers: { "Content-Type": "application/json", ...headers },
+	});
+}
+
+export async function POST(request: Request): Promise<Response> {
 	try {
 		const body = await request.json();
 		const { event, metadata } = body as {
@@ -28,18 +39,12 @@ export async function POST(request: NextRequest) {
 		};
 
 		if (!event || typeof event !== "string" || !ALLOWED_EVENTS_SET.has(event)) {
-			return NextResponse.json(
-				{ error: "Invalid event type" },
-				{ status: 400 },
-			);
+			return jsonResponse({ error: "Invalid event type" }, 400);
 		}
 
 		const metadataStr = metadata ? JSON.stringify(metadata) : null;
 		if (metadataStr && metadataStr.length > MAX_METADATA_LENGTH) {
-			return NextResponse.json(
-				{ error: "Metadata too large" },
-				{ status: 400 },
-			);
+			return jsonResponse({ error: "Metadata too large" }, 400);
 		}
 
 		const userIp = getClientIp(request.headers, null);
@@ -62,12 +67,17 @@ export async function POST(request: NextRequest) {
 			}
 		});
 
-		return NextResponse.json({ ok: true });
+		return jsonResponse({ ok: true });
 	} catch (error) {
 		console.error("Track event failed:", error);
-		return NextResponse.json(
-			{ error: "Failed to track event" },
-			{ status: 500 },
-		);
+		return jsonResponse({ error: "Failed to track event" }, 500);
 	}
 }
+
+export const Route = createFileRoute("/api/track")({
+	server: {
+		handlers: {
+			POST: ({ request }) => POST(request),
+		},
+	},
+});

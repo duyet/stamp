@@ -1,21 +1,25 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { createFileRoute } from "@tanstack/react-router";
 import { listConversations, searchConversations } from "@/lib/agentstate";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 
-export async function GET(request: NextRequest) {
+function jsonResponse(data: unknown, status = 200): Response {
+	return new Response(JSON.stringify(data), {
+		status,
+		headers: { "Content-Type": "application/json" },
+	});
+}
+
+export async function GET(request: Request): Promise<Response> {
 	const { userId } = await getAuthUserId(request.headers);
 	if (!userId) {
-		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		return jsonResponse({ error: "Unauthorized" }, 401);
 	}
 
 	const env = getEnv();
 	const apiKey = env.AGENTSTATE_API_KEY;
 	if (!apiKey) {
-		return NextResponse.json(
-			{ error: "AgentState not configured" },
-			{ status: 503 },
-		);
+		return jsonResponse({ error: "AgentState not configured" }, 503);
 	}
 
 	const url = new URL(request.url);
@@ -26,7 +30,7 @@ export async function GET(request: NextRequest) {
 	try {
 		if (query) {
 			const result = await searchConversations(apiKey, query, limit);
-			return NextResponse.json(result);
+			return jsonResponse(result);
 		}
 
 		const result = await listConversations(apiKey, {
@@ -34,12 +38,17 @@ export async function GET(request: NextRequest) {
 			cursor,
 			tag: `user:${userId}`,
 		});
-		return NextResponse.json(result);
+		return jsonResponse(result);
 	} catch (error) {
 		console.error("Conversations fetch failed:", error);
-		return NextResponse.json(
-			{ error: "Failed to fetch conversations" },
-			{ status: 500 },
-		);
+		return jsonResponse({ error: "Failed to fetch conversations" }, 500);
 	}
 }
+
+export const Route = createFileRoute("/api/conversations")({
+	server: {
+		handlers: {
+			GET: ({ request }) => GET(request),
+		},
+	},
+});

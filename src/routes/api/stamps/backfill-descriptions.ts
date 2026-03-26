@@ -1,5 +1,5 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { eq, isNull } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { isAdmin } from "@/lib/auth";
@@ -7,7 +7,7 @@ import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { capitalize } from "@/lib/text-utils";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request): Promise<Response> {
 	try {
 		const env = getEnv();
 		const db = getDb();
@@ -15,19 +15,28 @@ export async function POST(request: NextRequest) {
 		// Require authentication
 		const { userId } = await getAuthUserId(request.headers);
 		if (!userId) {
-			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+			return new Response(JSON.stringify({ error: "Unauthorized" }), {
+				status: 401,
+				headers: { "Content-Type": "application/json" },
+			});
 		}
 
 		// Fail-closed admin check: no admin list configured = 403
 		if (!isAdmin(userId)) {
-			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+			return new Response(JSON.stringify({ error: "Forbidden" }), {
+				status: 403,
+				headers: { "Content-Type": "application/json" },
+			});
 		}
 
 		const ai = env.AI;
 		if (!ai) {
-			return NextResponse.json(
-				{ error: "AI binding not configured." },
-				{ status: 503 },
+			return new Response(
+				JSON.stringify({ error: "AI binding not configured." }),
+				{
+					status: 503,
+					headers: { "Content-Type": "application/json" },
+				},
 			);
 		}
 
@@ -70,12 +79,25 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		return NextResponse.json({ updated, total });
+		return new Response(JSON.stringify({ updated, total }), {
+			headers: { "Content-Type": "application/json" },
+		});
 	} catch (error) {
 		console.error("Backfill descriptions failed:", error);
-		return NextResponse.json(
-			{ error: "Failed to backfill descriptions." },
-			{ status: 500 },
+		return new Response(
+			JSON.stringify({ error: "Failed to backfill descriptions." }),
+			{
+				status: 500,
+				headers: { "Content-Type": "application/json" },
+			},
 		);
 	}
 }
+
+export const Route = createFileRoute("/api/stamps/backfill-descriptions")({
+	server: {
+		handlers: {
+			POST: ({ request }) => POST(request),
+		},
+	},
+});

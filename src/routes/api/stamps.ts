@@ -1,5 +1,5 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { STAMP_STYLES } from "@/lib/constants";
@@ -19,7 +19,7 @@ interface StampsApiResponse {
 	hasMore: boolean;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
 	try {
 		const db = getDb();
 
@@ -106,17 +106,26 @@ export async function GET(request: Request) {
 
 		// Cache for 60 seconds, stale for 300 seconds (5 min)
 		// This allows quick page loads while still getting fresh data
-		return NextResponse.json(responseData, {
+		return new Response(JSON.stringify(responseData), {
 			headers: {
+				"Content-Type": "application/json",
 				"Cache-Control":
 					"public, max-age=60, stale-while-revalidate=300, stale-if-error=86400",
 			},
 		});
 	} catch (error) {
 		console.error("Failed to fetch stamps:", error);
-		return NextResponse.json(
-			{ error: "Failed to fetch stamps." },
-			{ status: 500 },
-		);
+		return new Response(JSON.stringify({ error: "Failed to fetch stamps." }), {
+			status: 500,
+			headers: { "Content-Type": "application/json" },
+		});
 	}
 }
+
+export const Route = createFileRoute("/api/stamps")({
+	server: {
+		handlers: {
+			GET: ({ request }) => GET(request),
+		},
+	},
+});

@@ -1,5 +1,3 @@
-import type { NextResponse } from "next/server";
-
 /**
  * Compression middleware for large JSON responses.
  * Uses Cloudflare Workers' automatic Brotli compression.
@@ -9,9 +7,9 @@ import type { NextResponse } from "next/server";
  * - Vary: Accept-Encoding (ensures proper caching)
  */
 export function addCompressionHeaders(
-	response: NextResponse,
+	response: Response,
 	contentType: "json" | "html" | "text" = "json",
-): NextResponse {
+): Response {
 	// Cloudflare Workers automatically compress responses with these headers
 	// No manual compression needed - just proper cache control
 	response.headers.set("Vary", "Accept-Encoding");
@@ -31,7 +29,7 @@ export function addCompressionHeaders(
  * Detect if response should be compressed based on content length.
  * Threshold: 1KB (responses smaller than this aren't worth compressing)
  */
-export function shouldCompress(response: NextResponse): boolean {
+export function shouldCompress(response: Response): boolean {
 	const contentLength = response.headers.get("Content-Length");
 	if (!contentLength) return true; // Unknown size, compress to be safe
 	return Number.parseInt(contentLength, 10) > 1024;

@@ -1,7 +1,6 @@
 /**
  * Shared test helpers for API route and unit tests.
  */
-import type { NextRequest } from "next/server";
 import { vi } from "vitest";
 import type { Database } from "@/db";
 
@@ -13,12 +12,12 @@ export function createJsonRequest(
 	method: string,
 	body: Record<string, unknown>,
 	headers: Record<string, string> = {},
-): NextRequest {
+): Request {
 	return new Request(url, {
 		method,
 		headers: { "Content-Type": "application/json", ...headers },
 		body: JSON.stringify(body),
-	}) as unknown as NextRequest;
+	});
 }
 
 /**
@@ -27,21 +26,12 @@ export function createJsonRequest(
 export function createGetRequest(
 	url: string,
 	params: Record<string, string> = {},
-): NextRequest {
+): Request {
 	const parsed = new URL(url);
 	for (const [key, value] of Object.entries(params)) {
 		parsed.searchParams.set(key, value);
 	}
-	return new Request(parsed.toString()) as unknown as NextRequest;
-}
-
-/**
- * Create a Next.js dynamic route `params` object (Promise-based, as of Next 15+).
- */
-export function createRouteParams<T extends Record<string, string>>(
-	params: T,
-): { params: Promise<T> } {
-	return { params: Promise.resolve(params) };
+	return new Request(parsed.toString());
 }
 
 /**

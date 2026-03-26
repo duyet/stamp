@@ -22,7 +22,7 @@ import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 
 // Dynamic import to allow stubEnv to take effect before route module loads
-let GET: typeof import("../route")["GET"];
+let GET: typeof import("../analytics")["GET"];
 
 describe("GET /api/analytics", () => {
 	const request = createGetRequest("http://localhost/api/analytics");
@@ -34,7 +34,7 @@ describe("GET /api/analytics", () => {
 			ADMIN_USER_IDS: "user_admin,user_other",
 		} as never);
 		// Import route after env is set
-		GET = (await import("../route")).GET;
+		GET = (await import("../analytics")).GET;
 	});
 
 	it("returns 401 when not authenticated", async () => {

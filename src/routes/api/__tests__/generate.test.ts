@@ -39,7 +39,7 @@ import { checkAndDeductCredit } from "@/lib/credits";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { clearPendingRequests, POST } from "../route";
+import { clearPendingRequests, POST } from "../generate";
 
 const URL = "http://localhost/api/generate";
 const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>

@@ -10,7 +10,7 @@ vi.mock("nanoid", () => ({
 }));
 
 import { getDb } from "@/db";
-import { ALLOWED_EVENTS, POST } from "../route";
+import { ALLOWED_EVENTS, POST } from "../track";
 
 const URL = "http://localhost/api/track";
 const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>

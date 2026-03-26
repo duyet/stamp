@@ -6,7 +6,7 @@ vi.mock("@/db", () => ({
 }));
 
 import { getDb } from "@/db";
-import { GET } from "../route";
+import { GET } from "../../stamps";
 
 const URL = "http://localhost/api/stamps";
 

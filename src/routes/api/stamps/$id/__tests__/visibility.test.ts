@@ -1,8 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createJsonRequest, createRouteParams } from "@/test-utils";
+import { createJsonRequest } from "@/test-utils";
 
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
+}));
+
+vi.mock("@/lib/env", () => ({
+	getEnv: vi.fn(),
 }));
 
 vi.mock("@/lib/clerk", () => ({
@@ -11,13 +15,13 @@ vi.mock("@/lib/clerk", () => ({
 
 import { getDb } from "@/db";
 import { getAuthUserId } from "@/lib/clerk";
-import { PATCH } from "../route";
+import { PATCH } from "../visibility";
 
 const URL = "http://localhost/api/stamps/abc123def456/visibility";
 const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>
 	createJsonRequest(URL, "PATCH", body, headers);
 
-describe("PATCH /api/stamps/[id]/visibility", () => {
+describe("PATCH /api/stamps/$id/visibility", () => {
 	const mockUpdate = vi.fn().mockReturnValue({
 		set: vi.fn().mockReturnValue({
 			where: vi.fn().mockReturnValue({
@@ -61,10 +65,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("returns 400 for invalid ID length", async () => {
-		const res = await PATCH(
-			req({ isPublic: false }),
-			createRouteParams({ id: "short" }),
-		);
+		const res = await PATCH(req({ isPublic: false }), "short");
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -72,10 +73,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("returns 400 for empty ID", async () => {
-		const res = await PATCH(
-			req({ isPublic: false }),
-			createRouteParams({ id: "" }),
-		);
+		const res = await PATCH(req({ isPublic: false }), "");
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -83,10 +81,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("returns 400 when isPublic is not a boolean", async () => {
-		const res = await PATCH(
-			req({ isPublic: "yes" }),
-			createRouteParams({ id: "abc123def456" }),
-		);
+		const res = await PATCH(req({ isPublic: "yes" }), "abc123def456");
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
@@ -94,15 +89,12 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	});
 
 	it("returns 400 when isPublic is missing", async () => {
-		const res = await PATCH(req({}), createRouteParams({ id: "abc123def456" }));
+		const res = await PATCH(req({}), "abc123def456");
 		expect(res.status).toBe(400);
 	});
 
 	it("returns 400 when isPublic is a number", async () => {
-		const res = await PATCH(
-			req({ isPublic: 1 }),
-			createRouteParams({ id: "abc123def456" }),
-		);
+		const res = await PATCH(req({ isPublic: 1 }), "abc123def456");
 		expect(res.status).toBe(400);
 	});
 
@@ -111,7 +103,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 		const res = await PATCH(
 			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
-			createRouteParams({ id: "abc123def456" }),
+			"abc123def456",
 		);
 		const data = (await res.json()) as Record<string, unknown>;
 
@@ -128,7 +120,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 		const res = await PATCH(
 			req({ isPublic: false }, { "cf-connecting-ip": "9.9.9.9" }),
-			createRouteParams({ id: "abc123def456" }),
+			"abc123def456",
 		);
 		const data = (await res.json()) as Record<string, unknown>;
 
@@ -139,7 +131,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 	it("allows toggle when IP matches creator (anonymous user)", async () => {
 		const res = await PATCH(
 			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
-			createRouteParams({ id: "abc123def456" }),
+			"abc123def456",
 		);
 		const data = (await res.json()) as Record<string, unknown>;
 
@@ -161,7 +153,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 		const res = await PATCH(
 			req({ isPublic: false }, { "cf-connecting-ip": "9.9.9.9" }),
-			createRouteParams({ id: "abc123def456" }),
+			"abc123def456",
 		);
 		const data = (await res.json()) as Record<string, unknown>;
 
@@ -183,7 +175,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 		const res = await PATCH(
 			req({ isPublic: false }, { "cf-connecting-ip": "9.9.9.9" }),
-			createRouteParams({ id: "abc123def456" }),
+			"abc123def456",
 		);
 		const data = (await res.json()) as Record<string, unknown>;
 
@@ -200,7 +192,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 		const res = await PATCH(
 			req({ isPublic: true }, { "cf-connecting-ip": "9.9.9.9" }),
-			createRouteParams({ id: "abc123def456" }),
+			"abc123def456",
 		);
 
 		expect(res.status).toBe(403);
@@ -213,10 +205,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 			userId: null,
 		});
 
-		const res = await PATCH(
-			req({ isPublic: true }),
-			createRouteParams({ id: "abc123def456" }),
-		);
+		const res = await PATCH(req({ isPublic: true }), "abc123def456");
 
 		expect(res.status).toBe(403);
 	});
@@ -226,7 +215,7 @@ describe("PATCH /api/stamps/[id]/visibility", () => {
 
 		const res = await PATCH(
 			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
-			createRouteParams({ id: "abc123def456" }),
+			"abc123def456",
 		);
 		const data = (await res.json()) as Record<string, unknown>;
 

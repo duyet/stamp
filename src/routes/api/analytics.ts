@@ -1,5 +1,5 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { desc, gte, sql } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
 import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { dailyStats, events, stamps } from "@/db/schema";
@@ -160,7 +160,63 @@ async function checkAnalyticsRateLimit(
 	return { allowed: true, remaining: ANALYTICS_RATE_LIMIT - 1 };
 }
 
-export async function GET(request: NextRequest) {
+function jsonResponse(
+	data: unknown,
+	status = 200,
+	headers?: Record<string, string>,
+): Response {
+	return new Response(JSON.stringify(data), {
+		status,
+		headers: { "Content-Type": "application/json", ...headers },
+	});
+}
+
+// Build country name map for location stats
+const countryNames: Record<string, string> = {
+	US: "United States",
+	GB: "United Kingdom",
+	JP: "Japan",
+	DE: "Germany",
+	FR: "France",
+	IN: "India",
+	BR: "Brazil",
+	AU: "Australia",
+	CA: "Canada",
+	CN: "China",
+	KR: "South Korea",
+	VN: "Vietnam",
+	SG: "Singapore",
+	NL: "Netherlands",
+	SE: "Sweden",
+	IT: "Italy",
+	ES: "Spain",
+	RU: "Russia",
+	MX: "Mexico",
+	TH: "Thailand",
+	ID: "Indonesia",
+	PH: "Philippines",
+	MY: "Malaysia",
+	TW: "Taiwan",
+	HK: "Hong Kong",
+	PL: "Poland",
+	CH: "Switzerland",
+	AT: "Austria",
+	BE: "Belgium",
+	IE: "Ireland",
+	NO: "Norway",
+	DK: "Denmark",
+	FI: "Finland",
+	PT: "Portugal",
+	NZ: "New Zealand",
+	IL: "Israel",
+	AE: "UAE",
+	ZA: "South Africa",
+	AR: "Argentina",
+	CL: "Chile",
+	CO: "Colombia",
+};
+
+export async function GET(request: Request): Promise<Response> {
 	const _env = getEnv();
 	const db = getDb();
 
@@ -169,12 +225,12 @@ export async function GET(request: NextRequest) {
 
 	// Require authentication
 	if (!userId) {
-		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		return jsonResponse({ error: "Unauthorized" }, 401);
 	}
 
 	// Fail-closed admin check: no admin list configured = 403
 	if (!isAdmin(userId)) {
-		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+		return jsonResponse({ error: "Forbidden" }, 403);
 	}
 
 	// Rate limit expensive analytics queries
@@ -183,9 +239,9 @@ export async function GET(request: NextRequest) {
 		userIp,
 	);
 	if (!allowed) {
-		return NextResponse.json(
+		return jsonResponse(
 			{ error: "Rate limit exceeded. Please try again later." },
-			{ status: 429 },
+			429,
 		);
 	}
 
@@ -377,51 +433,6 @@ export async function GET(request: NextRequest) {
 				.limit(500),
 		]);
 
-		// Build country name map for location stats
-		const countryNames: Record<string, string> = {
-			US: "United States",
-			GB: "United Kingdom",
-			JP: "Japan",
-			DE: "Germany",
-			FR: "France",
-			IN: "India",
-			BR: "Brazil",
-			AU: "Australia",
-			CA: "Canada",
-			CN: "China",
-			KR: "South Korea",
-			VN: "Vietnam",
-			SG: "Singapore",
-			NL: "Netherlands",
-			SE: "Sweden",
-			IT: "Italy",
-			ES: "Spain",
-			RU: "Russia",
-			MX: "Mexico",
-			TH: "Thailand",
-			ID: "Indonesia",
-			PH: "Philippines",
-			MY: "Malaysia",
-			TW: "Taiwan",
-			HK: "Hong Kong",
-			PL: "Poland",
-			CH: "Switzerland",
-			AT: "Austria",
-			BE: "Belgium",
-			IE: "Ireland",
-			NO: "Norway",
-			DK: "Denmark",
-			FI: "Finland",
-			PT: "Portugal",
-			NZ: "New Zealand",
-			IL: "Israel",
-			AE: "UAE",
-			ZA: "South Africa",
-			AR: "Argentina",
-			CL: "Chile",
-			CO: "Colombia",
-		};
-
 		const totalWithLocation = locationCountryResult.reduce(
 			(sum, r) => sum + r.count,
 			0,
@@ -469,7 +480,7 @@ export async function GET(request: NextRequest) {
 			count: r.count,
 		}));
 
-		return NextResponse.json(
+		return jsonResponse(
 			{
 				totalStamps: stampCountsResult.total_stamps,
 				stampsToday: stampCountsResult.stamps_today,
@@ -496,20 +507,24 @@ export async function GET(request: NextRequest) {
 				timezones,
 				mapData,
 			},
+			200,
 			{
-				headers: {
-					// Private cache — admin-only endpoint, public would bypass auth at CDN edge
-					"Cache-Control": "private, max-age=300, stale-while-revalidate=600",
-					// Enable Brotli compression (handled by CF Workers)
-					Vary: "Accept-Encoding",
-				},
+				// Private cache — admin-only endpoint, public would bypass auth at CDN edge
+				"Cache-Control": "private, max-age=300, stale-while-revalidate=600",
+				// Enable Brotli compression (handled by CF Workers)
+				Vary: "Accept-Encoding",
 			},
 		);
 	} catch (error) {
 		console.error("Analytics query failed:", error);
-		return NextResponse.json(
-			{ error: "Failed to fetch analytics" },
-			{ status: 500 },
-		);
+		return jsonResponse({ error: "Failed to fetch analytics" }, 500);
 	}
 }
+
+export const Route = createFileRoute("/api/analytics")({
+	server: {
+		handlers: {
+			GET: ({ request }) => GET(request),
+		},
+	},
+});

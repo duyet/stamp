@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
+import { createFileRoute } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
-import { type NextRequest, NextResponse } from "next/server";
 import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
@@ -35,7 +35,14 @@ export function clearPendingRequests() {
 	pendingRequests.clear();
 }
 
-export async function POST(request: NextRequest) {
+function jsonResponse(data: unknown, status = 200, headers?: HeadersInit) {
+	return new Response(JSON.stringify(data), {
+		status,
+		headers: { "Content-Type": "application/json", ...headers },
+	});
+}
+
+export async function POST(request: Request): Promise<Response> {
 	// Track whether credits were deducted for refund in catch block
 	let creditsDeducted = false;
 	let dbForRefund: Database | undefined;
@@ -86,9 +93,9 @@ export async function POST(request: NextRequest) {
 
 		// Reference images require HD mode (FLUX.2)
 		if (hasReference && !hd) {
-			return NextResponse.json(
+			return jsonResponse(
 				{ error: "Reference images require HD generation." },
-				{ status: 400 },
+				400,
 			);
 		}
 
@@ -99,34 +106,31 @@ export async function POST(request: NextRequest) {
 				prompt.trim().length === 0 ||
 				prompt.length > 500)
 		) {
-			return NextResponse.json(
+			return jsonResponse(
 				{ error: "Prompt is required and must be under 500 characters." },
-				{ status: 400 },
+				400,
 			);
 		}
 
 		// Still validate prompt length if provided even with reference
 		if (prompt && typeof prompt === "string" && prompt.length > 500) {
-			return NextResponse.json(
+			return jsonResponse(
 				{ error: "Prompt must be under 500 characters." },
-				{ status: 400 },
+				400,
 			);
 		}
 
 		const validStyles = Object.keys(STAMP_STYLE_PRESETS);
 		if (!validStyles.includes(style)) {
-			return NextResponse.json(
+			return jsonResponse(
 				{ error: `Invalid style. Must be one of: ${validStyles.join(", ")}` },
-				{ status: 400 },
+				400,
 			);
 		}
 
 		// HD generation requires authentication
 		if (hd && !userId) {
-			return NextResponse.json(
-				{ error: "HD generation requires sign-in." },
-				{ status: 401 },
-			);
+			return jsonResponse({ error: "HD generation requires sign-in." }, 401);
 		}
 
 		const creditCost = hd ? HD_CREDIT_COST : STANDARD_CREDIT_COST;
@@ -144,7 +148,7 @@ export async function POST(request: NextRequest) {
 				: "daily";
 
 		if (!allowed) {
-			return NextResponse.json(
+			return jsonResponse(
 				{
 					error: userId
 						? "Credit limit exceeded. Purchase more credits to continue."
@@ -152,7 +156,7 @@ export async function POST(request: NextRequest) {
 					remaining: 0,
 					resetAt,
 				},
-				{ status: 429 },
+				429,
 			);
 		}
 
@@ -186,7 +190,7 @@ export async function POST(request: NextRequest) {
 
 			// Still deduct credits since we're "generating" (just returning cached result)
 			// The user did intent to generate, and we're providing the result
-			return NextResponse.json({
+			return jsonResponse({
 				id: pending.stampId,
 				imageUrl: `/api/stamps/${pending.stampId}/image`,
 				prompt,
@@ -223,10 +227,7 @@ export async function POST(request: NextRequest) {
 
 		const ai = env.AI;
 		if (!ai) {
-			return NextResponse.json(
-				{ error: "AI binding not configured." },
-				{ status: 503 },
-			);
+			return jsonResponse({ error: "AI binding not configured." }, 503);
 		}
 
 		// Time the generation (LLM enhancement + image generation)
@@ -244,9 +245,9 @@ export async function POST(request: NextRequest) {
 				creditsDeducted = false;
 				const errorMessage =
 					error instanceof Error ? error.message : "Invalid reference image.";
-				return NextResponse.json(
+				return jsonResponse(
 					{ error: errorMessage },
-					{ status: errorMessage.includes("too large") ? 413 : 400 },
+					errorMessage.includes("too large") ? 413 : 400,
 				);
 			}
 		}
@@ -430,7 +431,7 @@ export async function POST(request: NextRequest) {
 		// Clean up dedup cache entry after successful generation
 		pendingRequests.delete(requestId);
 
-		return NextResponse.json({
+		return jsonResponse({
 			id: stampId,
 			imageUrl,
 			prompt,
@@ -463,9 +464,17 @@ export async function POST(request: NextRequest) {
 
 		// Log sanitized error for debugging, but don't leak details to client
 		console.error("Stamp generation failed:", sanitizeErrorForLogging(error));
-		return NextResponse.json(
+		return jsonResponse(
 			{ error: "Failed to generate stamp. Please try again." },
-			{ status: 500 },
+			500,
 		);
 	}
 }
+
+export const Route = createFileRoute("/api/generate")({
+	server: {
+		handlers: {
+			POST: ({ request }) => POST(request),
+		},
+	},
+});

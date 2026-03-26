@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createGetRequest, createRouteParams } from "@/test-utils";
 
 vi.mock("@/lib/env", () => ({
 	getEnv: vi.fn(),
@@ -11,11 +10,9 @@ vi.mock("@/db", () => ({
 
 import { getDb } from "@/db";
 import { getEnv } from "@/lib/env";
-import { GET } from "../route";
+import { GET } from "../image";
 
-const URL = "http://localhost/api/stamps/abc123def456/image";
-
-describe("GET /api/stamps/[id]/image", () => {
+describe("GET /api/stamps/$id/image", () => {
 	const mockBucket = {
 		get: vi.fn(),
 	};
@@ -45,10 +42,7 @@ describe("GET /api/stamps/[id]/image", () => {
 			arrayBuffer: () => Promise.resolve(imageData),
 		});
 
-		const res = await GET(
-			createGetRequest(URL),
-			createRouteParams({ id: "abc123def456" }),
-		);
+		const res = await GET("abc123def456");
 
 		expect(res.status).toBe(200);
 		expect(res.headers.get("Content-Type")).toBe("image/png");
@@ -63,10 +57,7 @@ describe("GET /api/stamps/[id]/image", () => {
 		});
 		mockBucket.get.mockResolvedValue(null);
 
-		const res = await GET(
-			createGetRequest(URL),
-			createRouteParams({ id: "abc123def456" }),
-		);
+		const res = await GET("abc123def456");
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(404);
@@ -79,10 +70,7 @@ describe("GET /api/stamps/[id]/image", () => {
 		});
 		mockBucket.get.mockResolvedValue(null);
 
-		const res = await GET(
-			createGetRequest(URL),
-			createRouteParams({ id: "abc123def456" }),
-		);
+		const res = await GET("abc123def456");
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(404);
@@ -97,7 +85,7 @@ describe("GET /api/stamps/[id]/image", () => {
 			arrayBuffer: () => Promise.resolve(new ArrayBuffer(4)),
 		});
 
-		await GET(createGetRequest(URL), createRouteParams({ id: "xyz789abc012" }));
+		await GET("xyz789abc012");
 
 		expect(mockBucket.get).toHaveBeenCalledWith("stamps/xyz789abc012.png");
 	});
@@ -110,10 +98,7 @@ describe("GET /api/stamps/[id]/image", () => {
 			arrayBuffer: () => Promise.reject(new Error("R2 unavailable")),
 		});
 
-		const res = await GET(
-			createGetRequest(URL),
-			createRouteParams({ id: "abc123def456" }),
-		);
+		const res = await GET("abc123def456");
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(500);
@@ -129,10 +114,7 @@ describe("GET /api/stamps/[id]/image", () => {
 			arrayBuffer: () => Promise.resolve(imageBytes.buffer),
 		});
 
-		const res = await GET(
-			createGetRequest(URL),
-			createRouteParams({ id: "abc123def456" }),
-		);
+		const res = await GET("abc123def456");
 		const body = await res.arrayBuffer();
 
 		expect(body.byteLength).toBe(4);
@@ -144,10 +126,7 @@ describe("GET /api/stamps/[id]/image", () => {
 			arrayBuffer: () => Promise.resolve(imageData),
 		});
 
-		const res = await GET(
-			createGetRequest(URL),
-			createRouteParams({ id: "ref_abc123" }),
-		);
+		const res = await GET("ref_abc123");
 
 		expect(res.status).toBe(200);
 		expect(mockDb.query.stamps.findFirst).not.toHaveBeenCalled();
