@@ -17,6 +17,7 @@
 
 # production
 /build
+/dist
 
 # cloudflare
 /.wrangler/
@@ -39,4 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# tanstack router
+src/routeTree.gen.ts
 .claude/
