@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { GeneratePageClient } from "@/app/generate/generate-page-client";
+import { GeneratePageClient } from "@/components/generate-page-client";
 
 export const Route = createFileRoute("/generate")({
 	head: () => ({

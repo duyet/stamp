@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq } from "drizzle-orm";
-import { StampDetailClient } from "@/app/stamps/[id]/stamp-detail-client";
+import { StampDetailClient } from "@/components/stamp-detail-client";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 

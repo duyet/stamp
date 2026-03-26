@@ -185,7 +185,7 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 						)}
 						<img
 							src={preview}
-							alt="Reference photo"
+							alt="Reference upload"
 							className="object-cover w-full h-full"
 						/>
 					</div>

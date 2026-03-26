@@ -6,10 +6,10 @@ import {
 	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
-import appCss from "@/app/globals.css?url";
 import { Button } from "@/components/button";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import appCss from "@/styles/globals.css?url";
 
 export const Route = createRootRoute({
 	head: () => ({

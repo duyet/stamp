@@ -1,5 +1,3 @@
-"use client";
-
 import { useMemo, useState } from "react";
 import { Button } from "@/components/button";
 import { RefreshIcon } from "@/components/icons";
