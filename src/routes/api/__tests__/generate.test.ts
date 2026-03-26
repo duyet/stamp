@@ -29,6 +29,10 @@ vi.mock("nanoid", () => ({
 	nanoid: vi.fn(() => "abc123def456"),
 }));
 
+vi.mock("cloudflare:workers", () => ({
+	waitUntil: vi.fn(),
+}));
+
 vi.mock("@/lib/clerk", () => ({
 	getAuthUserId: vi.fn(),
 }));
@@ -39,7 +43,7 @@ import { checkAndDeductCredit } from "@/lib/credits";
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { clearPendingRequests, POST } from "../generate";
+import { POST } from "../generate";
 
 const URL = "http://localhost/api/generate";
 const req = (body: Record<string, unknown>, headers?: Record<string, string>) =>
@@ -63,7 +67,6 @@ describe("POST /api/generate", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		clearPendingRequests();
 		// Default: anonymous user (no userId)
 		vi.mocked(getAuthUserId).mockResolvedValue({ userId: null });
 		vi.mocked(getDb).mockReturnValue(mockDb as never);

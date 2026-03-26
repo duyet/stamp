@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { waitUntil } from "cloudflare:workers";
 import { createFileRoute } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
 import type { Database } from "@/db";
@@ -20,21 +20,6 @@ import { refundCredits } from "@/lib/refund-credits";
 import { sanitizeErrorForLogging } from "@/lib/sanitize-error";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 import { validateReferenceImage } from "@/lib/validate-image";
-
-// In-memory request deduplication cache (prevents double-click spam)
-// Key: hash(userId, userIp, prompt, style, hd)
-// Value: { stampId, timestamp }
-const pendingRequests = new Map<
-	string,
-	{ stampId: string; timestamp: number }
->();
-const DEDUP_WINDOW_MS = 30000; // 30 seconds - extended to prevent duplicate generations from slow clients
-const MAX_PENDING_SIZE = 1000;
-
-// Export for testing
-export function clearPendingRequests() {
-	pendingRequests.clear();
-}
 
 function jsonResponse(data: unknown, status = 200, headers?: HeadersInit) {
 	return withSecurityHeaders(
@@ -163,62 +148,7 @@ export async function POST(request: Request): Promise<Response> {
 			);
 		}
 
-		// Request deduplication: prevent double-click spam
-		// Use a hash of the request parameters to identify duplicate requests
-		const requestId = createHash("sha256")
-			.update(
-				JSON.stringify({
-					userId: userId || null,
-					userIp,
-					prompt: prompt?.trim() || "",
-					style,
-					hd,
-					referenceImageData: referenceImageData ? "present" : "absent",
-				}),
-			)
-			.digest("hex");
-
-		// Check if there's a pending request with the same parameters
-		const pending = pendingRequests.get(requestId);
-		const now = Date.now();
-
-		if (pending && now - pending.timestamp < DEDUP_WINDOW_MS) {
-			// Duplicate request detected - return the existing stamp ID
-			// This prevents generating multiple identical stamps from double-clicks
-			if (process.env.NODE_ENV === "development") {
-				console.log(
-					`[Generate] Deduped request ${requestId.slice(0, 8)}... → existing stamp ${pending.stampId}`,
-				);
-			}
-
-			// Still deduct credits since we're "generating" (just returning cached result)
-			// The user did intent to generate, and we're providing the result
-			return jsonResponse({
-				id: pending.stampId,
-				imageUrl: `/api/stamps/${pending.stampId}/image`,
-				prompt,
-				enhancedPrompt: null,
-				description: null,
-				style,
-				hd,
-				remaining,
-				generationTimeMs: 0,
-				deduplicated: true,
-			});
-		}
-
-		// Clean up old entries from the dedup cache (prevent memory leaks)
-		if (pendingRequests.size > MAX_PENDING_SIZE) {
-			for (const [key, value] of pendingRequests.entries()) {
-				if (now - value.timestamp > DEDUP_WINDOW_MS) {
-					pendingRequests.delete(key);
-				}
-			}
-		}
-
-		// Reserve a stamp ID and register the pending request
 		const stampId = nanoid(12);
-		pendingRequests.set(requestId, { stampId, timestamp: now });
 
 		// Track credit info for potential refund
 		creditsDeducted = true;
@@ -327,112 +257,111 @@ export async function POST(request: Request): Promise<Response> {
 			throw dbError;
 		}
 
-		// Detached fire-and-forget operations (event tracking + AgentState)
-		// These run asynchronously and don't block the response
-		Promise.resolve().then(async () => {
-			try {
-				// Event tracking
-				await db.insert(events).values({
-					id: nanoid(12),
-					event: "generation",
-					metadata: JSON.stringify({
-						style,
-						hd,
-						prompt_length: prompt?.length ?? 0,
-						stamp_id: stampId,
-						generation_time_ms: generationTimeMs,
-						has_reference: !!referenceImageData,
-					}),
-					userIp,
-					createdAt: Date.now(),
-				});
-			} catch (err: unknown) {
-				const errorContext = {
-					operation: "track_generation_event",
-					stampId: stampId,
-					userId: userId ?? "anonymous",
-					error: err instanceof Error ? err.message : String(err),
-					timestamp: Date.now(),
-				};
-				console.error(
-					"[Analytics] Failed to track:",
-					JSON.stringify(errorContext, null, 2),
-				);
-			}
-
-			// AgentState conversation logging
-			const agentStateKey = env.AGENTSTATE_API_KEY;
-			if (agentStateKey) {
+		// Background operations (event tracking + AgentState)
+		// Use waitUntil to keep the Worker alive until these complete
+		waitUntil(
+			(async () => {
 				try {
-					const agentStateStart = Date.now();
-					const conv = await createConversation(agentStateKey, {
-						external_id: `stamp-${stampId}`,
-						title: prompt?.slice(0, 100) ?? "Stamp generation",
-						metadata: {
-							stamp_id: stampId,
+					// Event tracking
+					await db.insert(events).values({
+						id: nanoid(12),
+						event: "generation",
+						metadata: JSON.stringify({
 							style,
-							hd: !!hd,
-							user_id: userId ?? null,
-							user_ip: userIp,
+							hd,
+							prompt_length: prompt?.length ?? 0,
+							stamp_id: stampId,
 							generation_time_ms: generationTimeMs,
-							location_country: locationCountry ?? null,
-							location_city: locationCity ?? null,
-							timezone: timezone ?? null,
-						},
-						messages: [
-							{
-								role: "user",
-								content: prompt ?? "",
-								metadata: { style, hd: !!hd },
-							},
-							{
-								role: "assistant",
-								content: description ?? enhancedPrompt ?? prompt ?? "",
-								metadata: {
-									enhanced_prompt: enhancedPrompt,
-									image_url: imageUrl,
-									stamp_id: stampId,
-								},
-							},
-						],
+							has_reference: !!referenceImageData,
+						}),
+						userIp,
+						createdAt: Date.now(),
 					});
-
-					const tags = ["stamp"];
-					if (userId) tags.push(`user:${userId}`);
-					if (style) tags.push(`style:${style}`);
-					if (locationCountry) tags.push(`country:${locationCountry}`);
-
-					await addTags(agentStateKey, conv.id, tags);
-
-					if (process.env.NODE_ENV === "development") {
-						console.log(
-							`[AgentState] logged stamp=${stampId} conv=${conv.id} tags=${tags.join(",")} ${Date.now() - agentStateStart}ms`,
-						);
-					}
 				} catch (err: unknown) {
 					const errorContext = {
-						operation: "log_agentstate_conversation",
+						operation: "track_generation_event",
 						stampId: stampId,
 						userId: userId ?? "anonymous",
 						error: err instanceof Error ? err.message : String(err),
 						timestamp: Date.now(),
 					};
 					console.error(
-						`[AgentState] FAILED stamp=${stampId} error=${sanitizeErrorForLogging(err)}`,
+						"[Analytics] Failed to track:",
 						JSON.stringify(errorContext, null, 2),
 					);
 				}
-			} else {
-				if (process.env.NODE_ENV === "development") {
-					console.warn(
-						"[AgentState] AGENTSTATE_API_KEY not set, skipping conversation log",
-					);
-				}
-			}
-		});
 
-		// Clean up dedup cache entry after successful generation
-		pendingRequests.delete(requestId);
+				// AgentState conversation logging
+				const agentStateKey = env.AGENTSTATE_API_KEY;
+				if (agentStateKey) {
+					try {
+						const agentStateStart = Date.now();
+						const conv = await createConversation(agentStateKey, {
+							external_id: `stamp-${stampId}`,
+							title: prompt?.slice(0, 100) ?? "Stamp generation",
+							metadata: {
+								stamp_id: stampId,
+								style,
+								hd: !!hd,
+								user_id: userId ?? null,
+								user_ip: userIp,
+								generation_time_ms: generationTimeMs,
+								location_country: locationCountry ?? null,
+								location_city: locationCity ?? null,
+								timezone: timezone ?? null,
+							},
+							messages: [
+								{
+									role: "user",
+									content: prompt ?? "",
+									metadata: { style, hd: !!hd },
+								},
+								{
+									role: "assistant",
+									content: description ?? enhancedPrompt ?? prompt ?? "",
+									metadata: {
+										enhanced_prompt: enhancedPrompt,
+										image_url: imageUrl,
+										stamp_id: stampId,
+									},
+								},
+							],
+						});
+
+						const tags = ["stamp"];
+						if (userId) tags.push(`user:${userId}`);
+						if (style) tags.push(`style:${style}`);
+						if (locationCountry) tags.push(`country:${locationCountry}`);
+
+						await addTags(agentStateKey, conv.id, tags);
+
+						if (process.env.NODE_ENV === "development") {
+							console.log(
+								`[AgentState] logged stamp=${stampId} conv=${conv.id} tags=${tags.join(",")} ${Date.now() - agentStateStart}ms`,
+							);
+						}
+					} catch (err: unknown) {
+						const errorContext = {
+							operation: "log_agentstate_conversation",
+							stampId: stampId,
+							userId: userId ?? "anonymous",
+							error: err instanceof Error ? err.message : String(err),
+							timestamp: Date.now(),
+						};
+						console.error(
+							`[AgentState] FAILED stamp=${stampId} error=${sanitizeErrorForLogging(err)}`,
+							JSON.stringify(errorContext, null, 2),
+						);
+					}
+				} else {
+					if (process.env.NODE_ENV === "development") {
+						console.warn(
+							"[AgentState] AGENTSTATE_API_KEY not set, skipping conversation log",
+						);
+					}
+				}
+			})(),
+		);
 
 		return jsonResponse({
 			id: stampId,

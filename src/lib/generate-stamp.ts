@@ -8,32 +8,15 @@ interface GenerateStampResult {
 	description: string;
 }
 
-// Simple in-memory cache for enhanced prompts (10-20% faster for repeat prompts)
-// Uses prompt + style as key, stores up to 1000 entries
-const promptCache = new Map<string, string>();
-const MAX_CACHE_SIZE = 1000;
-
-function getCacheKey(prompt: string, style: StampStyle): string {
-	return `${prompt}|||${style}`;
-}
-
 /**
  * Enhance a user's rough prompt into a detailed stamp illustration prompt.
  * Uses CF Workers AI Qwen3 30B-A3B (free) to auto-tune the prompt.
- * Results are cached for repeat prompts.
  */
 async function enhancePrompt(
 	ai: Ai,
 	userPrompt: string,
 	style: StampStyle,
 ): Promise<string> {
-	// Check cache first
-	const cacheKey = getCacheKey(userPrompt, style);
-	const cached = promptCache.get(cacheKey);
-	if (cached) {
-		return cached;
-	}
-
 	const preset = STAMP_STYLE_PRESETS[style];
 
 	const systemPrompt = `You are a prompt engineer for an AI image generator that creates postage stamp illustrations.
@@ -67,18 +50,7 @@ Rules:
 		temperature: 0.7,
 	})) as { response?: string };
 
-	const enhanced =
-		response.response?.trim() || buildFallbackPrompt(userPrompt, style);
-
-	// Store in cache (with LRU eviction if full)
-	if (promptCache.size >= MAX_CACHE_SIZE) {
-		// Simple FIFO: delete first entry (Map maintains insertion order in JS)
-		const firstKey = promptCache.keys().next().value;
-		if (firstKey) promptCache.delete(firstKey);
-	}
-	promptCache.set(cacheKey, enhanced);
-
-	return enhanced;
+	return response.response?.trim() || buildFallbackPrompt(userPrompt, style);
 }
 
 /**
