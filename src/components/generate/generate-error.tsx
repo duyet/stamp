@@ -1,4 +1,4 @@
-import { SignInButton } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/tanstack-react-start";
 import { ErrorState } from "@/components/error-state";
 import { DAILY_CREDIT_LIMITS } from "@/lib/constants";
 import { formatCountdown } from "@/lib/date-utils";

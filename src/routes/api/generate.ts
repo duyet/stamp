@@ -55,7 +55,7 @@ export async function POST(request: Request): Promise<Response> {
 		const env = getEnv();
 		const db = getDb();
 
-		const { userId } = await getAuthUserId(request.headers);
+		const { userId } = await getAuthUserId();
 		const userIp = getClientIp(request.headers);
 
 		// Extract location data from Cloudflare headers

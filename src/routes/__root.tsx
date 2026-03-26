@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/tanstack-react-start";
 import {
 	createRootRoute,
 	HeadContent,
@@ -55,23 +56,32 @@ export const Route = createRootRoute({
 	component: RootComponent,
 	notFoundComponent: NotFoundComponent,
 	errorComponent: ErrorComponent,
+	shellComponent: RootDocument,
 });
 
-function RootComponent() {
+function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en">
 			<head>
 				<HeadContent />
 			</head>
 			<body className="antialiased min-h-screen flex flex-col font-[var(--font-serif,Georgia,serif)]">
-				<Header />
-				<main className="flex-1">
-					<Outlet />
-				</main>
-				<Footer />
+				<ClerkProvider>{children}</ClerkProvider>
 				<Scripts />
 			</body>
 		</html>
+	);
+}
+
+function RootComponent() {
+	return (
+		<>
+			<Header />
+			<main className="flex-1">
+				<Outlet />
+			</main>
+			<Footer />
+		</>
 	);
 }
 

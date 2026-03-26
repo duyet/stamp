@@ -11,7 +11,7 @@ function jsonResponse(data: unknown, status = 200): Response {
 }
 
 export async function GET(request: Request): Promise<Response> {
-	const { userId } = await getAuthUserId(request.headers);
+	const { userId } = await getAuthUserId();
 	if (!userId) {
 		return jsonResponse({ error: "Unauthorized" }, 401);
 	}

@@ -220,7 +220,7 @@ export async function GET(request: Request): Promise<Response> {
 	const _env = getEnv();
 	const db = getDb();
 
-	const { userId } = await getAuthUserId(request.headers);
+	const { userId } = await getAuthUserId();
 	const userIp = getClientIp(request.headers);
 
 	// Require authentication

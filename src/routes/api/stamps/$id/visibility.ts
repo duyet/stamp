@@ -31,7 +31,7 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 		}
 
 		// Get auth state (userId for logged-in users, IP for anonymous)
-		const { userId } = await getAuthUserId(request.headers);
+		const { userId } = await getAuthUserId();
 		const userIp = getClientIp(request.headers, null);
 
 		const stamp = await db.query.stamps.findFirst({

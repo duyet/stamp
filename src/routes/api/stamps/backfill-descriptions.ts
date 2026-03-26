@@ -7,13 +7,13 @@ import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { capitalize } from "@/lib/text-utils";
 
-export async function POST(request: Request): Promise<Response> {
+export async function POST(_request: Request): Promise<Response> {
 	try {
 		const env = getEnv();
 		const db = getDb();
 
 		// Require authentication
-		const { userId } = await getAuthUserId(request.headers);
+		const { userId } = await getAuthUserId();
 		if (!userId) {
 			return new Response(JSON.stringify({ error: "Unauthorized" }), {
 				status: 401,

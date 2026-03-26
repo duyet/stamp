@@ -14,8 +14,8 @@ function jsonResponse(
 	});
 }
 
-export async function GET(request: Request): Promise<Response> {
-	const { userId } = await getAuthUserId(request.headers);
+export async function GET(_request: Request): Promise<Response> {
+	const { userId } = await getAuthUserId();
 
 	if (!userId) {
 		return jsonResponse({ error: "Authentication required." }, 401);

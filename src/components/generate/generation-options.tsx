@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, useClerk } from "@clerk/nextjs";
+import { useAuth, useClerk } from "@clerk/tanstack-react-start";
 
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { Toggle } from "@/components/toggle";

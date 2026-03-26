@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@clerk/tanstack-react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ImageUpload } from "@/components/image-upload";
