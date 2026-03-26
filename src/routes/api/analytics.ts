@@ -3,7 +3,7 @@ import { desc, gte, sql } from "drizzle-orm";
 import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { dailyStats, events, stamps } from "@/db/schema";
-import { withSecurityHeaders } from "@/lib/api-utils";
+import { jsonResponse } from "@/lib/api-utils";
 import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
@@ -54,27 +54,19 @@ async function getDailyStats(
 		const stats = await db
 			.select({
 				date: dailyStats.date,
-				totalStamps: sql<number>`${dailyStats.totalStamps} as total_stamps`,
-				newStamps: sql<number>`${dailyStats.newStamps} as new_stamps`,
-				pageViews: sql<number>`${dailyStats.pageViews} as page_views`,
-				uniqueVisitors: sql<number>`${dailyStats.uniqueVisitors} as unique_visitors`,
-				downloads: sql<number>`${dailyStats.downloads} as downloads`,
-				shares: sql<number>`${dailyStats.shares} as shares`,
+				total_stamps: sql<number>`${dailyStats.totalStamps}`,
+				new_stamps: sql<number>`${dailyStats.newStamps}`,
+				page_views: sql<number>`${dailyStats.pageViews}`,
+				unique_visitors: sql<number>`${dailyStats.uniqueVisitors}`,
+				downloads: sql<number>`${dailyStats.downloads}`,
+				shares: sql<number>`${dailyStats.shares}`,
 			})
 			.from(dailyStats)
 			.where(gte(dailyStats.date, cutoffDateStr))
 			.orderBy(desc(dailyStats.date));
 
 		if (stats.length > 0) {
-			return stats as unknown as Array<{
-				date: string;
-				total_stamps: number;
-				new_stamps: number;
-				page_views: number;
-				unique_visitors: number;
-				downloads: number;
-				shares: number;
-			}>;
+			return stats;
 		}
 	} catch (error) {
 		console.warn(
@@ -159,19 +151,6 @@ async function checkAnalyticsRateLimit(
 		.run();
 
 	return { allowed: true, remaining: ANALYTICS_RATE_LIMIT - 1 };
-}
-
-function jsonResponse(
-	data: unknown,
-	status = 200,
-	headers?: Record<string, string>,
-): Response {
-	return withSecurityHeaders(
-		new Response(JSON.stringify(data), {
-			status,
-			headers: { "Content-Type": "application/json", ...headers },
-		}),
-	);
 }
 
 // Build country name map for location stats

@@ -5,7 +5,7 @@ import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { addTags, createConversation } from "@/lib/agentstate";
-import { withSecurityHeaders } from "@/lib/api-utils";
+import { jsonResponse } from "@/lib/api-utils";
 import { getAuthUserId } from "@/lib/clerk";
 import {
 	checkAndDeductCredit,
@@ -20,15 +20,6 @@ import { refundCredits } from "@/lib/refund-credits";
 import { sanitizeErrorForLogging } from "@/lib/sanitize-error";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 import { validateReferenceImage } from "@/lib/validate-image";
-
-function jsonResponse(data: unknown, status = 200, headers?: HeadersInit) {
-	return withSecurityHeaders(
-		new Response(JSON.stringify(data), {
-			status,
-			headers: { "Content-Type": "application/json", ...headers },
-		}),
-	);
-}
 
 export async function POST(request: Request): Promise<Response> {
 	// Track whether credits were deducted for refund in catch block

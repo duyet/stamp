@@ -1,17 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { listConversations, searchConversations } from "@/lib/agentstate";
-import { withSecurityHeaders } from "@/lib/api-utils";
+import { jsonResponse } from "@/lib/api-utils";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
-
-function jsonResponse(data: unknown, status = 200): Response {
-	return withSecurityHeaders(
-		new Response(JSON.stringify(data), {
-			status,
-			headers: { "Content-Type": "application/json" },
-		}),
-	);
-}
 
 export async function GET(request: Request): Promise<Response> {
 	const { userId } = await getAuthUserId();

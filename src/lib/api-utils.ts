@@ -47,3 +47,20 @@ export function apiSuccessResponse(
 ): Response {
 	return Response.json(data, { status });
 }
+
+/**
+ * Create a JSON response with security headers.
+ * Consolidates the per-route jsonResponse helpers into one shared function.
+ */
+export function jsonResponse(
+	data: unknown,
+	status = 200,
+	headers?: HeadersInit,
+): Response {
+	return withSecurityHeaders(
+		new Response(JSON.stringify(data), {
+			status,
+			headers: { "Content-Type": "application/json", ...headers },
+		}),
+	);
+}

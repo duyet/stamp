@@ -2,20 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { eq, isNull } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
-import { withSecurityHeaders } from "@/lib/api-utils";
+import { jsonResponse } from "@/lib/api-utils";
 import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { capitalize } from "@/lib/text-utils";
-
-function jsonResponse(data: unknown, status = 200): Response {
-	return withSecurityHeaders(
-		new Response(JSON.stringify(data), {
-			status,
-			headers: { "Content-Type": "application/json" },
-		}),
-	);
-}
 
 export async function POST(_request: Request): Promise<Response> {
 	try {
