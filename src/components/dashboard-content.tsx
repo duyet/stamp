@@ -1,6 +1,4 @@
-"use client";
-
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { memo, useEffect, useState } from "react";
 import { DashboardLocations } from "@/components/dashboard-locations";
 import { DashboardMap } from "@/components/dashboard-map";
@@ -326,7 +324,7 @@ export function RecentStampsSection() {
 					Recent Stamps
 				</h2>
 				<Link
-					href="/collections"
+					to="/collections"
 					className="text-sm text-stone-600 hover:text-stamp-navy transition-colors"
 				>
 					View all &rarr;

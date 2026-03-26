@@ -1,6 +1,3 @@
-"use client";
-
-import Image from "next/image";
 import type { StampStyle } from "@/lib/stamp-prompts";
 import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 
@@ -36,13 +33,10 @@ export function StyleSelector({
 									: "opacity-50 hover:opacity-100 hover:scale-105 hover:shadow-md"
 							}`}
 						>
-							<Image
+							<img
 								src={preset.thumbnail}
 								alt={preset.name}
-								width={48}
-								height={48}
 								className="object-cover w-full h-full"
-								unoptimized
 							/>
 						</div>
 						<p

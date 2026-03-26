@@ -1,6 +1,3 @@
-"use client";
-
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, UploadIcon } from "@/components/icons";
 import { IMAGE_CONSTANTS } from "@/lib/constants";
@@ -186,13 +183,10 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 								<div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
 							</div>
 						)}
-						<Image
+						<img
 							src={preview}
 							alt="Reference photo"
-							width={64}
-							height={64}
 							className="object-cover w-full h-full"
-							unoptimized
 						/>
 					</div>
 					<span className="text-xs text-stone-600">

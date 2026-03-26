@@ -1,10 +1,8 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { env } from "cloudflare:workers";
 
 /**
- * Get Cloudflare bindings in server components/route handlers.
- * Synchronous for dynamic routes (the common case).
+ * Get Cloudflare bindings in server context.
  */
 export function getEnv(): CloudflareEnv {
-	const { env } = getCloudflareContext();
 	return env as unknown as CloudflareEnv;
 }

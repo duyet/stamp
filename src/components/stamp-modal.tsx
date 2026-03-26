@@ -1,7 +1,4 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { FOCUSABLE_SELECTOR } from "@/constants/a11y";
@@ -147,14 +144,10 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 				{/* Stamp image - responsive max size */}
 				<div className="stamp-border stamp-modal-shadow max-w-full">
 					<div className="relative aspect-square w-full max-w-[500px] max-h-[50vh]">
-						<Image
+						<img
 							src={stamp.imageUrl}
 							alt={stamp.prompt}
-							fill
-							sizes="(max-width: 768px) 90vw, 500px"
-							className="object-cover"
-							priority
-							unoptimized
+							className="object-cover w-full h-full absolute inset-0"
 						/>
 					</div>
 				</div>
@@ -220,7 +213,8 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 							</button>
 						)}
 						<Link
-							href={`/stamps/${stamp.id}`}
+							to="/stamps/$id"
+							params={{ id: stamp.id }}
 							className="inline-flex items-center gap-2 px-5 py-2 text-gray-200 bg-white/10 border border-white/20 rounded-full text-sm hover:bg-white/20 hover:border-white/30 transition-all duration-200"
 						>
 							View page

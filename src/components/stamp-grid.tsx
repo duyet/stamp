@@ -1,7 +1,5 @@
-"use client";
-
+import { Link } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
-import Link from "next/link";
 import { memo } from "react";
 import { StampIcon } from "@/components/icons";
 import { StampCard } from "@/components/stamp-card";
@@ -41,7 +39,7 @@ function StampGrid() {
 					Be the first to create a unique AI-generated postage stamp.
 				</p>
 				<Link
-					href="/generate"
+					to="/generate"
 					className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-stone-900 text-white rounded-full font-medium text-base hover:bg-stone-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 button-ripple"
 				>
 					Create your first stamp

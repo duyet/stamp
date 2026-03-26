@@ -1,8 +1,3 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
-
 interface StyleShowcaseProps {
 	styles: Array<{
 		style: string;
@@ -34,13 +29,10 @@ export function StyleShowcase({ styles }: StyleShowcaseProps) {
 				>
 					<div className="relative aspect-square bg-stone-100">
 						{featuredStamp ? (
-							<Image
+							<img
 								src={featuredStamp.imageUrl}
 								alt={featuredStamp.description ?? featuredStamp.prompt}
-								fill
-								sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-								className="object-cover"
-								unoptimized
+								className="object-cover w-full h-full absolute inset-0"
 							/>
 						) : (
 							<div className="absolute inset-0 flex items-center justify-center">
@@ -60,12 +52,12 @@ export function StyleShowcase({ styles }: StyleShowcaseProps) {
 								{count} {count === 1 ? "stamp" : "stamps"}
 							</p>
 						</div>
-						<Link
+						<a
 							href={`/generate?style=${encodeURIComponent(style)}`}
 							className="shrink-0 ml-3 text-sm text-stone-600 hover:text-stamp-navy transition-colors"
 						>
 							Create {capitalize(style)} &rarr;
-						</Link>
+						</a>
 					</div>
 				</div>
 			))}

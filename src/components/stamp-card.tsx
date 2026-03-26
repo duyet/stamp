@@ -1,6 +1,3 @@
-"use client";
-
-import Image from "next/image";
 import type { Stamp } from "@/db/schema";
 
 interface StampCardProps {
@@ -13,13 +10,10 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 		<>
 			<div className="stamp-border group-hover:scale-105 transition-transform duration-200">
 				<div className="relative aspect-square">
-					<Image
+					<img
 						src={stamp.imageUrl}
 						alt={stamp.prompt}
-						fill
-						unoptimized
-						sizes="(max-width: 768px) 50vw, 25vw"
-						className="object-cover"
+						className="object-cover w-full h-full absolute inset-0"
 					/>
 				</div>
 			</div>

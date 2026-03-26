@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { useTrack } from "@/hooks/use-track";

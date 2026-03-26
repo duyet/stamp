@@ -1,6 +1,3 @@
-"use client";
-
-import Image from "next/image";
 import {
 	CheckIcon,
 	ClipboardIcon,
@@ -90,14 +87,7 @@ export function GenerationResults({
 							>
 								<HeartIcon filled={isFavorite(r.id)} />
 							</button>
-							<Image
-								src={r.imageUrl}
-								alt={r.prompt}
-								width={256}
-								height={256}
-								className="object-cover"
-								unoptimized
-							/>
+							<img src={r.imageUrl} alt={r.prompt} className="object-cover" />
 						</div>
 						<div className="mt-2 flex justify-center gap-1.5">
 							<a

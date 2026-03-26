@@ -1,13 +1,13 @@
 /// <reference types="@cloudflare/workers-types" />
 
-declare global {
-	interface CloudflareEnv {
-		DB: D1Database;
-		STAMPS_BUCKET: R2Bucket;
-		AI: Ai;
-		AGENTSTATE_API_KEY?: string;
-		ADMIN_USER_IDS?: string;
-	}
+interface CloudflareEnv {
+	DB: D1Database;
+	STAMPS_BUCKET: R2Bucket;
+	AI: Ai;
+	AGENTSTATE_API_KEY?: string;
+	ADMIN_USER_IDS?: string;
 }
 
-export {};
+declare namespace Cloudflare {
+	interface Env extends CloudflareEnv {}
+}

@@ -1,7 +1,4 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RefreshIcon } from "@/components/icons";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -48,7 +45,7 @@ export function StampDetailClient({
 			<div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 sm:py-16">
 				{/* Back link */}
 				<Link
-					href="/collections"
+					to="/collections"
 					className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-stamp-blue transition-colors mb-8"
 				>
 					← Back to collections
@@ -59,14 +56,10 @@ export function StampDetailClient({
 					<div className="relative">
 						<div className="stamp-border stamp-modal-shadow">
 							<div className="relative aspect-square">
-								<Image
+								<img
 									src={displayStamp.imageUrl}
 									alt={displayStamp.prompt}
-									fill
-									sizes="(max-width: 768px) 90vw, 448px"
-									className="object-cover"
-									priority
-									unoptimized
+									className="object-cover w-full h-full absolute inset-0"
 								/>
 							</div>
 						</div>
@@ -152,12 +145,12 @@ export function StampDetailClient({
 							>
 								{copied ? "✓ Link copied!" : "Copy link"}
 							</button>
-							<Link
+							<a
 								href={`/generate?prompt=${encodeURIComponent(displayStamp.prompt)}&style=${displayStamp.style}`}
 								className="block w-full text-center px-6 py-3 text-stamp-blue hover:text-stamp-blue/80 font-medium transition"
 							>
 								Create similar →
-							</Link>
+							</a>
 						</div>
 					</div>
 				</div>

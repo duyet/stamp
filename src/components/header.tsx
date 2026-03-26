@@ -1,14 +1,12 @@
-"use client";
-
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 export function Header() {
 	return (
 		<header className="bg-white sticky top-0 z-50 border-b border-gray-200">
 			<nav className="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
 				<Link
-					href="/"
+					to="/"
 					className="text-base text-black shrink-0"
 					style={{ fontFamily: "var(--font-stamp, Georgia, serif)" }}
 				>
@@ -16,13 +14,13 @@ export function Header() {
 				</Link>
 				<div className="flex items-center gap-3 sm:gap-6 text-sm">
 					<Link
-						href="/generate"
+						to="/generate"
 						className="text-gray-600 hover:text-black transition-colors"
 					>
 						Create
 					</Link>
 					<Link
-						href="/collections"
+						to="/collections"
 						className="text-gray-600 hover:text-black transition-colors"
 					>
 						Collections

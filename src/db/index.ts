@@ -1,16 +1,13 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
-import { cache } from "react";
 import * as schema from "./schema";
 
 /**
  * Get a per-request Drizzle DB instance.
- * Uses React cache() to deduplicate within a single request.
- * Never create a global DB client on Workers — each request gets its own.
+ * Each call creates a new instance — do NOT cache at module level on Workers.
  */
-export const getDb = cache(() => {
-	const { env } = getCloudflareContext();
+export function getDb() {
 	return drizzle(env.DB as unknown as D1Database, { schema });
-});
+}
 
 export type Database = ReturnType<typeof getDb>;

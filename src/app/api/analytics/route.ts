@@ -161,7 +161,7 @@ async function checkAnalyticsRateLimit(
 }
 
 export async function GET(request: NextRequest) {
-	const env = getEnv();
+	const _env = getEnv();
 	const db = getDb();
 
 	const { userId } = await getAuthUserId(request.headers);

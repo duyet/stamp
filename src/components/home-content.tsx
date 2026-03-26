@@ -1,7 +1,4 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { StampFan } from "@/components/stamp-fan";
@@ -81,7 +78,7 @@ export function HomeContent() {
 							Latest stamps
 						</h2>
 						<Link
-							href="/collections"
+							to="/collections"
 							className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
 						>
 							View all &rarr;
@@ -96,13 +93,10 @@ export function HomeContent() {
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">
-									<Image
+									<img
 										src={stamp.imageUrl}
 										alt={stamp.prompt}
-										fill
-										unoptimized
-										sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 16vw, 10vw"
-										className="object-cover"
+										className="object-cover w-full h-full absolute inset-0"
 									/>
 								</div>
 								<p className="px-3 py-2.5 text-xs text-gray-600 truncate">
