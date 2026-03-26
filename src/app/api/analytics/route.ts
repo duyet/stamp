@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { dailyStats, events, stamps } from "@/db/schema";
+import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
@@ -171,15 +172,8 @@ export async function GET(request: NextRequest) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
-	// Simple admin allowlist - can be configured via wrangler.toml or environment variables
-	// In development, allow all authenticated users for testing
-	const ADMIN_USERS = new Set(
-		(env.ADMIN_USERS as string | undefined)?.split(",").filter(Boolean) || [],
-	);
-
-	// In production with no admin list configured, allow all authenticated users
-	const isAdmin = ADMIN_USERS.size === 0 || ADMIN_USERS.has(userId);
-	if (!isAdmin) {
+	// Fail-closed admin check: no admin list configured = 403
+	if (!isAdmin(userId)) {
 		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 	}
 

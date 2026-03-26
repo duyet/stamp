@@ -6,7 +6,6 @@ declare global {
 		STAMPS_BUCKET: R2Bucket;
 		AI: Ai;
 		AGENTSTATE_API_KEY?: string;
-		ADMIN_USERS?: string;
 		ADMIN_USER_IDS?: string;
 	}
 }

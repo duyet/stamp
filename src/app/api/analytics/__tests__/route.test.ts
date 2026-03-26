@@ -28,11 +28,11 @@ describe("GET /api/analytics", () => {
 	const request = createGetRequest("http://localhost/api/analytics");
 
 	beforeEach(async () => {
-		// Set ADMIN_USERS before route module is loaded
-		vi.stubEnv("ADMIN_USERS", "user_admin,user_other");
 		vi.clearAllMocks();
 		vi.mocked(getAuthUserId).mockResolvedValue({ userId: "user_admin" });
-		vi.mocked(getEnv).mockReturnValue({} as never);
+		vi.mocked(getEnv).mockReturnValue({
+			ADMIN_USER_IDS: "user_admin,user_other",
+		} as never);
 		// Import route after env is set
 		GET = (await import("../route")).GET;
 	});

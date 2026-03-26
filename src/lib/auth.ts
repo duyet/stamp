@@ -2,6 +2,25 @@
  * Authorization utilities for stamp operations.
  */
 
+import { getEnv } from "@/lib/env";
+
+/**
+ * Check if a user is an admin. Fail-closed: if no admin list is configured,
+ * no one is admin. Uses ADMIN_USER_IDS env var (comma-separated Clerk user IDs).
+ */
+export function isAdmin(userId: string): boolean {
+	const env = getEnv();
+	const raw = (env.ADMIN_USER_IDS as string | undefined) ?? "";
+	const adminIds = raw.split(",").filter(Boolean);
+
+	// Fail-closed: no admin list configured = no admins
+	if (adminIds.length === 0) {
+		return false;
+	}
+
+	return adminIds.includes(userId);
+}
+
 /**
  * Check if a requester is authorized to modify a stamp.
  *
