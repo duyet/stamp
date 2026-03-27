@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { StampImage } from "@/components/stamp-image";
 import type { Stamp } from "@/db/schema";
 import { TEXT_COLORS } from "@/lib/constants";
@@ -7,7 +8,10 @@ interface StampCardProps {
 	onClick?: () => void;
 }
 
-export function StampCard({ stamp, onClick }: StampCardProps) {
+export const StampCard = memo(function StampCard({
+	stamp,
+	onClick,
+}: StampCardProps) {
 	const content = (
 		<>
 			<div className="stamp-border group-hover:scale-105 transition-transform duration-200">
@@ -58,4 +62,4 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 			{content}
 		</div>
 	);
-}
+});
