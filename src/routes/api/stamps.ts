@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
-import { withSecurityHeaders } from "@/lib/api-utils";
+import { jsonResponse } from "@/lib/api-utils";
 import { STAMP_STYLES } from "@/lib/constants";
 
 interface StampsApiResponse {
@@ -10,7 +10,6 @@ interface StampsApiResponse {
 		id: string;
 		prompt: string;
 		imageUrl: string;
-		thumbnailUrl: string | null;
 		style: string | null;
 		isPublic: boolean | null;
 		createdAt: Date;
@@ -67,14 +66,13 @@ export async function GET(request: Request): Promise<Response> {
 					)
 				: eq(stamps.isPublic, true);
 
-		// Select only columns needed for stamp listing (reduces data transfer by ~60%)
+		// Select only columns needed for stamp listing (reduces data transfer)
 		// Fetch limit + 1 to determine if there are more results
 		const queryResults = await db
 			.select({
 				id: stamps.id,
 				prompt: stamps.prompt,
 				imageUrl: stamps.imageUrl,
-				thumbnailUrl: stamps.thumbnailUrl,
 				style: stamps.style,
 				isPublic: stamps.isPublic,
 				createdAt: stamps.createdAt,
@@ -107,23 +105,13 @@ export async function GET(request: Request): Promise<Response> {
 
 		// Cache for 60 seconds, stale for 300 seconds (5 min)
 		// This allows quick page loads while still getting fresh data
-		return withSecurityHeaders(
-			new Response(JSON.stringify(responseData), {
-				headers: {
-					"Content-Type": "application/json",
-					"Cache-Control":
-						"public, max-age=60, stale-while-revalidate=300, stale-if-error=86400",
-				},
-			}),
-		);
+		return jsonResponse(responseData, 200, {
+			"Cache-Control":
+				"public, max-age=60, stale-while-revalidate=300, stale-if-error=86400",
+		});
 	} catch (error) {
 		console.error("Failed to fetch stamps:", error);
-		return withSecurityHeaders(
-			new Response(JSON.stringify({ error: "Failed to fetch stamps." }), {
-				status: 500,
-				headers: { "Content-Type": "application/json" },
-			}),
-		);
+		return jsonResponse({ error: "Failed to fetch stamps." }, 500);
 	}
 }
 
