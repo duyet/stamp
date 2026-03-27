@@ -94,7 +94,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 						disabled={disabled}
 						aria-label="Describe your stamp"
 						aria-describedby="prompt-hint"
-						className={`w-full pl-4 pr-14 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm leading-relaxed placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50 shadow-sm focus:shadow-md ${
+						className={`w-full pl-4 pr-14 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm leading-relaxed placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50 ${
 							isShaking ? "animate-shake" : ""
 						}`}
 					/>
@@ -138,7 +138,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									onClick={() => setActiveGroupIndex(groupIndex)}
 									className={`rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition ${
 										activeGroupIndex === groupIndex
-											? "bg-gray-900 text-white shadow-md"
+											? "bg-gray-900 text-white"
 											: "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
 									}`}
 								>
@@ -167,7 +167,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									}
 								}}
 								disabled={loading}
-								className="shrink-0 rounded-full px-3 py-1 text-xs text-gray-600 border border-gray-200 hover:text-gray-900 hover:border-gray-400 hover:bg-gray-50 cursor-pointer transition-all duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 hover:scale-105 hover:shadow-sm"
+								className="shrink-0 rounded-full px-3 py-1 text-xs text-gray-600 border border-gray-200 hover:text-gray-900 hover:border-gray-400 hover:bg-gray-50 cursor-pointer transition-all duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 hover:scale-105"
 							>
 								{example}
 							</button>

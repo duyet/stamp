@@ -1,3 +1,5 @@
+import { StampImage } from "@/components/stamp-image";
+
 interface StyleShowcaseProps {
 	styles: Array<{
 		style: string;
@@ -25,11 +27,11 @@ export function StyleShowcase({ styles }: StyleShowcaseProps) {
 			{styles.map(({ style, count, featuredStamp }) => (
 				<div
 					key={style}
-					className="bg-white rounded-xl border border-stone-200 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+					className="bg-white rounded-xl border border-stone-200 overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
 				>
 					<div className="relative aspect-square bg-stone-100">
 						{featuredStamp ? (
-							<img
+							<StampImage
 								src={featuredStamp.imageUrl}
 								alt={featuredStamp.description ?? featuredStamp.prompt}
 								className="object-cover w-full h-full absolute inset-0"

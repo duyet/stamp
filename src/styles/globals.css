@@ -26,7 +26,6 @@ body {
 
 /* Stamp perforated edge effect */
 .stamp-border {
-	filter: drop-shadow(1px 2px 6px rgba(0, 0, 0, 0.12));
 	background: white;
 	padding: 12px;
 	mask:
@@ -55,6 +54,7 @@ body {
 	height: 170px;
 	transition: all 0.4s ease-out;
 	transform-origin: bottom center;
+	will-change: transform;
 }
 
 /* Stacked state (default) */
@@ -106,14 +106,14 @@ body {
 	transform: rotate(24deg) translateX(70px) translateY(-10px);
 }
 
-/* Subtle lift shadow on hover */
+/* Subtle lift on hover — flat, no shadow */
 .stamp-fan:hover .stamp-fan-card .stamp-border {
-	filter: drop-shadow(1px 3px 8px rgba(0, 0, 0, 0.12));
+	background: #fafafa;
 }
 
-/* Modal stamp — large drop shadow */
+/* Modal stamp — flat, no shadow */
 .stamp-modal-shadow {
-	filter: drop-shadow(0 16px 48px rgba(0, 0, 0, 0.18));
+	border: 1px solid var(--color-border);
 }
 
 /* Modal appear animation */
@@ -174,4 +174,9 @@ body {
 }
 .animate-form-enter {
 	animation: form-enter 0.4s ease-out forwards;
+}
+
+/* Font utility — replaces inline style={{ fontFamily: "var(--font-stamp)" }} */
+.font-stamp {
+	font-family: var(--font-stamp);
 }

@@ -102,7 +102,7 @@ export function DashboardMap({ data }: DashboardMapProps) {
 
 				{tooltip && (
 					<div
-						className="pointer-events-none absolute z-10 rounded-lg bg-stone-900 text-white px-3 py-2 text-xs shadow-lg whitespace-nowrap"
+						className="pointer-events-none absolute z-10 rounded-lg bg-stone-900 text-white px-3 py-2 text-xs whitespace-nowrap"
 						style={{
 							left: tooltip.x + 12,
 							top: tooltip.y - 36,

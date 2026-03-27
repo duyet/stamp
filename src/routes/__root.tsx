@@ -95,10 +95,7 @@ function NotFoundComponent() {
 					<div className="absolute inset-0 border-4 border-dashed border-stone-300 rounded-lg transform rotate-3" />
 					{/* Inner stamp content */}
 					<div className="absolute inset-2 bg-stone-100 rounded flex items-center justify-center">
-						<span
-							className="text-6xl font-bold text-stone-300"
-							style={{ fontFamily: "var(--font-stamp)" }}
-						>
+						<span className="text-6xl font-bold text-stone-300 font-stamp">
 							404
 						</span>
 					</div>
@@ -122,7 +119,7 @@ function NotFoundComponent() {
 			</p>
 			<Link
 				to="/"
-				className="px-6 py-3 bg-stone-900 text-white rounded-full hover:bg-stone-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 text-sm font-medium inline-flex items-center gap-2 button-shine-effect"
+				className="px-6 py-3 bg-stone-900 text-white rounded-full hover:bg-stone-800 transition-all duration-300 hover:-translate-y-0.5 text-sm font-medium inline-flex items-center gap-2 button-shine-effect"
 			>
 				<span>&larr; Back to home</span>
 			</Link>
@@ -136,7 +133,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 	return (
 		<div className="min-h-screen flex items-center justify-center px-4">
 			<div className="text-center max-w-md">
-				<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-stone-100 mb-6 shadow-sm text-stone-400">
+				<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-stone-100 mb-6 text-stone-400">
 					<svg
 						viewBox="0 0 24 24"
 						fill="none"

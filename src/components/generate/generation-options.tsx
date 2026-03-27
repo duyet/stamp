@@ -44,7 +44,7 @@ export function GenerationOptions({
 			<button
 				type="submit"
 				disabled={loading || disabled}
-				className="px-6 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+				className="px-6 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
 			>
 				{loading ? (
 					<span className="flex items-center gap-1.5">

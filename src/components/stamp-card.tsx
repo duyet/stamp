@@ -1,3 +1,4 @@
+import { StampImage } from "@/components/stamp-image";
 import type { Stamp } from "@/db/schema";
 
 interface StampCardProps {
@@ -10,7 +11,7 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 		<>
 			<div className="stamp-border group-hover:scale-105 transition-transform duration-200">
 				<div className="relative aspect-square">
-					<img
+					<StampImage
 						src={stamp.imageUrl}
 						alt={stamp.prompt}
 						loading="lazy"

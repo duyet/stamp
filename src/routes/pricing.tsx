@@ -44,10 +44,7 @@ function PricingPage() {
 	return (
 		<div className="max-w-5xl mx-auto px-6 py-20">
 			<div className="text-center mb-16">
-				<h1
-					className="text-4xl font-bold text-stamp-navy tracking-tight mb-4"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
+				<h1 className="text-4xl font-bold text-stamp-navy tracking-tight mb-4 font-stamp">
 					Simple, honest pricing
 				</h1>
 				<p className="text-stone-600 text-base max-w-md mx-auto">
@@ -59,12 +56,9 @@ function PricingPage() {
 			<div className="bg-stone-100 rounded-2xl p-6 sm:p-10 max-w-3xl mx-auto">
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{/* Free card */}
-					<div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col shadow-sm hover-lift-bold animate-card-entrance">
+					<div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col hover-lift-bold animate-card-entrance">
 						<div className="flex items-start justify-between mb-2">
-							<h2
-								className="text-lg font-semibold text-stamp-navy"
-								style={{ fontFamily: "var(--font-stamp)" }}
-							>
+							<h2 className="text-lg font-semibold text-stamp-navy font-stamp">
 								Free
 							</h2>
 							<span className="text-xs font-medium bg-stamp-green/10 text-stamp-green px-2.5 py-1 rounded-full">
@@ -93,7 +87,7 @@ function PricingPage() {
 						</p>
 						<Link
 							to="/"
-							className="block text-center bg-stamp-navy text-white rounded-xl py-3 px-6 text-sm font-medium hover:bg-stone-800 transition-all duration-300 hover:shadow-md button-shine-effect"
+							className="block text-center bg-stamp-navy text-white rounded-xl py-3 px-6 text-sm font-medium hover:bg-stone-800 transition-all duration-300 button-shine-effect"
 						>
 							Start Creating
 						</Link>

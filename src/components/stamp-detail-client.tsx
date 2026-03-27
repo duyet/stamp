@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RefreshIcon } from "@/components/icons";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { StampImage } from "@/components/stamp-image";
 import type { Stamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
 import { useRegenerateStamp } from "@/hooks/use-regenerate-stamp";
@@ -56,7 +57,7 @@ export function StampDetailClient({
 					<div className="relative">
 						<div className="stamp-border stamp-modal-shadow">
 							<div className="relative aspect-square">
-								<img
+								<StampImage
 									src={displayStamp.imageUrl}
 									width={500}
 									height={500}
@@ -90,10 +91,7 @@ export function StampDetailClient({
 					{/* Details */}
 					<div className="flex flex-col">
 						{/* Title/description */}
-						<h1
-							className="text-2xl sm:text-3xl font-bold text-stone-900 mb-4"
-							style={{ fontFamily: "var(--font-stamp)" }}
-						>
+						<h1 className="text-2xl sm:text-3xl font-bold text-stone-900 mb-4 font-stamp">
 							{displayStamp.description || displayStamp.prompt}
 						</h1>
 
@@ -136,7 +134,7 @@ export function StampDetailClient({
 							<a
 								href={displayStamp.imageUrl}
 								download={`stamp-${displayStamp.id}.png`}
-								className="block w-full text-center px-6 py-3 bg-stone-900 text-white rounded-full font-medium hover:bg-stone-800 transition-all duration-200 shadow-sm"
+								className="block w-full text-center px-6 py-3 bg-stone-900 text-white rounded-full font-medium hover:bg-stone-800 transition-all duration-200"
 							>
 								Download Stamp
 							</a>

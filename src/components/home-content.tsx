@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { StampFan } from "@/components/stamp-fan";
+import { StampImage } from "@/components/stamp-image";
 import { StampModal } from "@/components/stamp-modal";
 import type { Stamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
@@ -56,10 +57,7 @@ export function HomeContent() {
 					/>
 				</div>
 
-				<h1
-					className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
+				<h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight font-stamp">
 					Stamps, builders
 				</h1>
 			</section>
@@ -71,10 +69,7 @@ export function HomeContent() {
 			{recentStamps.length > 0 && (
 				<section className="mb-16 relative left-1/2 -translate-x-1/2 w-screen px-4 sm:px-6">
 					<div className="flex items-baseline justify-between mb-8 max-w-5xl mx-auto">
-						<h2
-							className="text-2xl font-semibold text-gray-900"
-							style={{ fontFamily: "var(--font-stamp)" }}
-						>
+						<h2 className="text-2xl font-semibold text-gray-900 font-stamp">
 							Latest stamps
 						</h2>
 						<Link
@@ -89,11 +84,11 @@ export function HomeContent() {
 							<button
 								key={stamp.id}
 								type="button"
-								className="group text-left cursor-pointer rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition"
+								className="group text-left cursor-pointer rounded-xl overflow-hidden border border-gray-200 transition"
 								onClick={() => setSelectedStamp(stamp)}
 							>
 								<div className="relative aspect-square">
-									<img
+									<StampImage
 										src={stamp.imageUrl}
 										alt={stamp.prompt}
 										loading="lazy"
@@ -112,10 +107,7 @@ export function HomeContent() {
 			)}
 
 			<section className="py-16 text-center">
-				<p
-					className="text-sm text-gray-600"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
+				<p className="text-sm text-gray-600 font-stamp">
 					20 free stamps per day. Sign in for 100.
 				</p>
 			</section>

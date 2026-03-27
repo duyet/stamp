@@ -1,3 +1,4 @@
+import { StampImage } from "@/components/stamp-image";
 import type { StampStyle } from "@/lib/stamp-prompts";
 import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 
@@ -29,11 +30,11 @@ export function StyleSelector({
 						<div
 							className={`w-14 h-14 rounded-lg transition-all duration-200 ${
 								currentStyle === key
-									? "ring-2 ring-gray-900 ring-offset-1 shadow-lg scale-105"
-									: "opacity-50 hover:opacity-100 hover:scale-105 hover:shadow-md"
+									? "ring-2 ring-gray-900 ring-offset-1 scale-105"
+									: "opacity-50 hover:opacity-100 hover:scale-105"
 							}`}
 						>
-							<img
+							<StampImage
 								src={preset.thumbnail}
 								alt={preset.name}
 								className="object-cover w-full h-full"

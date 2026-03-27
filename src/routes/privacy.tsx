@@ -25,10 +25,7 @@ export const Route = createFileRoute("/privacy")({
 function PrivacyPage() {
 	return (
 		<div className="max-w-3xl mx-auto px-6 py-20">
-			<h1
-				className="text-3xl font-bold text-stamp-navy tracking-tight mb-2"
-				style={{ fontFamily: "var(--font-stamp)" }}
-			>
+			<h1 className="text-3xl font-bold text-stamp-navy tracking-tight mb-2 font-stamp">
 				Privacy Policy
 			</h1>
 			<p className="text-sm text-stone-500 mb-10">

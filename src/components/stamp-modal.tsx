@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { StampImage } from "@/components/stamp-image";
 import { FOCUSABLE_SELECTOR } from "@/constants/a11y";
 import type { Stamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
@@ -135,7 +136,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 					ref={closeButtonRef}
 					type="button"
 					onClick={onClose}
-					className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/90 text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-200 shadow-lg"
+					className="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/90 text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-200"
 					aria-label="Close modal"
 				>
 					<CloseIcon />
@@ -144,7 +145,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 				{/* Stamp image - responsive max size */}
 				<div className="stamp-border stamp-modal-shadow max-w-full">
 					<div className="relative aspect-square w-full max-w-[500px] max-h-[50vh]">
-						<img
+						<StampImage
 							src={stamp.imageUrl}
 							loading="lazy"
 							width={500}
@@ -159,10 +160,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 				<div className="mt-6 space-y-4 max-w-lg w-full px-4">
 					{/* Description + style badge */}
 					<div className="text-center space-y-2 px-2">
-						<p
-							className="text-gray-100 text-[15px] leading-relaxed"
-							style={{ fontFamily: "var(--font-stamp, Georgia, serif)" }}
-						>
+						<p className="text-gray-100 text-[15px] leading-relaxed font-stamp">
 							{stamp.description || stamp.prompt}
 						</p>
 						{stamp.description && stamp.description !== stamp.prompt && (
@@ -225,7 +223,7 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 						<a
 							href={stamp.imageUrl}
 							download={`stamp-${stamp.id}.png`}
-							className="inline-flex items-center gap-2 px-5 py-2 bg-white text-gray-900 rounded-full text-sm hover:bg-gray-100 transition-all duration-200 shadow-lg"
+							className="inline-flex items-center gap-2 px-5 py-2 bg-white text-gray-900 rounded-full text-sm hover:bg-gray-100 transition-all duration-200"
 						>
 							<DownloadIcon />
 							Download

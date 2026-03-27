@@ -20,8 +20,7 @@ export function Footer() {
 				</nav>
 				<a
 					href="https://stamp.duyet.net"
-					className="hover:text-gray-700 transition"
-					style={{ fontFamily: "var(--font-stamp, Georgia, serif)" }}
+					className="hover:text-gray-700 transition font-stamp"
 				>
 					stamp.builders
 				</a>

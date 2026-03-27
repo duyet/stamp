@@ -12,10 +12,7 @@ export function GeneratePageClient() {
 	return (
 		<div className="max-w-5xl mx-auto px-6 py-10 sm:py-14 animate-page-fade-in">
 			<div className="text-center mb-8">
-				<h1
-					className="text-4xl md:text-5xl font-bold tracking-tight mb-3 hero-gradient"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
+				<h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3 hero-gradient font-stamp">
 					Create your stamp
 				</h1>
 				<p className="text-base text-stone-600">

@@ -4,6 +4,7 @@ import {
 	DownloadIcon,
 	HeartIcon,
 } from "@/components/icons";
+import { StampImage } from "@/components/stamp-image";
 import { Toggle } from "@/components/toggle";
 import { useFavorites } from "@/hooks/use-favorites";
 
@@ -78,7 +79,7 @@ export function GenerationResults({
 							<button
 								type="button"
 								onClick={() => toggleFavorite(r.id)}
-								className="absolute -top-3 -right-3 z-10 p-2.5 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+								className="absolute -top-3 -right-3 z-10 p-2.5 bg-white rounded-full hover:bg-gray-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
 								aria-label={
 									isFavorite(r.id)
 										? "Remove from favorites"
@@ -87,7 +88,7 @@ export function GenerationResults({
 							>
 								<HeartIcon filled={isFavorite(r.id)} />
 							</button>
-							<img
+							<StampImage
 								src={r.imageUrl}
 								alt={r.prompt}
 								width={256}
