@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Stamp } from "@/db/schema";
+import type { StampStyle } from "@/lib/stamp-prompts";
 
 /**
  * Fetch public stamps with cursor-based pagination.
  * @param pageSize - Number of stamps per page
  * @param retryKey - Optional key that changes to trigger a refetch
+ * @param style - Optional style filter passed to the API
  */
-export function useStamps(pageSize: number, retryKey = 0) {
+export function useStamps(pageSize: number, retryKey = 0, style?: StampStyle) {
 	const [stamps, setStamps] = useState<Stamp[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [loadingMore, setLoadingMore] = useState(false);
@@ -25,7 +27,8 @@ export function useStamps(pageSize: number, retryKey = 0) {
 			try {
 				setLoading(true);
 				nextCursorRef.current = null;
-				const r = await fetch(`/api/stamps?limit=${pageSize}`, {
+				const styleQuery = style ? `&style=${style}` : "";
+				const r = await fetch(`/api/stamps?limit=${pageSize}${styleQuery}`, {
 					signal: controller.signal,
 				});
 				const data = (await r.json()) as {
@@ -54,7 +57,7 @@ export function useStamps(pageSize: number, retryKey = 0) {
 		load();
 
 		return () => controller.abort();
-	}, [pageSize, retryKey]);
+	}, [pageSize, retryKey, style]);
 
 	// Load next page
 	const loadMore = useCallback(async () => {
@@ -63,8 +66,9 @@ export function useStamps(pageSize: number, retryKey = 0) {
 		const controller = new AbortController();
 		try {
 			setLoadingMore(true);
+			const styleQuery = style ? `&style=${style}` : "";
 			const r = await fetch(
-				`/api/stamps?limit=${pageSize}&cursor=${nextCursorRef.current}`,
+				`/api/stamps?limit=${pageSize}&cursor=${nextCursorRef.current}${styleQuery}`,
 				{ signal: controller.signal },
 			);
 			const data = (await r.json()) as {
@@ -85,7 +89,7 @@ export function useStamps(pageSize: number, retryKey = 0) {
 		} finally {
 			setLoadingMore(false);
 		}
-	}, [pageSize, loadingMore]);
+	}, [pageSize, loadingMore, style]);
 
 	return { stamps, setStamps, loading, loadingMore, error, hasMore, loadMore };
 }

@@ -26,16 +26,13 @@ export default function CollectionsPage() {
 	const [retryKey, setRetryKey] = useState(0);
 	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
 	const { stamps, loading, loadingMore, error, setStamps, hasMore, loadMore } =
-		useStamps(PAGE_SIZE, retryKey);
+		useStamps(
+			PAGE_SIZE,
+			retryKey,
+			selectedStyle === ALL_STYLES ? undefined : selectedStyle,
+		);
 
-	// Memoized filter to avoid re-computation on every render
-	const filteredStamps = useMemo(
-		() =>
-			selectedStyle === ALL_STYLES
-				? stamps
-				: stamps.filter((s) => s.style === selectedStyle),
-		[stamps, selectedStyle],
-	);
+	// Display stamps directly — server-side filtering handles style selection
 
 	// Memoized empty state message for selected style
 	const emptyStateMessage = useMemo(() => {
@@ -104,7 +101,7 @@ export default function CollectionsPage() {
 				</div>
 			) : loading ? (
 				<StampGridSkeleton count={8} />
-			) : filteredStamps.length === 0 ? (
+			) : stamps.length === 0 ? (
 				<div className="text-center py-20">
 					<div className="max-w-sm mx-auto">
 						<p className="text-gray-700 mb-2 text-base font-medium">
@@ -122,7 +119,7 @@ export default function CollectionsPage() {
 			) : (
 				<>
 					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-						{filteredStamps.map((stamp) => (
+						{stamps.map((stamp) => (
 							<StampCard
 								key={stamp.id}
 								stamp={stamp}
