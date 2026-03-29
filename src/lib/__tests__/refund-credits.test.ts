@@ -6,7 +6,7 @@ import { refundCredits } from "../refund-credits";
 const FIXED_NOW = 1718452800000; // 2024-06-15T12:00:00Z
 
 function createMockRefundDb() {
-	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
+	const mockPrepare = vi.fn().mockImplementation((_sql: string) => {
 		return {
 			bind: vi.fn().mockImplementation((..._args: unknown[]) => ({
 				run: vi.fn().mockResolvedValue({ meta: { changes: 1 } }),

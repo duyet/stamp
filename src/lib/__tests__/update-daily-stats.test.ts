@@ -98,7 +98,7 @@ describe("updateDailyStats", () => {
 		// The date should be 2024-06-15 based on FIXED_NOW
 		const insertMock = (db as unknown as { insert: ReturnType<typeof vi.fn> })
 			.insert;
-		const insertCall = insertMock.mock.calls[0];
+		const _insertCall = insertMock.mock.calls[0];
 		// insert() is called with the dailyStats table, not values directly
 		// The values are passed to .values() which is called before onConflictDoUpdate
 		expect(insertMock).toHaveBeenCalled();

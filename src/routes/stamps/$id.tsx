@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq } from "drizzle-orm";
 import { StampDetailClient } from "@/components/stamp-detail-client";
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/stamps/$id")({
 	loader: async ({ params }) => {
 		const stamp = await fetchStamp({ data: params.id });
 		if (!stamp) {
-			throw new Error("Stamp not found");
+			throw notFound();
 		}
 		return { stamp };
 	},
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/stamps/$id")({
 		};
 	},
 	component: StampDetailPage,
-	errorComponent: StampNotFound,
+	notFoundComponent: StampNotFound,
 });
 
 function StampDetailPage() {

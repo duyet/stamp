@@ -1,9 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	createGetRequest,
-	createMockRateLimitPrepare,
-	createSelectChain,
-} from "@/test-utils";
+import { createGetRequest, createSelectChain } from "@/test-utils";
 
 vi.mock("@/lib/clerk", () => ({
 	getAuthUserId: vi.fn(),
@@ -48,14 +44,14 @@ describe("Analytics rate limiting (checkAnalyticsRateLimit)", () => {
 		windowStart?: number;
 		exceedLimit?: boolean;
 	}) {
-		const { existingCount, windowStart, exceedLimit } = options;
+		const { existingCount, windowStart } = options;
 		const ANALYTICS_RATE_LIMIT = 10;
 		const ANALYTICS_RATE_WINDOW = 15 * 60 * 1000;
 		const now = Date.now();
-		const windowStartThreshold = now - ANALYTICS_RATE_WINDOW;
+		const _windowStartThreshold = now - ANALYTICS_RATE_WINDOW;
 
 		return vi.fn().mockImplementation((sql: string) => ({
-			bind: vi.fn().mockImplementation((...args: unknown[]) => ({
+			bind: vi.fn().mockImplementation((..._args: unknown[]) => ({
 				first: vi.fn().mockImplementation(() => {
 					// UPDATE ... RETURNING: atomically increment if under limit
 					if (
