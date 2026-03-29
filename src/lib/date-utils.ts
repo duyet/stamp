@@ -38,32 +38,6 @@ export function formatDateLong(ts: DateInput): string {
 }
 
 /**
- * Format a timestamp as a relative time (e.g., "2 hours ago")
- * @param ts - Unix timestamp in milliseconds or Date object
- * @returns Relative time string
- */
-export function formatRelativeTime(ts: DateInput): string {
-	const now = Date.now();
-	const timestamp = toDate(ts).getTime();
-	const diff = now - timestamp;
-	const seconds = Math.floor(diff / 1000);
-	const minutes = Math.floor(seconds / 60);
-	const hours = Math.floor(minutes / 60);
-	const days = Math.floor(hours / 24);
-
-	if (days > 0) {
-		return `${days} day${days > 1 ? "s" : ""} ago`;
-	}
-	if (hours > 0) {
-		return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-	}
-	if (minutes > 0) {
-		return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-	}
-	return "Just now";
-}
-
-/**
  * Format seconds as MM:SS countdown
  * @param seconds - Number of seconds
  * @returns Formatted time string (e.g., "02:30")
