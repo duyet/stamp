@@ -51,6 +51,7 @@ export const Route = createRootRoute({
 		links: [
 			{ rel: "stylesheet", href: appCss },
 			{ rel: "canonical", href: "https://stamp.duyet.net" },
+			{ rel: "icon", type: "image/png", href: "/stamp.png" },
 		],
 	}),
 	component: RootComponent,

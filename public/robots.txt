@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://stamp.builders/sitemap.xml
+Sitemap: https://stamp.duyet.net/sitemap.xml
