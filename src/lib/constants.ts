@@ -18,11 +18,6 @@ export const IMAGE_CONSTANTS = {
 } as const;
 
 /**
- * Prompt constraints
- */
-export const PROMPT_MAX_LENGTH = 500;
-
-/**
  * Rate limiting window (24 hours in milliseconds)
  */
 export const RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -51,18 +46,6 @@ export const DAILY_CREDIT_LIMITS = {
  * Stamp pagination
  */
 export const STAMPS_PER_PAGE = 50;
-
-/**
- * Analytics event types
- */
-export const ANALYTICS_EVENTS = {
-	PAGE_VIEW: "page_view",
-	GENERATION: "generation",
-	DOWNLOAD: "download",
-	SHARE: "share",
-	COPY_LINK: "copy_link",
-	STAMP_VIEW: "stamp_view",
-} as const;
 
 /**
  * Stamp styles
@@ -97,28 +80,10 @@ export const TEXT_COLORS = {
 	heading: "text-stamp-navy dark:text-stone-100",
 	/** Muted text color */
 	muted: "text-stone-400 dark:text-stone-500",
+	/** Hover text color */
+	hover: "hover:text-stone-700 dark:hover:text-stone-300",
 	/** Inverted text (dark mode) */
 	inverted: "text-stone-900 dark:text-stone-100",
-} as const;
-
-/**
- * Background color constants for dark mode consistency
- */
-export const BG_COLORS = {
-	/** Surface background (cards, inputs) */
-	surface: "bg-white dark:bg-stone-900",
-	/** Container background */
-	container: "bg-stone-100 dark:bg-stone-800/50",
-	/** Subtle background */
-	subtle: "bg-stone-50 dark:bg-stone-800/50",
-	/** Full-screen overlay */
-	overlay: "bg-stone-950/95 dark:bg-black/95",
-	/** Inverted background (for buttons in dark mode) */
-	inverted: "bg-stone-900 dark:bg-stone-100",
-	/** Border color */
-	border: "border-stone-200 dark:border-stone-700",
-	/** Subtle border */
-	borderSubtle: "border-stone-100 dark:border-stone-800",
 } as const;
 
 /**
@@ -135,14 +100,4 @@ export const DASHBOARD = {
 	STATS_PER_ROW: 4,
 	/** Number of popular styles to showcase */
 	POPULAR_STYLES_LIMIT: 6,
-} as const;
-
-/**
- * Grid layout constants
- */
-export const GRID_LAYOUTS = {
-	/** Default skeleton card count for stamp grids */
-	DEFAULT_SKELETON_COUNT: 8,
-	/** Maximum number of stamps to show in collections */
-	MAX_STAMP_LIMIT: 100,
 } as const;

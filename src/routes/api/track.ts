@@ -1,3 +1,4 @@
+import { waitUntil } from "cloudflare:workers";
 import { createFileRoute } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
 import { getDb } from "@/db";
@@ -39,23 +40,23 @@ export async function POST(request: Request): Promise<Response> {
 
 		const userIp = getClientIp(request.headers, null);
 
-		// Fire-and-forget: respond immediately, track in background
-		// This reduces tracking latency from ~50-100ms to ~5ms
+		// Use waitUntil to keep Worker alive until DB insert completes
+		// This prevents lost tracking events on Workers runtime
 		const db = getDb();
-		Promise.resolve().then(async () => {
-			try {
-				await db.insert(events).values({
+		waitUntil(
+			db
+				.insert(events)
+				.values({
 					id: nanoid(12),
 					event,
 					metadata: metadataStr,
 					userIp,
 					createdAt: Date.now(),
-				});
-			} catch (err) {
-				// Silently fail - tracking is non-critical
-				console.error("Track event failed (async):", err);
-			}
-		});
+				})
+				.catch((err) => {
+					console.error("Track event failed:", err);
+				}),
+		);
 
 		return jsonResponse({ ok: true });
 	} catch (error) {

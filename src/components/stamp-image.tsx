@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-interface StampImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface StampImageProps
+	extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, "src"> {
+	src: string;
 	fallbackSrc?: string;
 }
 
@@ -11,24 +13,32 @@ export function StampImage({
 	alt,
 	fallbackSrc,
 	decoding,
+	src,
 	...rest
 }: StampImageProps) {
 	const [failed, setFailed] = useState(false);
 	const [triedFallback, setTriedFallback] = useState(false);
+	const [currentSrc, setCurrentSrc] = useState(src);
 
-	if (failed && !triedFallback && fallbackSrc) {
-		setTriedFallback(true);
-		setFailed(false);
-		return (
-			<StampImage
-				{...rest}
-				alt={alt}
-				src={fallbackSrc}
-				onError={onError}
-				decoding={decoding}
-			/>
-		);
-	}
+	// Reset state when src prop changes
+	const prevSrcRef = useRef(src);
+	useEffect(() => {
+		if (prevSrcRef.current !== src) {
+			prevSrcRef.current = src;
+			setFailed(false);
+			setTriedFallback(false);
+			setCurrentSrc(src);
+		}
+	}, [src]);
+
+	// Handle fallback in useEffect (not during render)
+	useEffect(() => {
+		if (failed && !triedFallback && fallbackSrc) {
+			setTriedFallback(true);
+			setFailed(false);
+			setCurrentSrc(fallbackSrc);
+		}
+	}, [failed, triedFallback, fallbackSrc]);
 
 	if (failed) {
 		return (
@@ -46,6 +56,7 @@ export function StampImage({
 		<img
 			decoding={decoding ?? "async"}
 			alt={alt}
+			src={currentSrc}
 			onError={(e) => {
 				setFailed(true);
 				onError?.(e);

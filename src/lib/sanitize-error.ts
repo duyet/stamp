@@ -14,7 +14,7 @@ export function sanitizeErrorForLogging(error: unknown): string {
 			.replace(/secret["\s:=]+[^\s,}]*/gi, "secret=***")
 			.replace(/password["\s:=]+[^\s,}]*/gi, "password=***")
 			.replace(/bearer["\s:=]+[^\s,}]*/gi, "bearer=***")
-			.replace(/sk-[a-zA-Z0-9]{20,}/g, "sk-***")
+			.replace(/sk-[a-zA-Z0-9_-]{20,}/g, "sk-***")
 			.replace(/["\s:]([^"\\]{10,})["\\]/g, (match) => {
 				// Truncate long strings that might be sensitive
 				const content = match.slice(1, -1);

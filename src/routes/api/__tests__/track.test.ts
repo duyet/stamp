@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createJsonRequest } from "@/test-utils";
 
+vi.mock("cloudflare:workers", () => ({
+	waitUntil: vi.fn((promise: Promise<unknown>) => promise.catch(() => {})),
+}));
+
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
 }));

@@ -3,7 +3,10 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { withSecurityHeaders } from "@/lib/api-utils";
+import { canModifyStamp } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
+import { getClientIp } from "@/lib/get-client-ip";
 
 const CONTENT_TYPE_MAP: Record<string, string> = {
 	png: "image/png",
@@ -16,7 +19,7 @@ const VALID_EXTENSIONS = ["png", "jpg", "jpeg", "webp"] as const;
 const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const MAX_ID_LENGTH = 100;
 
-export async function GET(id: string): Promise<Response> {
+export async function GET(request: Request, id: string): Promise<Response> {
 	const jsonError = (msg: string, status: number) =>
 		withSecurityHeaders(
 			new Response(JSON.stringify({ error: msg }), {
@@ -52,8 +55,23 @@ export async function GET(id: string): Promise<Response> {
 		if (!isReference) {
 			const stamp = await db.query.stamps.findFirst({
 				where: eq(stamps.id, id),
-				columns: { imageExt: true },
+				columns: {
+					imageExt: true,
+					isPublic: true,
+					userId: true,
+					userIp: true,
+				},
 			});
+
+			// Ownership check: private stamps require authentication or IP match
+			if (stamp && stamp.isPublic === false) {
+				const { userId } = await getAuthUserId();
+				const userIp = getClientIp(request.headers, null);
+
+				if (!canModifyStamp(stamp, { userId, userIp })) {
+					return jsonError("Not authorized", 403);
+				}
+			}
 
 			if (stamp?.imageExt) {
 				const ext = stamp.imageExt;
@@ -90,10 +108,9 @@ export async function GET(id: string): Promise<Response> {
 			return jsonError("Image not found", 404);
 		}
 
-		const body = await object.arrayBuffer();
-
+		// Stream R2 body directly — avoids buffering images into Worker memory
 		return withSecurityHeaders(
-			new Response(body, {
+			new Response(object.body, {
 				headers: {
 					"Content-Type": contentType,
 					"Cache-Control": "public, max-age=31536000, immutable",
@@ -109,7 +126,7 @@ export async function GET(id: string): Promise<Response> {
 export const Route = createFileRoute("/api/stamps/$id/image")({
 	server: {
 		handlers: {
-			GET: ({ params }) => GET(params.id),
+			GET: ({ request, params }) => GET(request, params.id),
 		},
 	},
 });

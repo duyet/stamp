@@ -1,4 +1,5 @@
 import { StampImage } from "@/components/stamp-image";
+import { capitalize } from "@/lib/text-utils";
 
 interface StyleShowcaseProps {
 	styles: Array<{
@@ -11,10 +12,6 @@ interface StyleShowcaseProps {
 			description: string | null;
 		};
 	}>;
-}
-
-function capitalize(s: string): string {
-	return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export function StyleShowcase({ styles }: StyleShowcaseProps) {
