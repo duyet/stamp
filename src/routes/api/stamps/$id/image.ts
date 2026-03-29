@@ -90,10 +90,9 @@ export async function GET(id: string): Promise<Response> {
 			return jsonError("Image not found", 404);
 		}
 
-		const body = await object.arrayBuffer();
-
+		// Stream R2 body directly — avoids buffering images into Worker memory
 		return withSecurityHeaders(
-			new Response(body, {
+			new Response(object.body, {
 				headers: {
 					"Content-Type": contentType,
 					"Cache-Control": "public, max-age=31536000, immutable",
