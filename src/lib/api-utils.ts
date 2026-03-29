@@ -32,10 +32,15 @@ export function jsonResponse(
 	status = 200,
 	headers?: HeadersInit,
 ): Response {
+	const responseHeaders = new Headers(headers);
+	if (!responseHeaders.has("Content-Type")) {
+		responseHeaders.set("Content-Type", "application/json");
+	}
+
 	return withSecurityHeaders(
 		new Response(JSON.stringify(data), {
 			status,
-			headers: { "Content-Type": "application/json", ...headers },
+			headers: responseHeaders,
 		}),
 	);
 }

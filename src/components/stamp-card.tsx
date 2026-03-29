@@ -36,7 +36,7 @@ export const StampCard = memo(function StampCard({
 						href={stamp.imageUrl}
 						download={`stamp-${stamp.id}.png`}
 						onClick={(e) => e.stopPropagation()}
-						className={`text-xs ${TEXT_COLORS.muted} hover:text-gray-800 dark:hover:text-gray-200 transition`}
+						className={`text-xs ${TEXT_COLORS.muted} ${TEXT_COLORS.hover} transition`}
 					>
 						Download
 					</a>

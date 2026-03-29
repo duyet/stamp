@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
-interface StampImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface StampImageProps
+	extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, "src"> {
+	src: string;
 	fallbackSrc?: string;
 }
 

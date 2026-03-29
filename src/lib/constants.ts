@@ -97,6 +97,8 @@ export const TEXT_COLORS = {
 	heading: "text-stamp-navy dark:text-stone-100",
 	/** Muted text color */
 	muted: "text-stone-400 dark:text-stone-500",
+	/** Hover text color */
+	hover: "hover:text-stone-700 dark:hover:text-stone-300",
 	/** Inverted text (dark mode) */
 	inverted: "text-stone-900 dark:text-stone-100",
 } as const;

@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { waitUntil } from "cloudflare:workers";
+import { createFileRoute } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
@@ -44,15 +44,18 @@ export async function POST(request: Request): Promise<Response> {
 		// This prevents lost tracking events on Workers runtime
 		const db = getDb();
 		waitUntil(
-			db.insert(events).values({
-				id: nanoid(12),
-				event,
-				metadata: metadataStr,
-				userIp,
-				createdAt: Date.now(),
-			}).catch((err) => {
-				console.error("Track event failed:", err);
-			}),
+			db
+				.insert(events)
+				.values({
+					id: nanoid(12),
+					event,
+					metadata: metadataStr,
+					userIp,
+					createdAt: Date.now(),
+				})
+				.catch((err) => {
+					console.error("Track event failed:", err);
+				}),
 		);
 
 		return jsonResponse({ ok: true });
