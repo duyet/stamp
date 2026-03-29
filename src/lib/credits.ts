@@ -60,7 +60,7 @@ export async function getUserCredits(db: Database, userId: string) {
  * Deducts from daily credits first, then purchased credits.
  *
  * Uses atomic UPDATE with WHERE clause to prevent race conditions.
- * Uses raw SQL to ensure the check-and-update happens atomically.
+ * Uses RETURNING to get accurate post-update values instead of stale reads.
  *
  * @param cost - Number of credits to deduct (default 1, e.g. 5 for HD).
  */
@@ -75,40 +75,39 @@ export async function checkAndDeductCredit(
 }> {
 	const now = Date.now();
 
-	// Get current credit state (handles auto-reset)
-	const credits = await getUserCredits(db, userId);
+	// Ensure user credit record exists and handle auto-reset
+	await getUserCredits(db, userId);
 
-	// Try atomic UPDATE on daily credits first
+	// Try atomic UPDATE on daily credits with RETURNING
 	// WHERE clause ensures we only update if within limit
-	// The meta.changes property tells us if the UPDATE succeeded
+	// RETURNING gives accurate post-increment values (not stale from prior read)
 	const dailyResult = await db.$client
 		.prepare(
-			`UPDATE user_credits SET daily_used = daily_used + ?, updated_at = ? WHERE user_id = ? AND daily_used + ? <= daily_limit`,
+			`UPDATE user_credits SET daily_used = daily_used + ?, updated_at = ? WHERE user_id = ? AND daily_used + ? <= daily_limit RETURNING daily_used, daily_limit, purchased_credits`,
 		)
 		.bind(cost, now, userId, cost)
-		.run();
+		.first<{
+			daily_used: number;
+			daily_limit: number;
+			purchased_credits: number;
+		}>();
 
-	// Check if the UPDATE succeeded (meta.changes > 0 means rows were modified)
-	if (dailyResult.meta.changes > 0) {
-		// Daily credit was deducted successfully
-		// Calculate remaining without another query
-		const dailyRemaining = credits.dailyLimit - (credits.dailyUsed + cost);
-		const remaining = dailyRemaining + credits.purchasedCredits;
+	if (dailyResult) {
+		// Use RETURNING values — accurate even under concurrent requests
+		const dailyRemaining = dailyResult.daily_limit - dailyResult.daily_used;
+		const remaining = dailyRemaining + dailyResult.purchased_credits;
 		return { allowed: true, remaining, source: "daily" };
 	}
 
-	// Daily credits exhausted, try purchased credits atomically
+	// Daily credits exhausted, try purchased credits atomically with RETURNING
 	const purchasedResult = await db.$client
 		.prepare(
-			`UPDATE user_credits SET purchased_credits = purchased_credits - ?, updated_at = ? WHERE user_id = ? AND purchased_credits >= ?`,
+			`UPDATE user_credits SET purchased_credits = purchased_credits - ?, updated_at = ? WHERE user_id = ? AND purchased_credits >= ? RETURNING purchased_credits`,
 		)
 		.bind(cost, now, userId, cost)
-		.run();
+		.first<{ purchased_credits: number }>();
 
-	// Check if purchased credit deduction succeeded
-	if (purchasedResult.meta.changes > 0) {
-		const newPurchasedBalance = credits.purchasedCredits - cost;
-
+	if (purchasedResult) {
 		// Record transaction asynchronously (fire-and-forget for non-critical logging)
 		db.insert(creditTransactions)
 			.values({
@@ -116,7 +115,7 @@ export async function checkAndDeductCredit(
 				userId,
 				type: "deduct_purchased",
 				amount: -cost,
-				balanceAfter: newPurchasedBalance,
+				balanceAfter: purchasedResult.purchased_credits,
 				metadata: null,
 				createdAt: now,
 			})
@@ -124,14 +123,14 @@ export async function checkAndDeductCredit(
 				console.error("[Credits] Failed to record transaction:", {
 					userId,
 					amount: -cost,
-					balance: newPurchasedBalance,
+					balance: purchasedResult.purchased_credits,
 					error: err,
 				});
 			});
 
 		return {
 			allowed: true,
-			remaining: newPurchasedBalance,
+			remaining: purchasedResult.purchased_credits,
 			source: "purchased",
 		};
 	}

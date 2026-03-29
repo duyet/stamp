@@ -264,6 +264,80 @@ export function createMockCreditsDb(
 						return { meta: { changes: 0 } };
 					}),
 					first: vi.fn().mockImplementation(() => {
+						// Simulate checkAndDeductCredit daily: UPDATE ... daily_used + ? ... RETURNING daily_used, daily_limit, purchased_credits
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("daily_used = daily_used +") &&
+							sql.includes("RETURNING daily_used")
+						) {
+							const cost = args[0] as number;
+							if (
+								currentState &&
+								currentState.dailyUsed + cost <= currentState.dailyLimit
+							) {
+								currentState.dailyUsed += cost;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									daily_used: currentState.dailyUsed,
+									daily_limit: currentState.dailyLimit,
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
+						// Simulate checkAndDeductCredit purchased: UPDATE ... purchased_credits - ? ... RETURNING purchased_credits
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("purchased_credits = purchased_credits -") &&
+							sql.includes("RETURNING purchased_credits")
+						) {
+							const cost = args[0] as number;
+							if (currentState && currentState.purchasedCredits >= cost) {
+								currentState.purchasedCredits -= cost;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
+						// Simulate daily credit deduction with RETURNING
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("daily_used = daily_used +") &&
+							sql.includes("RETURNING daily_used")
+						) {
+							const cost = args[0] as number;
+							if (
+								currentState &&
+								currentState.dailyUsed + cost <= currentState.dailyLimit
+							) {
+								currentState.dailyUsed += cost;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									daily_used: currentState.dailyUsed,
+									daily_limit: currentState.dailyLimit,
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
+						// Simulate purchased credit deduction with RETURNING
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("purchased_credits = purchased_credits -") &&
+							sql.includes("RETURNING purchased_credits")
+						) {
+							const cost = args[0] as number;
+							if (currentState && currentState.purchasedCredits >= cost) {
+								currentState.purchasedCredits -= cost;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
 						// Simulate atomic addCredits: UPDATE ... purchased_credits + ? ... RETURNING
 						if (
 							sql.includes("UPDATE user_credits") &&
