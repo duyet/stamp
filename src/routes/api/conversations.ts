@@ -27,7 +27,12 @@ export async function GET(request: Request): Promise<Response> {
 
 	try {
 		if (query) {
-			const result = await searchConversations(apiKey, query, limit);
+			const result = await searchConversations(
+				apiKey,
+				query,
+				limit,
+				`user:${userId}`,
+			);
 			return jsonResponse(result);
 		}
 
