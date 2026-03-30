@@ -18,7 +18,8 @@ import { getClientIp } from "@/lib/get-client-ip";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { refundCredits } from "@/lib/refund-credits";
 import { sanitizeErrorForLogging } from "@/lib/sanitize-error";
-import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
+import { generateRequestSchema } from "@/lib/schemas";
+import type { StampStyle } from "@/lib/stamp-prompts";
 import { validateReferenceImage } from "@/lib/validate-image";
 
 export async function POST(request: Request): Promise<Response> {
@@ -53,22 +54,18 @@ export async function POST(request: Request): Promise<Response> {
 			? Number(request.headers.get("cf-iplongitude"))
 			: undefined;
 
-		const body = await request.json();
-		const {
-			prompt,
-			style = "vintage",
-			isPublic = true,
-			hd = false,
-			timezone,
-			referenceImageData, // base64 string from client
-		} = body as {
-			prompt: string;
-			style?: StampStyle;
-			isPublic?: boolean;
-			hd?: boolean;
-			timezone?: string;
-			referenceImageData?: string; // base64-encoded PNG
-		};
+		const rawBody = await request.json();
+		const parsed = generateRequestSchema.safeParse(rawBody);
+		if (!parsed.success) {
+			return jsonResponse(
+				{ error: "Invalid request body", details: parsed.error.flatten() },
+				400,
+			);
+		}
+		const { prompt, style, isPublic, hd, timezone, referenceImageData } =
+			parsed.data;
+		// Zod validated style against STAMP_STYLE_PRESETS keys; cast is safe
+		const stampStyle = style as StampStyle;
 
 		// Validate input before deducting credits
 		const hasReference =
@@ -93,22 +90,6 @@ export async function POST(request: Request): Promise<Response> {
 		) {
 			return jsonResponse(
 				{ error: "Prompt is required and must be under 500 characters." },
-				400,
-			);
-		}
-
-		// Still validate prompt length if provided even with reference
-		if (prompt && typeof prompt === "string" && prompt.length > 500) {
-			return jsonResponse(
-				{ error: "Prompt must be under 500 characters." },
-				400,
-			);
-		}
-
-		const validStyles = Object.keys(STAMP_STYLE_PRESETS);
-		if (!validStyles.includes(style)) {
-			return jsonResponse(
-				{ error: `Invalid style. Must be one of: ${validStyles.join(", ")}` },
 				400,
 			);
 		}
@@ -183,7 +164,13 @@ export async function POST(request: Request): Promise<Response> {
 		}
 
 		const { imageData, mimeType, enhancedPrompt, description } =
-			await generateStamp(ai, prompt || "", style, hd, referenceImageBytes);
+			await generateStamp(
+				ai,
+				prompt || "",
+				stampStyle,
+				hd,
+				referenceImageBytes,
+			);
 
 		const generationTimeMs = Date.now() - genStart;
 

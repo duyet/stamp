@@ -5,7 +5,8 @@ import { getDb } from "@/db";
 import { events } from "@/db/schema";
 import { handleCorsPreflight, jsonResponse } from "@/lib/api-utils";
 import { getClientIp } from "@/lib/get-client-ip";
-import { checkTrackRateLimit } from "@/lib/track-rate-limit";
+import { checkTrackRateLimit } from "@/lib/rate-limit";
+import { trackRequestSchema } from "@/lib/schemas";
 
 export const ALLOWED_EVENTS = [
 	"page_view",
@@ -24,15 +25,15 @@ const MAX_METADATA_LENGTH = 1024;
 
 export async function POST(request: Request): Promise<Response> {
 	try {
-		const body = await request.json();
-		const { event, metadata } = body as {
-			event: string;
-			metadata?: Record<string, unknown>;
-		};
-
-		if (!event || typeof event !== "string" || !ALLOWED_EVENTS_SET.has(event)) {
-			return jsonResponse({ error: "Invalid event type" }, 400);
+		const rawBody = await request.json();
+		const parsed = trackRequestSchema.safeParse(rawBody);
+		if (!parsed.success) {
+			return jsonResponse(
+				{ error: "Invalid request body", details: parsed.error.flatten() },
+				400,
+			);
 		}
+		const { event, metadata } = parsed.data;
 
 		const metadataStr = metadata ? JSON.stringify(metadata) : null;
 		if (metadataStr && metadataStr.length > MAX_METADATA_LENGTH) {

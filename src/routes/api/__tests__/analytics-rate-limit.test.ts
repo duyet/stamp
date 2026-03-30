@@ -33,11 +33,7 @@ describe("Analytics rate limiting (checkAnalyticsRateLimit)", () => {
 
 	/**
 	 * Helper: create a mock prepare that simulates analytics rate limit behavior.
-	 * The analytics route uses `checkAnalyticsRateLimit` which runs 1-3 prepare calls:
-	 *   1. UPDATE ... RETURNING (increment if under limit)
-	 *   2. SELECT ... (check existing record)
-	 *   3. UPDATE ... SET generations_count = 1 (reset expired window)
-	 *      OR INSERT ... (new record)
+	 * Matches the factory-created rate limiter (UPDATE + INSERT ON CONFLICT).
 	 */
 	function createAnalyticsRateLimitMock(options: {
 		existingCount?: number;
@@ -48,7 +44,6 @@ describe("Analytics rate limiting (checkAnalyticsRateLimit)", () => {
 		const ANALYTICS_RATE_LIMIT = 10;
 		const ANALYTICS_RATE_WINDOW = 15 * 60 * 1000;
 		const now = Date.now();
-		const _windowStartThreshold = now - ANALYTICS_RATE_WINDOW;
 
 		return vi.fn().mockImplementation((sql: string) => ({
 			bind: vi.fn().mockImplementation((..._args: unknown[]) => ({
@@ -68,15 +63,33 @@ describe("Analytics rate limiting (checkAnalyticsRateLimit)", () => {
 						}
 						return Promise.resolve(null); // limit reached or no record
 					}
-					// SELECT: check existing record
-					if (sql.includes("SELECT generations_count")) {
-						if (existingCount !== undefined) {
+					// INSERT ... ON CONFLICT DO UPDATE ... RETURNING (new user or expired window)
+					if (
+						sql.includes("INSERT INTO analytics_rate_limits") &&
+						sql.includes("ON CONFLICT")
+					) {
+						if (existingCount === undefined) {
+							// New record — allowed
 							return Promise.resolve({
-								generations_count: existingCount,
-								window_start: windowStart ?? now,
+								generations_count: 1,
+								window_start: now,
 							});
 						}
-						return Promise.resolve(null); // no record
+						// Existing record — check if window expired
+						const windowStartThreshold = now - ANALYTICS_RATE_WINDOW;
+						const ws = windowStart ?? now;
+						if (ws < windowStartThreshold) {
+							// Window expired — reset
+							return Promise.resolve({
+								generations_count: 1,
+								window_start: now,
+							});
+						}
+						// Window valid, at limit
+						return Promise.resolve({
+							generations_count: existingCount,
+							window_start: ws,
+						});
 					}
 					return Promise.resolve(null);
 				}),

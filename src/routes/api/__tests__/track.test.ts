@@ -13,14 +13,14 @@ vi.mock("nanoid", () => ({
 	nanoid: vi.fn(() => "track_id_123"),
 }));
 
-vi.mock("@/lib/track-rate-limit", () => ({
+vi.mock("@/lib/rate-limit", () => ({
 	checkTrackRateLimit: vi
 		.fn()
 		.mockResolvedValue({ allowed: true, remaining: 99 }),
 }));
 
 import { getDb } from "@/db";
-import { checkTrackRateLimit } from "@/lib/track-rate-limit";
+import { checkTrackRateLimit } from "@/lib/rate-limit";
 import { ALLOWED_EVENTS, POST } from "../track";
 
 const URL = "http://localhost/api/track";
@@ -47,7 +47,7 @@ describe("POST /api/track", () => {
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
-		expect(data.error).toContain("Invalid event type");
+		expect(data.error).toContain("Invalid request body");
 	});
 
 	it("returns 400 for empty event string", async () => {
@@ -65,7 +65,7 @@ describe("POST /api/track", () => {
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(400);
-		expect(data.error).toContain("Invalid event type");
+		expect(data.error).toContain("Invalid request body");
 	});
 
 	it.each([...ALLOWED_EVENTS])("accepts event type '%s'", async (event) => {

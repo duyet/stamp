@@ -17,6 +17,12 @@ vi.mock("@/lib/env", () => ({
 	getEnv: vi.fn(),
 }));
 
+vi.mock("@/lib/rate-limit", () => ({
+	checkAnalyticsRateLimit: vi
+		.fn()
+		.mockResolvedValue({ allowed: true, remaining: 9 }),
+}));
+
 import { getDb } from "@/db";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";

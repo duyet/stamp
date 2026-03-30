@@ -202,7 +202,7 @@ describe("POST /api/generate", () => {
 
 			expect(res.status).toBe(400);
 			const data = (await res.json()) as Record<string, unknown>;
-			expect(data.error).toContain("under 500 characters");
+			expect(data.error).toContain("Invalid request body");
 		});
 
 		it("accepts prompt at exactly 500 characters", async () => {
@@ -220,7 +220,7 @@ describe("POST /api/generate", () => {
 			const data = (await res.json()) as Record<string, unknown>;
 
 			expect(res.status).toBe(400);
-			expect(data.error).toContain("Invalid style");
+			expect(data.error).toContain("Invalid request body");
 		});
 
 		it.each(

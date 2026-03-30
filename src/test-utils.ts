@@ -45,14 +45,19 @@ export function createMockRateLimitDb(
 		windowStart: Date;
 	} | null,
 ) {
-	// Mutable state that gets updated by SQL operations
-	let currentState = existing ? { ...existing } : null;
+	// Mutable state — stores integer ms timestamps to match refactored rate limiter
+	let currentState = existing
+		? {
+				userIp: existing.userIp,
+				generationsCount: existing.generationsCount,
+				windowStartMs: existing.windowStart.getTime(),
+			}
+		: null;
 
 	const insertValues = vi.fn().mockResolvedValue(undefined);
 	const updateSet = vi
 		.fn()
 		.mockImplementation((fields: Record<string, unknown>) => {
-			// Simulate Drizzle update().set() by updating currentState directly
 			if (currentState && fields.generationsCount !== undefined) {
 				currentState = { ...currentState, ...fields };
 			}
@@ -61,38 +66,19 @@ export function createMockRateLimitDb(
 			};
 		});
 
-	// Mock D1 client for raw SQL
+	// Mock D1 client for raw SQL (integer ms timestamps)
 	const WINDOW_MS = 24 * 60 * 60 * 1000;
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
 		return {
 			bind: vi.fn().mockImplementation((...args: unknown[]) => {
 				return {
-					run: vi.fn().mockImplementation(() => {
-						// Simulate atomic UPDATE for rate limit
-						if (
-							sql.includes("UPDATE rate_limits") &&
-							sql.includes("generations_count = generations_count + 1")
-						) {
-							if (currentState && currentState.generationsCount < 20) {
-								currentState.generationsCount += 1;
-								return { meta: { changes: 1 } };
-							}
-							return { meta: { changes: 0 } };
-						}
-						return { meta: { changes: 0 } };
-					}),
 					first: vi.fn().mockImplementation(() => {
-						// Simulate UPDATE ... RETURNING for atomic increment
-						if (
-							sql.includes("UPDATE rate_limits") &&
-							sql.includes("RETURNING generations_count")
-						) {
+						// UPDATE ... RETURNING — atomic increment (NOT INSERT)
+						if (sql.trim().startsWith("UPDATE") && sql.includes("RETURNING")) {
 							if (currentState) {
-								// Check window validity: the WHERE clause compares window_start >= windowStartDate
 								const windowStartMs = Date.now() - WINDOW_MS;
-								const stateWindowMs = currentState.windowStart.getTime();
 								if (
-									stateWindowMs >= windowStartMs &&
+									currentState.windowStartMs >= windowStartMs &&
 									currentState.generationsCount < 20
 								) {
 									currentState.generationsCount += 1;
@@ -103,35 +89,30 @@ export function createMockRateLimitDb(
 							}
 							return Promise.resolve(null);
 						}
-						// Simulate INSERT ... ON CONFLICT DO UPDATE ... RETURNING
-						if (
-							sql.includes("INSERT INTO rate_limits") &&
-							sql.includes("ON CONFLICT")
-						) {
+						// INSERT ... ON CONFLICT DO UPDATE ... RETURNING
+						if (sql.includes("INSERT") && sql.includes("ON CONFLICT")) {
 							if (!currentState) {
-								// New record
 								const ip = args[0] as string;
+								const now = args[2] as number;
 								currentState = {
 									userIp: ip,
 									generationsCount: 1,
-									windowStart: args[2] as Date,
+									windowStartMs: now,
 								};
 								return Promise.resolve({
 									generations_count: 1,
-									window_start: currentState.windowStart.toISOString(),
+									window_start: now,
 								});
 							}
 							// Existing record — simulate CASE logic
-							const windowStartThreshold = args[3] as Date;
-							if (currentState.windowStart < windowStartThreshold) {
-								// Window expired — reset
+							const windowStartThreshold = args[3] as number;
+							if (currentState.windowStartMs < windowStartThreshold) {
 								currentState.generationsCount = 1;
-								currentState.windowStart = args[5] as Date;
+								currentState.windowStartMs = args[5] as number;
 							}
-							// Window still valid — no change (count stays same)
 							return Promise.resolve({
 								generations_count: currentState.generationsCount,
-								window_start: currentState.windowStart.toISOString(),
+								window_start: currentState.windowStartMs,
 							});
 						}
 						return Promise.resolve(null);

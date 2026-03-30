@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { desc, gte, sql } from "drizzle-orm";
+import type { z } from "zod";
 import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { dailyStats, events, stamps } from "@/db/schema";
@@ -8,21 +9,13 @@ import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
+import { checkAnalyticsRateLimit } from "@/lib/rate-limit";
+import { eventMetricsSchema, stampCountsSchema } from "@/lib/schemas";
 import { COUNTRY_NAMES } from "@/lib/world-map-data";
 
-interface StampCountsResult {
-	total_stamps: number;
-	stamps_today: number;
-	stamps_week: number;
-	stamps_month: number;
-}
-
-interface EventMetricsResult {
-	total_page_views: number;
-	total_downloads: number;
-	total_shares: number;
-}
-
+// Type aliases derived from zod schemas
+type StampCountsResult = z.infer<typeof stampCountsSchema>;
+type EventMetricsResult = z.infer<typeof eventMetricsSchema>;
 /**
  * Fetch pre-aggregated daily stats for performance optimization.
  * Returns data from daily_stats table if available, falling back to raw queries.
@@ -79,80 +72,10 @@ async function getDailyStats(
 	return [];
 }
 
-// Rate limit for expensive analytics queries (10 requests per 15 minutes)
-const ANALYTICS_RATE_LIMIT = 10;
-const ANALYTICS_RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
-
 // Time constants for analytics calculations
 const SECONDS_PER_DAY = 86_400;
 const WEEK_DAYS = 7;
 const MONTH_DAYS = 30;
-
-async function checkAnalyticsRateLimit(
-	db: Database,
-	userIp: string,
-): Promise<{ allowed: boolean; remaining: number }> {
-	const now = Date.now();
-	const windowStart = now - ANALYTICS_RATE_WINDOW;
-
-	// Try atomic UPDATE with RETURNING clause
-	// Returns the new count if UPDATE succeeded, null otherwise
-	const updateResult = await db.$client
-		.prepare(
-			`UPDATE analytics_rate_limits
-			 SET generations_count = generations_count + 1
-			 WHERE user_ip = ?
-			 AND generations_count < ?
-			 AND window_start >= ?
-			 RETURNING generations_count`,
-		)
-		.bind(userIp, ANALYTICS_RATE_LIMIT, windowStart)
-		.first<{ generations_count: number }>();
-
-	if (updateResult) {
-		// UPDATE succeeded - record exists and was within limits
-		return {
-			allowed: true,
-			remaining: ANALYTICS_RATE_LIMIT - updateResult.generations_count,
-		};
-	}
-
-	// Check if record exists but exceeded limit
-	const existingRecord = await db.$client
-		.prepare(
-			`SELECT generations_count, window_start FROM analytics_rate_limits WHERE user_ip = ?`,
-		)
-		.bind(userIp)
-		.first<{ generations_count: number; window_start: number }>();
-
-	if (existingRecord) {
-		// Record exists but UPDATE failed - either exceeded limit or expired window
-		if (existingRecord.window_start < windowStart) {
-			// Window expired, reset counter
-			await db.$client
-				.prepare(
-					`UPDATE analytics_rate_limits
-					 SET generations_count = 1, window_start = ?
-					 WHERE user_ip = ?`,
-				)
-				.bind(now, userIp)
-				.run();
-			return { allowed: true, remaining: ANALYTICS_RATE_LIMIT - 1 };
-		}
-		// Limit exceeded
-		return { allowed: false, remaining: 0 };
-	}
-
-	// No existing record - do atomic insert
-	await db.$client
-		.prepare(
-			`INSERT INTO analytics_rate_limits (user_ip, generations_count, window_start) VALUES (?, 1, ?)`,
-		)
-		.bind(userIp, now)
-		.run();
-
-	return { allowed: true, remaining: ANALYTICS_RATE_LIMIT - 1 };
-}
 
 export async function GET(request: Request): Promise<Response> {
 	const _env = getEnv();
@@ -236,7 +159,7 @@ export async function GET(request: Request): Promise<Response> {
 			console.warn("[Analytics] daily_stats empty, using raw queries");
 
 			// Consolidated stamp count query (4 aggregations → 1 query)
-			const [stampResult] = (await db.all(
+			const stampRows = await db.all(
 				sql`
 					SELECT
 						count(*) as total_stamps,
@@ -245,11 +168,14 @@ export async function GET(request: Request): Promise<Response> {
 						count(CASE WHEN created_at >= ${monthStart} THEN 1 END) as stamps_month
 					FROM stamps
 				`,
-			)) as [StampCountsResult];
-			stampCountsResult = stampResult;
+			);
+			const parsedStamps = stampCountsSchema.safeParse(stampRows[0]);
+			stampCountsResult = parsedStamps.success
+				? parsedStamps.data
+				: { total_stamps: 0, stamps_today: 0, stamps_week: 0, stamps_month: 0 };
 
 			// Consolidated event metrics query (3 aggregations → 1 query)
-			const [eventResult] = (await db.all(
+			const eventRows = await db.all(
 				sql`
 					SELECT
 						count(CASE WHEN event = 'page_view' THEN 1 END) as total_page_views,
@@ -257,8 +183,11 @@ export async function GET(request: Request): Promise<Response> {
 						count(CASE WHEN event IN ('copy_link', 'share') THEN 1 END) as total_shares
 					FROM events
 				`,
-			)) as [EventMetricsResult];
-			eventMetricsResult = eventResult;
+			);
+			const parsedEvents = eventMetricsSchema.safeParse(eventRows[0]);
+			eventMetricsResult = parsedEvents.success
+				? parsedEvents.data
+				: { total_page_views: 0, total_downloads: 0, total_shares: 0 };
 
 			// Daily trend query
 			const trendData = await db
