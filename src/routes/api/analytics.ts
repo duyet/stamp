@@ -8,6 +8,7 @@ import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
+import { COUNTRY_NAMES } from "@/lib/world-map-data";
 
 interface StampCountsResult {
 	total_stamps: number;
@@ -152,51 +153,6 @@ async function checkAnalyticsRateLimit(
 
 	return { allowed: true, remaining: ANALYTICS_RATE_LIMIT - 1 };
 }
-
-// Build country name map for location stats
-const countryNames: Record<string, string> = {
-	US: "United States",
-	GB: "United Kingdom",
-	JP: "Japan",
-	DE: "Germany",
-	FR: "France",
-	IN: "India",
-	BR: "Brazil",
-	AU: "Australia",
-	CA: "Canada",
-	CN: "China",
-	KR: "South Korea",
-	VN: "Vietnam",
-	SG: "Singapore",
-	NL: "Netherlands",
-	SE: "Sweden",
-	IT: "Italy",
-	ES: "Spain",
-	RU: "Russia",
-	MX: "Mexico",
-	TH: "Thailand",
-	ID: "Indonesia",
-	PH: "Philippines",
-	MY: "Malaysia",
-	TW: "Taiwan",
-	HK: "Hong Kong",
-	PL: "Poland",
-	CH: "Switzerland",
-	AT: "Austria",
-	BE: "Belgium",
-	IE: "Ireland",
-	NO: "Norway",
-	DK: "Denmark",
-	FI: "Finland",
-	PT: "Portugal",
-	NZ: "New Zealand",
-	IL: "Israel",
-	AE: "UAE",
-	ZA: "South Africa",
-	AR: "Argentina",
-	CL: "Chile",
-	CO: "Colombia",
-};
 
 export async function GET(request: Request): Promise<Response> {
 	const _env = getEnv();
@@ -444,7 +400,7 @@ export async function GET(request: Request): Promise<Response> {
 
 		// Build location stats (merging country + city data)
 		const locations = locationCountryResult.map((r) => ({
-			country: countryNames[r.countryCode ?? ""] ?? r.countryCode ?? "Unknown",
+			country: COUNTRY_NAMES[r.countryCode ?? ""] ?? r.countryCode ?? "Unknown",
 			countryCode: r.countryCode ?? "XX",
 			count: r.count,
 			percentage:

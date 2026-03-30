@@ -63,6 +63,8 @@ export const COUNTRY_NAMES: Record<string, string> = {
 	CH: "Switzerland",
 	GR: "Greece",
 	IE: "Ireland",
+	TW: "Taiwan",
+	HK: "Hong Kong",
 } as const;
 
 /** SVG path data for each country */

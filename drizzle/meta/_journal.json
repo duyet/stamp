@@ -57,6 +57,13 @@
       "when": 1773878742081,
       "tag": "0007_charming_gorilla_man",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1774825884065,
+      "tag": "0008_illegal_mathemanic",
+      "breakpoints": true
     }
   ]
 }

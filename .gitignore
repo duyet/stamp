@@ -44,3 +44,6 @@ next-env.d.ts
 # tanstack router
 src/routeTree.gen.ts
 .claude/
+
+# bun project — npm lockfile is noise
+package-lock.json

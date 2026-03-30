@@ -114,6 +114,16 @@ export const analyticsRateLimits = sqliteTable("analytics_rate_limits", {
 	windowStart: integer("window_start").notNull(),
 });
 
+export const trackRateLimits = sqliteTable(
+	"track_rate_limits",
+	{
+		userIp: text("user_ip").primaryKey(),
+		eventCount: integer("event_count").notNull().default(1),
+		windowStart: integer("window_start").notNull(),
+	},
+	(table) => [index("idx_track_rate_limits_ip").on(table.userIp)],
+);
+
 /**
  * Daily stats summary table for analytics optimization.
  * Updated by background jobs to avoid full table scans.

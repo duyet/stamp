@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { events } from "@/db/schema";
 import { jsonResponse } from "@/lib/api-utils";
 import { getClientIp } from "@/lib/get-client-ip";
+import { checkTrackRateLimit } from "@/lib/track-rate-limit";
 
 export const ALLOWED_EVENTS = [
 	"page_view",
@@ -40,9 +41,18 @@ export async function POST(request: Request): Promise<Response> {
 
 		const userIp = getClientIp(request.headers, null);
 
+		// Rate limit: 100 events per minute per IP
+		const db = getDb();
+		const { allowed } = await checkTrackRateLimit(db, userIp || "unknown");
+		if (!allowed) {
+			return jsonResponse(
+				{ error: "Rate limit exceeded", retryAfter: 60 },
+				429,
+			);
+		}
+
 		// Use waitUntil to keep Worker alive until DB insert completes
 		// This prevents lost tracking events on Workers runtime
-		const db = getDb();
 		waitUntil(
 			db
 				.insert(events)

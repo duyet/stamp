@@ -63,9 +63,6 @@ export const STAMP_STYLES = [
 	"risograph",
 ] as const;
 
-/** Stamp style type */
-export type StampStyle = (typeof STAMP_STYLES)[number];
-
 /**
  * UI color constants for dark mode consistency
  */

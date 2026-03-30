@@ -13,7 +13,14 @@ vi.mock("nanoid", () => ({
 	nanoid: vi.fn(() => "track_id_123"),
 }));
 
+vi.mock("@/lib/track-rate-limit", () => ({
+	checkTrackRateLimit: vi
+		.fn()
+		.mockResolvedValue({ allowed: true, remaining: 99 }),
+}));
+
 import { getDb } from "@/db";
+import { checkTrackRateLimit } from "@/lib/track-rate-limit";
 import { ALLOWED_EVENTS, POST } from "../track";
 
 const URL = "http://localhost/api/track";
@@ -141,5 +148,18 @@ describe("POST /api/track", () => {
 
 		// Wait a tick for the async error to be logged
 		await new Promise((resolve) => setTimeout(resolve, 0));
+	});
+	it("returns 429 when rate limit is exceeded", async () => {
+		vi.mocked(checkTrackRateLimit).mockResolvedValueOnce({
+			allowed: false,
+			remaining: 0,
+		});
+
+		const res = await POST(req({ event: "page_view" }));
+		const data = (await res.json()) as Record<string, unknown>;
+
+		expect(res.status).toBe(429);
+		expect(data.error).toContain("Rate limit exceeded");
+		expect(data.retryAfter).toBe(60);
 	});
 });
