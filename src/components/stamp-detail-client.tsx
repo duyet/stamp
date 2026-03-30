@@ -3,14 +3,14 @@ import { useState } from "react";
 import { RefreshIcon } from "@/components/icons";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { StampImage } from "@/components/stamp-image";
-import type { Stamp } from "@/db/schema";
+import type { PublicStamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
 import { useRegenerateStamp } from "@/hooks/use-regenerate-stamp";
 import { formatDateLong } from "@/lib/date-utils";
 import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 
 interface StampDetailClientProps {
-	stamp: Stamp;
+	stamp: PublicStamp;
 }
 
 export function StampDetailClient({
@@ -18,7 +18,9 @@ export function StampDetailClient({
 }: StampDetailClientProps) {
 	const { copied, copy } = useCopy();
 	const { regenerate, regenerating } = useRegenerateStamp();
-	const [regeneratedStamp, setRegeneratedStamp] = useState<Stamp | null>(null);
+	const [regeneratedStamp, setRegeneratedStamp] = useState<PublicStamp | null>(
+		null,
+	);
 
 	// Use derived state: display regenerated stamp if exists, otherwise initial stamp
 	const displayStamp = regeneratedStamp ?? initialStamp;

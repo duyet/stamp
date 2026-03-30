@@ -3,14 +3,26 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, eq } from "drizzle-orm";
 import { StampDetailClient } from "@/components/stamp-detail-client";
 import { getDb } from "@/db";
-import { stamps } from "@/db/schema";
+import { type PublicStamp, stamps } from "@/db/schema";
+
+// Explicit column selection — never expose PII fields (userIp, userAgent, referrer, location)
+const publicStampColumns = {
+	id: stamps.id,
+	prompt: stamps.prompt,
+	enhancedPrompt: stamps.enhancedPrompt,
+	description: stamps.description,
+	imageUrl: stamps.imageUrl,
+	style: stamps.style,
+	isPublic: stamps.isPublic,
+	createdAt: stamps.createdAt,
+} as const;
 
 const fetchStamp = createServerFn({ method: "GET" })
 	.inputValidator((id: string) => id)
-	.handler(async ({ data: id }) => {
+	.handler(async ({ data: id }): Promise<PublicStamp | null> => {
 		const db = getDb();
 		const stamp = await db
-			.select()
+			.select(publicStampColumns)
 			.from(stamps)
 			.where(and(eq(stamps.id, id), eq(stamps.isPublic, true)))
 			.get();

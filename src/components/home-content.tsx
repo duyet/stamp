@@ -4,12 +4,12 @@ import { GenerateForm } from "@/components/generate-form";
 import { StampFan } from "@/components/stamp-fan";
 import { StampImage } from "@/components/stamp-image";
 import { StampModal } from "@/components/stamp-modal";
-import type { Stamp } from "@/db/schema";
+import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 
 export function HomeContent() {
 	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(30);
-	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
+	const [selectedStamp, setSelectedStamp] = useState<PublicStamp | null>(null);
 
 	function handleGenerated(stamp: {
 		id: string;
@@ -19,26 +19,14 @@ export function HomeContent() {
 		enhancedPrompt?: string;
 		description?: string;
 	}) {
-		const newStamp: Stamp = {
+		const newStamp: PublicStamp = {
 			id: stamp.id,
 			prompt: stamp.prompt,
 			enhancedPrompt: stamp.enhancedPrompt ?? null,
 			description: stamp.description ?? null,
 			imageUrl: stamp.imageUrl,
-			thumbnailUrl: null,
-			referenceImageUrl: null,
-			imageExt: null,
 			style: stamp.style ?? "vintage",
 			isPublic: true,
-			userIp: null,
-			userId: null,
-			locationCity: null,
-			locationCountry: null,
-			locationLat: null,
-			locationLng: null,
-			userTimezone: null,
-			userAgent: null,
-			referrer: null,
 			createdAt: new Date(),
 		};
 		setRecentStamps((prev) => [newStamp, ...prev]);

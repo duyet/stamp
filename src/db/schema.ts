@@ -60,6 +60,19 @@ export const rateLimits = sqliteTable(
 export type Stamp = typeof stamps.$inferSelect;
 export type NewStamp = typeof stamps.$inferInsert;
 
+/** Stamp fields safe for public API responses — excludes PII (IP, UA, referrer, location). */
+export type PublicStamp = Pick<
+	Stamp,
+	| "id"
+	| "prompt"
+	| "enhancedPrompt"
+	| "description"
+	| "imageUrl"
+	| "style"
+	| "isPublic"
+	| "createdAt"
+>;
+
 export const events = sqliteTable(
 	"events",
 	{

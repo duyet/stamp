@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { StampImage } from "@/components/stamp-image";
 import { FOCUSABLE_SELECTOR } from "@/constants/a11y";
-import type { Stamp } from "@/db/schema";
+import type { PublicStamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
 import { useRegenerateStamp } from "@/hooks/use-regenerate-stamp";
 import {
@@ -16,9 +16,9 @@ import {
 } from "./icons";
 
 interface StampModalProps {
-	stamp: Stamp;
+	stamp: PublicStamp;
 	onClose: () => void;
-	onRegenerate?: (newStamp: Stamp) => void;
+	onRegenerate?: (newStamp: PublicStamp) => void;
 }
 
 export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {

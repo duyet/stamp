@@ -4,7 +4,7 @@ import { RefreshIcon } from "@/components/icons";
 import { StampCard } from "@/components/stamp-card";
 import { StampGridSkeleton } from "@/components/stamp-grid-skeleton";
 import { StampModal } from "@/components/stamp-modal";
-import type { Stamp } from "@/db/schema";
+import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
@@ -24,7 +24,7 @@ const getFilterButtonClass = (isActive: boolean) =>
 export default function CollectionsPage() {
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
 	const [retryKey, setRetryKey] = useState(0);
-	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
+	const [selectedStamp, setSelectedStamp] = useState<PublicStamp | null>(null);
 	const { stamps, loading, loadingMore, error, setStamps, hasMore, loadMore } =
 		useStamps(
 			PAGE_SIZE,
@@ -50,7 +50,7 @@ export default function CollectionsPage() {
 	}
 
 	// Handle regeneration from modal
-	function handleRegenerate(newStamp: Stamp) {
+	function handleRegenerate(newStamp: PublicStamp) {
 		setSelectedStamp(newStamp);
 		setStamps((prev) => {
 			const filtered = prev.filter((s) => s.id !== newStamp.id);

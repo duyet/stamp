@@ -1,10 +1,10 @@
 import { memo } from "react";
 import { StampImage } from "@/components/stamp-image";
-import type { Stamp } from "@/db/schema";
+import type { PublicStamp } from "@/db/schema";
 import { TEXT_COLORS } from "@/lib/constants";
 
 interface StampCardProps {
-	stamp: Stamp;
+	stamp: PublicStamp;
 	onClick?: () => void;
 }
 

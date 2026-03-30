@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Stamp } from "@/db/schema";
+import type { PublicStamp } from "@/db/schema";
 import type { StampStyle } from "@/lib/stamp-prompts";
 
 /**
@@ -9,7 +9,7 @@ import type { StampStyle } from "@/lib/stamp-prompts";
  * @param style - Optional style filter passed to the API
  */
 export function useStamps(pageSize: number, retryKey = 0, style?: StampStyle) {
-	const [stamps, setStamps] = useState<Stamp[]>([]);
+	const [stamps, setStamps] = useState<PublicStamp[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [loadingMore, setLoadingMore] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export function useStamps(pageSize: number, retryKey = 0, style?: StampStyle) {
 					signal: controller.signal,
 				});
 				const data = (await r.json()) as {
-					stamps?: Stamp[];
+					stamps?: PublicStamp[];
 					error?: string;
 					nextCursor?: string;
 					hasMore?: boolean;
@@ -72,7 +72,7 @@ export function useStamps(pageSize: number, retryKey = 0, style?: StampStyle) {
 				{ signal: controller.signal },
 			);
 			const data = (await r.json()) as {
-				stamps?: Stamp[];
+				stamps?: PublicStamp[];
 				error?: string;
 				nextCursor?: string;
 				hasMore?: boolean;

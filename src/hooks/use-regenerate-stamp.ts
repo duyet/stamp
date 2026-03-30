@@ -1,8 +1,8 @@
 import { useState } from "react";
-import type { Stamp } from "@/db/schema";
+import type { PublicStamp } from "@/db/schema";
 
 interface RegenerateStampOptions {
-	onSuccess?: (newStamp: Stamp) => void;
+	onSuccess?: (newStamp: PublicStamp) => void;
 	onError?: (error: string) => void;
 }
 
@@ -15,7 +15,7 @@ export function useRegenerateStamp() {
 	const [error, setError] = useState<string | null>(null);
 
 	async function regenerate(
-		stamp: Stamp,
+		stamp: PublicStamp,
 		options: RegenerateStampOptions = {},
 	) {
 		setRegenerating(true);
@@ -47,7 +47,7 @@ export function useRegenerateStamp() {
 				throw new Error("Invalid response from server");
 			}
 
-			const newStamp: Stamp = {
+			const newStamp: PublicStamp = {
 				...stamp,
 				id: data.id,
 				imageUrl: data.imageUrl,
