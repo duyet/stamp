@@ -37,6 +37,10 @@ vi.mock("@/lib/clerk", () => ({
 	getAuthUserId: vi.fn(),
 }));
 
+vi.mock("@/lib/hash-ip", () => ({
+	hashIp: vi.fn((ip: string) => Promise.resolve(ip)),
+}));
+
 import { getDb } from "@/db";
 import { getAuthUserId } from "@/lib/clerk";
 import { checkAndDeductCredit } from "@/lib/credits";

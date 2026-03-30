@@ -3,7 +3,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { jsonResponse } from "@/lib/api-utils";
-import { STAMP_STYLES } from "@/lib/constants";
+import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 
 interface StampsApiResponse {
 	stamps: Array<{
@@ -45,7 +45,10 @@ export async function GET(request: Request): Promise<Response> {
 
 		// Validate style parameter against allowlist
 		const style =
-			styleParam && (STAMP_STYLES as readonly string[]).includes(styleParam)
+			styleParam &&
+			(Object.keys(STAMP_STYLE_PRESETS) as readonly string[]).includes(
+				styleParam,
+			)
 				? styleParam
 				: undefined;
 

@@ -48,22 +48,6 @@ export const DAILY_CREDIT_LIMITS = {
 export const STAMPS_PER_PAGE = 50;
 
 /**
- * Stamp styles
- */
-export const STAMP_STYLES = [
-	"vintage",
-	"folk",
-	"modern",
-	"botanical",
-	"portrait",
-	"watercolor",
-	"woodcut",
-	"engraved",
-	"pixel",
-	"risograph",
-] as const;
-
-/**
  * UI color constants for dark mode consistency
  */
 export const TEXT_COLORS = {

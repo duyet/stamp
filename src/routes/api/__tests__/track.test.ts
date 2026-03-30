@@ -19,6 +19,10 @@ vi.mock("@/lib/rate-limit", () => ({
 		.mockResolvedValue({ allowed: true, remaining: 99 }),
 }));
 
+vi.mock("@/lib/hash-ip", () => ({
+	hashIp: vi.fn((ip: string) => Promise.resolve(ip)),
+}));
+
 import { getDb } from "@/db";
 import { checkTrackRateLimit } from "@/lib/rate-limit";
 import { ALLOWED_EVENTS, POST } from "../track";
@@ -123,15 +127,15 @@ describe("POST /api/track", () => {
 
 		const valuesCall =
 			mockDb.insert.mock.results[0]?.value.values.mock.calls[0][0];
-		expect(valuesCall.userIp).toBeNull();
+		expect(valuesCall.userIp).toBe("anonymous");
 	});
 
-	it("sets null IP when no headers present", async () => {
+	it("sets 'anonymous' IP when no headers present", async () => {
 		await POST(req({ event: "page_view" }));
 
 		const valuesCall =
 			mockDb.insert.mock.results[0]?.value.values.mock.calls[0][0];
-		expect(valuesCall.userIp).toBeNull();
+		expect(valuesCall.userIp).toBe("anonymous");
 	});
 
 	it("returns 200 even on database error (fire-and-forget)", async () => {

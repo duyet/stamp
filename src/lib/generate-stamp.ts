@@ -113,7 +113,11 @@ export async function generateStamp(
 	let enhancedPrompt: string;
 	try {
 		enhancedPrompt = await enhancePrompt(ai, userPrompt, style);
-	} catch {
+	} catch (err) {
+		console.warn(
+			"[Generate] Prompt enhancement failed, using fallback:",
+			err instanceof Error ? err.message : String(err),
+		);
 		enhancedPrompt = buildFallbackPrompt(userPrompt, style);
 	}
 

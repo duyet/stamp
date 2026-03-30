@@ -9,6 +9,7 @@ import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
+import { hashIp } from "@/lib/hash-ip";
 import { checkAnalyticsRateLimit } from "@/lib/rate-limit";
 import { eventMetricsSchema, stampCountsSchema } from "@/lib/schemas";
 import { COUNTRY_NAMES } from "@/lib/world-map-data";
@@ -82,7 +83,8 @@ export async function GET(request: Request): Promise<Response> {
 	const db = getDb();
 
 	const { userId } = await getAuthUserId();
-	const userIp = getClientIp(request.headers);
+	const rawIp = getClientIp(request.headers);
+	const userIp = rawIp ? await hashIp(rawIp) : "anonymous";
 
 	// Require authentication
 	if (!userId) {

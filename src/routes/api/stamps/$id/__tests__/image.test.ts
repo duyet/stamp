@@ -20,6 +20,10 @@ vi.mock("@/lib/auth", () => ({
 	canModifyStamp: vi.fn(),
 }));
 
+vi.mock("@/lib/hash-ip", () => ({
+	hashIp: vi.fn((ip: string) => Promise.resolve(ip)),
+}));
+
 import { getDb } from "@/db";
 import { canModifyStamp } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";

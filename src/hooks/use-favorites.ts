@@ -14,8 +14,12 @@ export function useFavorites() {
 				const parsed = JSON.parse(stored) as string[];
 				setFavorites(new Set(parsed));
 			}
-		} catch {
-			// Ignore localStorage errors (e.g., in private browsing)
+		} catch (err) {
+			// Expected in private browsing or storage-full scenarios
+			console.debug(
+				"[Favorites] localStorage read failed:",
+				err instanceof Error ? err.message : String(err),
+			);
 		} finally {
 			setIsInitialized(true);
 		}
@@ -29,8 +33,12 @@ export function useFavorites() {
 					FAVORITES_KEY,
 					JSON.stringify(Array.from(favorites)),
 				);
-			} catch {
-				// Ignore localStorage errors
+			} catch (err) {
+				// Expected in private browsing or storage-full scenarios
+				console.debug(
+					"[Favorites] localStorage write failed:",
+					err instanceof Error ? err.message : String(err),
+				);
 			}
 		}
 	}, [favorites, isInitialized]);

@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { events } from "@/db/schema";
 import { handleCorsPreflight, jsonResponse } from "@/lib/api-utils";
 import { getClientIp } from "@/lib/get-client-ip";
+import { hashIp } from "@/lib/hash-ip";
 import { checkTrackRateLimit } from "@/lib/rate-limit";
 import { trackRequestSchema } from "@/lib/schemas";
 
@@ -40,11 +41,12 @@ export async function POST(request: Request): Promise<Response> {
 			return jsonResponse({ error: "Metadata too large" }, 400);
 		}
 
-		const userIp = getClientIp(request.headers, null);
+		const rawIp = getClientIp(request.headers, null);
+		const userIp = rawIp ? await hashIp(rawIp) : "anonymous";
 
 		// Rate limit: 100 events per minute per IP
 		const db = getDb();
-		const { allowed } = await checkTrackRateLimit(db, userIp || "unknown");
+		const { allowed } = await checkTrackRateLimit(db, userIp);
 		if (!allowed) {
 			return jsonResponse(
 				{ error: "Rate limit exceeded", retryAfter: 60 },

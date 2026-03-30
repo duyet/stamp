@@ -7,6 +7,7 @@ import { canModifyStamp } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
+import { hashIp } from "@/lib/hash-ip";
 
 const CONTENT_TYPE_MAP: Record<string, string> = {
 	png: "image/png",
@@ -66,7 +67,8 @@ export async function GET(request: Request, id: string): Promise<Response> {
 			// Ownership check: private stamps require authentication or IP match
 			if (stamp && stamp.isPublic === false) {
 				const { userId } = await getAuthUserId();
-				const userIp = getClientIp(request.headers, null);
+				const rawIp = getClientIp(request.headers, null);
+				const userIp = rawIp ? await hashIp(rawIp) : null;
 
 				if (!canModifyStamp(stamp, { userId, userIp })) {
 					return jsonError("Not authorized", 403);

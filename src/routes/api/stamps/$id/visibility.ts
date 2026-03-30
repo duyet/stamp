@@ -6,6 +6,7 @@ import { handleCorsPreflight, jsonResponse } from "@/lib/api-utils";
 import { canModifyStamp } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getClientIp } from "@/lib/get-client-ip";
+import { hashIp } from "@/lib/hash-ip";
 
 export async function PATCH(request: Request, id: string): Promise<Response> {
 	try {
@@ -22,9 +23,10 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 			return jsonResponse({ error: "isPublic must be a boolean" }, 400);
 		}
 
-		// Get auth state (userId for logged-in users, IP for anonymous)
+		// Get auth state (userId for logged-in users, hashed IP for anonymous)
 		const { userId } = await getAuthUserId();
-		const userIp = getClientIp(request.headers, null);
+		const rawIp = getClientIp(request.headers, null);
+		const userIp = rawIp ? await hashIp(rawIp) : null;
 
 		const stamp = await db.query.stamps.findFirst({
 			where: eq(stamps.id, id),

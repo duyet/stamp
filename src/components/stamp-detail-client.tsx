@@ -33,8 +33,12 @@ export function StampDetailClient({
 			// Update URL to new stamp ID without page reload
 			const newUrl = `/stamps/${newStamp.id}`;
 			window.history.replaceState({}, "", newUrl);
-		} catch {
-			// Error handled by hook
+		} catch (err) {
+			// Error displayed by useRegenerateStamp hook
+			console.debug(
+				"[StampDetail] Regenerate failed:",
+				err instanceof Error ? err.message : String(err),
+			);
 		}
 	}
 

@@ -38,8 +38,12 @@ export function StampModal({ stamp, onClose, onRegenerate }: StampModalProps) {
 		try {
 			const newStamp = await regenerate(stamp);
 			onRegenerate(newStamp);
-		} catch {
-			// Error handled by hook
+		} catch (err) {
+			// Error displayed by useRegenerateStamp hook
+			console.debug(
+				"[StampModal] Regenerate failed:",
+				err instanceof Error ? err.message : String(err),
+			);
 		}
 	}
 

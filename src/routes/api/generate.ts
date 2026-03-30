@@ -15,6 +15,7 @@ import {
 import { getEnv } from "@/lib/env";
 import { generateStamp } from "@/lib/generate-stamp";
 import { getClientIp } from "@/lib/get-client-ip";
+import { hashIp } from "@/lib/hash-ip";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { refundCredits } from "@/lib/refund-credits";
 import { sanitizeErrorForLogging } from "@/lib/sanitize-error";
@@ -42,7 +43,8 @@ export async function POST(request: Request): Promise<Response> {
 		const db = getDb();
 
 		const { userId } = await getAuthUserId();
-		const userIp = getClientIp(request.headers);
+		const rawIp = getClientIp(request.headers);
+		const userIp = rawIp ? await hashIp(rawIp) : "anonymous";
 
 		// Extract location data from Cloudflare headers
 		const locationCountry = request.headers.get("cf-ipcountry") ?? undefined;
