@@ -5,7 +5,7 @@ import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { events, stamps } from "@/db/schema";
 import { addTags, createConversation } from "@/lib/agentstate";
-import { jsonResponse } from "@/lib/api-utils";
+import { handleCorsPreflight, jsonResponse } from "@/lib/api-utils";
 import { getAuthUserId } from "@/lib/clerk";
 import {
 	checkAndDeductCredit,
@@ -22,6 +22,12 @@ import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 import { validateReferenceImage } from "@/lib/validate-image";
 
 export async function POST(request: Request): Promise<Response> {
+	// Early body size check — reject oversized payloads before parsing JSON
+	const contentLength = Number(request.headers.get("content-length") || 0);
+	if (contentLength > 15 * 1024 * 1024) {
+		return jsonResponse({ error: "Request too large" }, 413);
+	}
+
 	// Track whether credits were deducted for refund in catch block
 	let creditsDeducted = false;
 	let dbForRefund: Database | undefined;
@@ -397,6 +403,7 @@ export async function POST(request: Request): Promise<Response> {
 export const Route = createFileRoute("/api/generate")({
 	server: {
 		handlers: {
+			OPTIONS: ({ request }) => handleCorsPreflight(request),
 			POST: ({ request }) => POST(request),
 		},
 	},

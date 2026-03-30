@@ -2,6 +2,39 @@
  * API utilities for consistent response handling
  */
 
+/** Allowed origins for CORS — only the production domain and Workers dev URL. */
+const ALLOWED_ORIGINS = new Set([
+	"https://stamp.duyet.net",
+	"https://stamp.duyet.workers.dev",
+]);
+
+/**
+ * Resolve the allowed origin from the request Origin header.
+ * Returns the origin if it's in our allowlist, otherwise null.
+ */
+function getAllowedOrigin(request: Request): string | null {
+	const origin = request.headers.get("Origin");
+	if (origin && ALLOWED_ORIGINS.has(origin)) {
+		return origin;
+	}
+	return null;
+}
+
+/** Maximum request body size (15 MB) — checked before parsing JSON. */
+export const MAX_REQUEST_BODY_SIZE = 15 * 1024 * 1024;
+
+/**
+ * Reject requests with bodies that exceed the size limit.
+ * Call this *before* `request.json()` to avoid buffering huge payloads.
+ */
+export function checkBodySize(request: Request): Response | null {
+	const contentLength = Number(request.headers.get("content-length") || 0);
+	if (contentLength > MAX_REQUEST_BODY_SIZE) {
+		return jsonResponse({ error: "Request too large" }, 413);
+	}
+	return null;
+}
+
 const SECURITY_HEADERS: Record<string, string> = {
 	"X-Content-Type-Options": "nosniff",
 	"X-Frame-Options": "DENY",
@@ -20,28 +53,73 @@ const SECURITY_HEADERS: Record<string, string> = {
 };
 
 /**
- * Add standard security headers to an existing Response.
+ * Add standard security + CORS headers to an existing Response.
+ * If an Origin header is present and matches our allowlist, CORS headers are added.
  */
-export function withSecurityHeaders(response: Response): Response {
+export function withSecurityHeaders(
+	response: Response,
+	request?: Request,
+): Response {
 	for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
 		response.headers.set(key, value);
 	}
+
+	if (request) {
+		const allowedOrigin = getAllowedOrigin(request);
+		if (allowedOrigin) {
+			response.headers.set("Access-Control-Allow-Origin", allowedOrigin);
+			response.headers.set(
+				"Access-Control-Allow-Methods",
+				"GET, POST, PATCH, OPTIONS",
+			);
+			response.headers.set(
+				"Access-Control-Allow-Headers",
+				"Content-Type, Authorization",
+			);
+			response.headers.set("Access-Control-Max-Age", "86400");
+		}
+	}
+
 	return response;
 }
 
 /**
- * Create a JSON response with security headers.
+ * Handle CORS preflight (OPTIONS) requests.
+ * Returns 204 with CORS headers if the origin is allowed, 403 otherwise.
+ */
+export function handleCorsPreflight(request: Request): Response {
+	const allowedOrigin = getAllowedOrigin(request);
+	if (!allowedOrigin) {
+		return new Response(null, { status: 403 });
+	}
+	return withSecurityHeaders(
+		new Response(null, {
+			status: 204,
+			headers: {
+				"Access-Control-Allow-Origin": allowedOrigin,
+				"Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+				"Access-Control-Allow-Headers": "Content-Type, Authorization",
+				"Access-Control-Max-Age": "86400",
+			},
+		}),
+	);
+}
+
+/**
+ * Create a JSON response with security + CORS headers.
  * Consolidates the per-route jsonResponse helpers into one shared function.
  *
  * @param data - Response data to return to client
  * @param status - HTTP status code (default: 200)
  * @param headers - Optional headers to add
- * @returns Response with security headers
+ * @param request - Optional request for CORS origin resolution
+ * @returns Response with security + CORS headers
  */
 export function jsonResponse(
 	data: unknown,
 	status = 200,
 	headers?: HeadersInit,
+	request?: Request,
 ): Response {
 	const responseHeaders = new Headers(headers);
 	if (!responseHeaders.has("Content-Type")) {
@@ -53,5 +131,6 @@ export function jsonResponse(
 			status,
 			headers: responseHeaders,
 		}),
+		request,
 	);
 }

@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
 import { getDb } from "@/db";
 import { events } from "@/db/schema";
-import { jsonResponse } from "@/lib/api-utils";
+import { handleCorsPreflight, jsonResponse } from "@/lib/api-utils";
 import { getClientIp } from "@/lib/get-client-ip";
 import { checkTrackRateLimit } from "@/lib/track-rate-limit";
 
@@ -78,6 +78,7 @@ export async function POST(request: Request): Promise<Response> {
 export const Route = createFileRoute("/api/track")({
 	server: {
 		handlers: {
+			OPTIONS: ({ request }) => handleCorsPreflight(request),
 			POST: ({ request }) => POST(request),
 		},
 	},

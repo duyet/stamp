@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
-import { jsonResponse } from "@/lib/api-utils";
+import { handleCorsPreflight, jsonResponse } from "@/lib/api-utils";
 import { canModifyStamp } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getClientIp } from "@/lib/get-client-ip";
@@ -59,6 +59,7 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 export const Route = createFileRoute("/api/stamps/$id/visibility")({
 	server: {
 		handlers: {
+			OPTIONS: ({ request }) => handleCorsPreflight(request),
 			PATCH: ({ request, params }) => PATCH(request, params.id),
 		},
 	},
