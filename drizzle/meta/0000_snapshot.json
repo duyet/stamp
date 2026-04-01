@@ -1,9 +1,41 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "7f341d7a-8380-47db-aadc-c5a9e7ce0566",
+  "id": "399f566f-e588-4d96-96a4-fb53c826997a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "analytics_rate_limits": {
+      "name": "analytics_rate_limits",
+      "columns": {
+        "user_ip": {
+          "name": "user_ip",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "generations_count": {
+          "name": "generations_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "window_start": {
+          "name": "window_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "credit_transactions": {
       "name": "credit_transactions",
       "columns": {
@@ -72,6 +104,78 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "daily_stats": {
+      "name": "daily_stats",
+      "columns": {
+        "date": {
+          "name": "date",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_stamps": {
+          "name": "total_stamps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "new_stamps": {
+          "name": "new_stamps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "page_views": {
+          "name": "page_views",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "unique_visitors": {
+          "name": "unique_visitors",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "downloads": {
+          "name": "downloads",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "shares": {
+          "name": "shares",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "events": {
       "name": "events",
       "columns": {
@@ -111,7 +215,23 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_events_event": {
+          "name": "idx_events_event",
+          "columns": [
+            "event"
+          ],
+          "isUnique": false
+        },
+        "idx_events_event_created": {
+          "name": "idx_events_event_created",
+          "columns": [
+            "event",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -150,7 +270,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_rate_limits_ip": {
+          "name": "idx_rate_limits_ip",
+          "columns": [
+            "user_ip"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -208,6 +336,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "image_ext": {
+          "name": "image_ext",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "style": {
           "name": "style",
           "type": "text",
@@ -226,6 +361,13 @@
         },
         "user_ip": {
           "name": "user_ip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "session_token": {
+          "name": "session_token",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -300,6 +442,77 @@
           "name": "idx_stamps_user",
           "columns": [
             "user_id"
+          ],
+          "isUnique": false
+        },
+        "idx_stamps_session_token": {
+          "name": "idx_stamps_session_token",
+          "columns": [
+            "session_token"
+          ],
+          "isUnique": false
+        },
+        "idx_stamps_public_created": {
+          "name": "idx_stamps_public_created",
+          "columns": [
+            "is_public",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_stamps_public_style_created": {
+          "name": "idx_stamps_public_style_created",
+          "columns": [
+            "is_public",
+            "style",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "idx_stamps_created": {
+          "name": "idx_stamps_created",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "track_rate_limits": {
+      "name": "track_rate_limits",
+      "columns": {
+        "user_ip": {
+          "name": "user_ip",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_count": {
+          "name": "event_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "window_start": {
+          "name": "window_start",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_track_rate_limits_ip": {
+          "name": "idx_track_rate_limits_ip",
+          "columns": [
+            "user_ip"
           ],
           "isUnique": false
         }
