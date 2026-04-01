@@ -8,6 +8,7 @@ import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
 import { hashIp } from "@/lib/hash-ip";
+import { getSessionToken } from "@/lib/session-cookie";
 
 const CONTENT_TYPE_MAP: Record<string, string> = {
 	png: "image/png",
@@ -61,6 +62,7 @@ export async function GET(request: Request, id: string): Promise<Response> {
 					isPublic: true,
 					userId: true,
 					userIp: true,
+					sessionToken: true,
 				},
 			});
 
@@ -69,8 +71,9 @@ export async function GET(request: Request, id: string): Promise<Response> {
 				const { userId } = await getAuthUserId();
 				const rawIp = getClientIp(request.headers, null);
 				const userIp = rawIp ? await hashIp(rawIp) : null;
+				const sessionToken = getSessionToken(request);
 
-				if (!canModifyStamp(stamp, { userId, userIp })) {
+				if (!canModifyStamp(stamp, { userId, userIp, sessionToken })) {
 					return jsonError("Not authorized", 403);
 				}
 			}

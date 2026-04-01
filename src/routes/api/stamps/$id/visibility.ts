@@ -7,6 +7,7 @@ import { canModifyStamp } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getClientIp } from "@/lib/get-client-ip";
 import { hashIp } from "@/lib/hash-ip";
+import { getSessionToken } from "@/lib/session-cookie";
 
 export async function PATCH(request: Request, id: string): Promise<Response> {
 	try {
@@ -27,6 +28,7 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 		const { userId } = await getAuthUserId();
 		const rawIp = getClientIp(request.headers, null);
 		const userIp = rawIp ? await hashIp(rawIp) : null;
+		const sessionToken = getSessionToken(request);
 
 		const stamp = await db.query.stamps.findFirst({
 			where: eq(stamps.id, id),
@@ -37,7 +39,7 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 		}
 
 		// Authorization: Only the creator can toggle visibility
-		if (!canModifyStamp(stamp, { userId, userIp })) {
+		if (!canModifyStamp(stamp, { userId, userIp, sessionToken })) {
 			return jsonResponse({ error: "Not authorized" }, 403);
 		}
 

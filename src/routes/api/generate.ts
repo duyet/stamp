@@ -20,6 +20,11 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { refundCredits } from "@/lib/refund-credits";
 import { sanitizeErrorForLogging } from "@/lib/sanitize-error";
 import { generateRequestSchema } from "@/lib/schemas";
+import {
+	buildSetCookieHeader,
+	createSessionToken,
+	getSessionToken,
+} from "@/lib/session-cookie";
 import type { StampStyle } from "@/lib/stamp-prompts";
 import { validateReferenceImage } from "@/lib/validate-image";
 
@@ -130,6 +135,11 @@ export async function POST(request: Request): Promise<Response> {
 
 		const stampId = nanoid(12);
 
+		// Generate session token for anonymous stamp ownership.
+		// Reuse existing cookie if present (user already has a session).
+		const existingSessionToken = getSessionToken(request);
+		const sessionToken = existingSessionToken || createSessionToken();
+
 		// Track credit info for potential refund
 		creditsDeducted = true;
 		dbForRefund = db;
@@ -216,6 +226,7 @@ export async function POST(request: Request): Promise<Response> {
 				style,
 				isPublic,
 				userIp,
+				sessionToken,
 				userId: userId ?? null,
 				locationCity,
 				locationCountry,
@@ -349,17 +360,27 @@ export async function POST(request: Request): Promise<Response> {
 			})(),
 		);
 
-		return jsonResponse({
-			id: stampId,
-			imageUrl,
-			prompt,
-			enhancedPrompt,
-			description,
-			style,
-			hd,
-			remaining,
-			generationTimeMs,
-		});
+		// Set session cookie on response (only if new token was generated)
+		const responseHeaders = new Headers();
+		if (!existingSessionToken) {
+			responseHeaders.set("Set-Cookie", buildSetCookieHeader(sessionToken));
+		}
+
+		return jsonResponse(
+			{
+				id: stampId,
+				imageUrl,
+				prompt,
+				enhancedPrompt,
+				description,
+				style,
+				hd,
+				remaining,
+				generationTimeMs,
+			},
+			200,
+			responseHeaders,
+		);
 	} catch (error) {
 		// Refund credits if generation fails after deduction
 		// This handles failures in generateStamp() or R2 upload

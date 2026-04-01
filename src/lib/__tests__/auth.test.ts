@@ -66,8 +66,8 @@ describe("canModifyStamp", () => {
 	it("allows authenticated user to modify their own stamp", () => {
 		expect(
 			canModifyStamp(
-				{ userId: "user_1", userIp: "1.2.3.4" },
-				{ userId: "user_1", userIp: "5.6.7.8" },
+				{ userId: "user_1", userIp: "1.2.3.4", sessionToken: null },
+				{ userId: "user_1", userIp: "5.6.7.8", sessionToken: null },
 			),
 		).toBe(true);
 	});
@@ -75,27 +75,81 @@ describe("canModifyStamp", () => {
 	it("denies authenticated user from modifying another user stamp", () => {
 		expect(
 			canModifyStamp(
-				{ userId: "user_1", userIp: "1.2.3.4" },
-				{ userId: "user_2", userIp: "1.2.3.4" },
+				{ userId: "user_1", userIp: "1.2.3.4", sessionToken: "token-a" },
+				{ userId: "user_2", userIp: "5.6.7.8", sessionToken: "token-b" },
 			),
 		).toBe(false);
 	});
 
-	it("allows anonymous user with matching IP", () => {
+	it("allows anonymous user with matching session token", () => {
 		expect(
 			canModifyStamp(
-				{ userId: null, userIp: "1.2.3.4" },
-				{ userId: null, userIp: "1.2.3.4" },
+				{ userId: null, userIp: "1.2.3.4", sessionToken: "token-abc" },
+				{ userId: null, userIp: "5.6.7.8", sessionToken: "token-abc" },
 			),
 		).toBe(true);
 	});
 
-	it("denies anonymous user with different IP", () => {
+	it("denies anonymous user with different session token", () => {
 		expect(
 			canModifyStamp(
-				{ userId: null, userIp: "1.2.3.4" },
-				{ userId: null, userIp: "5.6.7.8" },
+				{ userId: null, userIp: "1.2.3.4", sessionToken: "token-abc" },
+				{ userId: null, userIp: "5.6.7.8", sessionToken: "token-xyz" },
 			),
 		).toBe(false);
+	});
+
+	it("falls back to IP match when no session token (backward compat)", () => {
+		expect(
+			canModifyStamp(
+				{ userId: null, userIp: "1.2.3.4", sessionToken: null },
+				{ userId: null, userIp: "1.2.3.4", sessionToken: null },
+			),
+		).toBe(true);
+	});
+
+	it("denies anonymous user with different IP and no session token", () => {
+		expect(
+			canModifyStamp(
+				{ userId: null, userIp: "1.2.3.4", sessionToken: null },
+				{ userId: null, userIp: "5.6.7.8", sessionToken: null },
+			),
+		).toBe(false);
+	});
+
+	it("prefers userId over sessionToken and IP", () => {
+		expect(
+			canModifyStamp(
+				{ userId: "user_1", userIp: "1.2.3.4", sessionToken: "token-abc" },
+				{ userId: "user_1", userIp: "5.6.7.8", sessionToken: "token-xyz" },
+			),
+		).toBe(true);
+	});
+
+	it("prefers sessionToken over IP", () => {
+		expect(
+			canModifyStamp(
+				{ userId: null, userIp: "1.2.3.4", sessionToken: "token-abc" },
+				{ userId: null, userIp: "5.6.7.8", sessionToken: "token-abc" },
+			),
+		).toBe(true);
+	});
+
+	it("denies when stamp has no sessionToken and IPs differ", () => {
+		expect(
+			canModifyStamp(
+				{ userId: null, userIp: "1.2.3.4", sessionToken: null },
+				{ userId: null, userIp: "5.6.7.8", sessionToken: "token-abc" },
+			),
+		).toBe(false);
+	});
+
+	it("falls back to IP when stamp has sessionToken but requester does not", () => {
+		expect(
+			canModifyStamp(
+				{ userId: null, userIp: "1.2.3.4", sessionToken: "token-abc" },
+				{ userId: null, userIp: "1.2.3.4", sessionToken: null },
+			),
+		).toBe(true); // IP fallback still works
 	});
 });

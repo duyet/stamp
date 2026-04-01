@@ -20,6 +20,7 @@ export const stamps = sqliteTable(
 		style: text("style").default("vintage"),
 		isPublic: integer("is_public", { mode: "boolean" }).default(true),
 		userIp: text("user_ip"),
+		sessionToken: text("session_token"),
 		userId: text("user_id"),
 		locationCity: text("location_city"),
 		locationCountry: text("location_country"),
@@ -34,6 +35,7 @@ export const stamps = sqliteTable(
 	},
 	(table) => [
 		index("idx_stamps_user").on(table.userId),
+		index("idx_stamps_session_token").on(table.sessionToken),
 		index("idx_stamps_public_created").on(table.isPublic, table.createdAt),
 		index("idx_stamps_public_style_created").on(
 			table.isPublic,
