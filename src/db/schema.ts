@@ -43,6 +43,12 @@ export const stamps = sqliteTable(
 			table.createdAt,
 		),
 		index("idx_stamps_created").on(table.createdAt),
+		index("idx_stamps_country").on(table.locationCountry),
+		index("idx_stamps_city_country").on(
+			table.locationCity,
+			table.locationCountry,
+		),
+		index("idx_stamps_timezone").on(table.userTimezone),
 	],
 );
 
