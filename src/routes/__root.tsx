@@ -6,10 +6,23 @@ import {
 	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Button } from "@/components/button";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import appCss from "@/styles/globals.css?url";
+
+/**
+ * Sensitive query parameters that should be stripped from the URL
+ * after processing to prevent leakage via browser history, referrer
+ * headers, or server logs.
+ */
+const SENSITIVE_PARAMS = [
+	"__clerk_handshake",
+	"__clerk_db_jwt",
+	"__clerk_ticket",
+	"__clerk_status",
+];
 
 export const Route = createRootRoute({
 	head: () => ({
@@ -75,6 +88,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const url = new URL(window.location.href);
+		let modified = false;
+		for (const param of SENSITIVE_PARAMS) {
+			if (url.searchParams.has(param)) {
+				url.searchParams.delete(param);
+				modified = true;
+			}
+		}
+		if (modified) {
+			window.history.replaceState(window.history.state, "", url.toString());
+		}
+	}, []);
+
 	return (
 		<>
 			<Header />
