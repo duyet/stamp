@@ -8,7 +8,7 @@ const securityHeadersMiddleware = createMiddleware().server(
 		const headers = result.response.headers;
 		headers.set("X-Frame-Options", "DENY");
 		headers.set("X-Content-Type-Options", "nosniff");
-		headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+		headers.set("Referrer-Policy", "strict-origin");
 		headers.set(
 			"Strict-Transport-Security",
 			"max-age=63072000; includeSubDomains; preload",

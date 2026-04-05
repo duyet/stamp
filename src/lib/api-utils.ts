@@ -38,7 +38,7 @@ export function checkBodySize(request: Request): Response | null {
 const SECURITY_HEADERS: Record<string, string> = {
 	"X-Content-Type-Options": "nosniff",
 	"X-Frame-Options": "DENY",
-	"Referrer-Policy": "strict-origin-when-cross-origin",
+	"Referrer-Policy": "strict-origin",
 	"Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
 	"Content-Security-Policy": [
 		"default-src 'self'",
@@ -46,7 +46,7 @@ const SECURITY_HEADERS: Record<string, string> = {
 		"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
 		"font-src 'self' https://fonts.gstatic.com",
 		"img-src 'self' data: blob: https://img.clerk.com https://*.clerk.com https://images.unsplash.com",
-		"connect-src 'self' https: https://agentstate.app https://*.clerk.com https://clerk.stamp.duyet.net https://challenges.cloudflare.com",
+		"connect-src 'self' https://agentstate.app https://*.clerk.com https://clerk.stamp.duyet.net https://challenges.cloudflare.com",
 		"frame-src https://challenges.cloudflare.com https://*.clerk.com",
 	].join("; "),
 	"Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
