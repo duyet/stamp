@@ -74,72 +74,99 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
 		return (
 			<div className="space-y-4">
-				{/* Textarea with auth button */}
-				<div className="relative">
-					<textarea
-						ref={textareaRef}
-						id="prompt"
-						value={value}
-						onChange={(e) => {
-							onChange(e.target.value);
-							autoResize(e.target);
-						}}
-						placeholder={
-							referenceImage
-								? "Add extra instructions (optional)..."
-								: "Describe your stamp..."
-						}
-						maxLength={500}
-						rows={1}
-						disabled={disabled}
-						aria-label="Describe your stamp"
-						aria-describedby="prompt-hint"
-						className={`w-full pl-4 pr-14 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm leading-relaxed placeholder:text-gray-400 focus:ring-2 focus:ring-gray-900/10 outline-none transition-all duration-200 resize-none overflow-hidden disabled:opacity-50 ${
-							isShaking ? "animate-shake" : ""
-						}`}
-					/>
-					<div className="absolute right-3 top-3">
-						<Show when="signed-out">
-							<SignInButton mode="modal">
-								<button
-									type="button"
-									className="text-gray-300 hover:text-gray-500 transition-colors"
-									aria-label="Sign in"
-								>
-									<AvatarIcon />
-								</button>
-							</SignInButton>
-						</Show>
-						<Show when="signed-in">
-							<UserButton appearance={{ elements: { avatarBox: "w-6 h-6" } }} />
-						</Show>
+				<div className="rounded-[1.7rem] border border-stone-300/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,243,235,0.95))] p-4 shadow-[0_20px_45px_-40px_rgba(67,42,18,0.55)]">
+					<div className="flex items-center justify-between gap-3">
+						<div>
+							<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
+								Prompt
+							</p>
+							<p className="mt-1 text-sm text-stone-600">
+								{referenceImage
+									? "Add extra direction for the uploaded image."
+									: "Describe the scene, subject, or mood you want on the stamp."}
+							</p>
+						</div>
+						<div className="shrink-0">
+							<Show when="signed-out">
+								<SignInButton mode="modal">
+									<button
+										type="button"
+										className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-400 transition-colors hover:text-stone-700"
+										aria-label="Sign in"
+									>
+										<AvatarIcon />
+									</button>
+								</SignInButton>
+							</Show>
+							<Show when="signed-in">
+								<UserButton
+									appearance={{ elements: { avatarBox: "w-10 h-10" } }}
+								/>
+							</Show>
+						</div>
+					</div>
+
+					<div className="relative mt-4">
+						<textarea
+							ref={textareaRef}
+							id="prompt"
+							value={value}
+							onChange={(e) => {
+								onChange(e.target.value);
+								autoResize(e.target);
+							}}
+							placeholder={
+								referenceImage
+									? "Example: turn this photo into a commemorative engraved stamp with a quiet coastal mood"
+									: "Example: rainy Saigon alley with scooters, glowing windows, and a vintage blue engraving feel"
+							}
+							maxLength={500}
+							rows={1}
+							disabled={disabled}
+							aria-label="Describe your stamp"
+							aria-describedby="prompt-hint"
+							className={`min-h-[128px] w-full resize-none overflow-hidden rounded-[1.3rem] border border-stone-200 bg-white px-4 py-4 text-sm leading-7 text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-stone-400 focus:ring-4 focus:ring-stone-900/5 disabled:opacity-50 ${
+								isShaking ? "animate-shake" : ""
+							}`}
+						/>
+					</div>
+
+					<div className="mt-3 flex items-center justify-between text-xs text-stone-500">
+						<span id="prompt-hint">
+							{value.length > 0 && referenceImage
+								? "Nice. This will be combined with your reference photo."
+								: value.length > 0
+									? "Ready to generate whenever you are."
+									: "Start simple, then layer in place, texture, and mood."}
+						</span>
+						<span className="rounded-full bg-stone-100 px-2.5 py-1 tabular-nums text-stone-600">
+							{value.length}/500
+						</span>
 					</div>
 				</div>
-				{/* Character counter and hint */}
-				<div className="flex items-center justify-between text-xs text-gray-400">
-					<span id="prompt-hint">
-						{value.length > 0 && referenceImage
-							? "Add details to enhance your photo"
-							: value.length > 0
-								? "Great! Press Enter or click Generate"
-								: "Be creative or pick a suggestion below"}
-					</span>
-					<span className="tabular-nums">{value.length}/500</span>
-				</div>
 
-				{/* Prompt suggestions */}
-				<div>
+				<div className="rounded-[1.5rem] border border-stone-200/80 bg-white/65 p-4">
+					<div className="mb-3 flex items-center justify-between gap-3">
+						<div>
+							<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
+								Quick prompts
+							</p>
+							<p className="mt-1 text-sm text-stone-600">
+								Use a suggestion as-is or stack a few together.
+							</p>
+						</div>
+					</div>
 					{PROMPT_GROUPS.length > 1 && (
-						<div className="flex items-center gap-1 mb-1.5">
+						<div className="mb-3 flex items-center gap-2">
 							{PROMPT_GROUPS.map((group, groupIndex) => (
 								<button
 									key={group.label ?? "default"}
 									type="button"
 									onClick={() => setActiveGroupIndex(groupIndex)}
-									className={`rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition ${
+									className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
 										activeGroupIndex === groupIndex
-											? "bg-gray-900 text-white"
-											: "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+											? "border-stone-900 bg-stone-900 text-white"
+											: "border-stone-200 bg-white text-stone-500 hover:border-stone-300 hover:text-stone-700"
 									}`}
 								>
 									{group.label ?? "Ideas"}
@@ -147,7 +174,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 							))}
 						</div>
 					)}
-					<div className="flex flex-wrap gap-1.5">
+					<div className="flex flex-wrap gap-2">
 						{shuffledPrompts.map((example) => (
 							<button
 								key={example}
@@ -167,7 +194,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									}
 								}}
 								disabled={loading}
-								className="shrink-0 rounded-full px-3 py-1 text-xs text-gray-600 border border-gray-200 hover:text-gray-900 hover:border-gray-400 hover:bg-gray-50 cursor-pointer transition-all duration-200 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900/20 hover:scale-105"
+								className="shrink-0 rounded-full border border-stone-200 bg-[linear-gradient(180deg,#fff,#f7f1e6)] px-3 py-1.5 text-xs text-stone-600 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-400 hover:bg-white hover:text-stone-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
 							>
 								{example}
 							</button>

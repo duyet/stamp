@@ -12,43 +12,49 @@ export function StyleSelector({
 	onStyleChange,
 }: StyleSelectorProps) {
 	return (
-		<div className="relative group">
-			{/* Left fade indicator */}
-			<div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
-			{/* Right fade indicator */}
-			<div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none opacity-100 transition-opacity duration-300 z-10" />
-			<div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 p-2">
+		<div className="group relative rounded-[1.5rem] border border-stone-200/80 bg-white/65 p-4">
+			<div className="mb-3">
+				<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
+					Style shelf
+				</p>
+				<p className="mt-1 text-sm text-stone-600">
+					Pick the stamp language before you generate.
+				</p>
+			</div>
+			<div className="pointer-events-none absolute top-[4.8rem] bottom-4 left-4 z-10 w-8 bg-gradient-to-r from-white/90 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+			<div className="pointer-events-none absolute top-[4.8rem] right-4 bottom-4 z-10 w-8 bg-gradient-to-l from-white/90 to-transparent opacity-100 transition-opacity duration-300" />
+			<div className="flex gap-3 overflow-x-auto p-1 pb-2 scrollbar-hide">
 				{Object.entries(STAMP_STYLE_PRESETS).map(([key, preset]) => (
 					<button
 						key={key}
 						type="button"
 						onClick={() => onStyleChange(key as StampStyle)}
-						className="shrink-0 p-2 cursor-pointer transition"
+						className="shrink-0 cursor-pointer text-left transition"
 						aria-label={`Select ${preset.name} style`}
 						aria-pressed={currentStyle === key}
 					>
 						<div
-							className={`w-14 h-14 rounded-lg transition-all duration-200 ${
+							className={`w-[88px] rounded-[1.1rem] border p-2 transition-all duration-200 ${
 								currentStyle === key
-									? "ring-2 ring-gray-900 ring-offset-1 scale-105"
-									: "opacity-50 hover:opacity-100 hover:scale-105"
+									? "scale-[1.02] border-stone-900 bg-stone-950 text-white shadow-[0_18px_30px_-24px_rgba(33,25,17,0.85)]"
+									: "border-stone-200 bg-[linear-gradient(180deg,#fff,#f5eee2)] text-stone-700 hover:-translate-y-0.5 hover:border-stone-400"
 							}`}
 						>
-							<StampImage
-								src={preset.thumbnail}
-								alt={preset.name}
-								className="object-cover w-full h-full"
-							/>
+							<div className="h-[72px] overflow-hidden rounded-[0.9rem] border border-stone-200/70 bg-white">
+								<StampImage
+									src={preset.thumbnail}
+									alt={preset.name}
+									className="h-full w-full object-cover"
+								/>
+							</div>
+							<p
+								className={`mt-2 text-[11px] font-medium tracking-tight ${
+									currentStyle === key ? "text-white" : "text-stone-700"
+								}`}
+							>
+								{preset.name}
+							</p>
 						</div>
-						<p
-							className={`text-[10px] mt-0.5 text-center transition-colors ${
-								currentStyle === key
-									? "text-gray-900 font-medium"
-									: "text-gray-400 hover:text-gray-700"
-							}`}
-						>
-							{preset.name}
-						</p>
 					</button>
 				))}
 			</div>

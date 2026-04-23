@@ -22,7 +22,7 @@ export function Toggle({
 	return (
 		<label
 			htmlFor={id}
-			className={`relative inline-flex items-center gap-2 cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+			className={`relative inline-flex items-center gap-3 rounded-full border border-stone-300/80 bg-white/85 px-3 py-2 shadow-sm transition-colors ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:border-stone-400"} ${className}`}
 		>
 			<input
 				type="checkbox"
@@ -32,10 +32,14 @@ export function Toggle({
 				disabled={disabled}
 				className="peer sr-only"
 			/>
-			<div className="relative w-8 h-4 bg-stone-200 rounded-full peer-checked:bg-stone-800 peer-focus-visible:ring-2 peer-focus-visible:ring-stone-400 peer-focus-visible:ring-offset-2 transition-colors duration-200">
-				<div className="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 peer-checked:translate-x-4" />
+			<div className="relative h-5 w-10 rounded-full bg-stone-200 transition-colors duration-200 peer-checked:bg-stone-900 peer-focus-visible:ring-2 peer-focus-visible:ring-stone-400 peer-focus-visible:ring-offset-2">
+				<div className="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 peer-checked:translate-x-5" />
 			</div>
-			{label && <span className="text-sm text-stone-600">{label}</span>}
+			{label && (
+				<span className="text-sm font-medium tracking-tight text-stone-700">
+					{label}
+				</span>
+			)}
 		</label>
 	);
 }

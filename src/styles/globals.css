@@ -19,9 +19,12 @@
 }
 
 body {
-	background-color: var(--color-background);
+	background:
+		radial-gradient(circle at top, rgba(174, 140, 97, 0.16), transparent 32%),
+		linear-gradient(180deg, #fcfaf5 0%, #f6f1e7 56%, #efe7da 100%);
 	color: var(--color-text-primary);
 	font-family: var(--font-serif, "Georgia", serif);
+	min-height: 100vh;
 }
 
 /* Stamp perforated edge effect */

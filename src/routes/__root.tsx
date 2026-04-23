@@ -111,7 +111,7 @@ function RootComponent() {
 	return (
 		<>
 			<Header />
-			<main className="flex-1">
+			<main className="relative flex-1 pt-4 sm:pt-5">
 				<Outlet />
 			</main>
 			<Footer />
