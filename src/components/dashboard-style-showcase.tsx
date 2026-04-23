@@ -1,7 +1,5 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import { StampImage } from "@/components/stamp-image";
+import { capitalize } from "@/lib/text-utils";
 
 interface StyleShowcaseProps {
 	styles: Array<{
@@ -16,10 +14,6 @@ interface StyleShowcaseProps {
 	}>;
 }
 
-function capitalize(s: string): string {
-	return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
 export function StyleShowcase({ styles }: StyleShowcaseProps) {
 	if (styles.length === 0) {
 		return null;
@@ -30,17 +24,14 @@ export function StyleShowcase({ styles }: StyleShowcaseProps) {
 			{styles.map(({ style, count, featuredStamp }) => (
 				<div
 					key={style}
-					className="bg-white rounded-xl border border-stone-200 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+					className="bg-white rounded-xl border border-stone-200 overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
 				>
 					<div className="relative aspect-square bg-stone-100">
 						{featuredStamp ? (
-							<Image
+							<StampImage
 								src={featuredStamp.imageUrl}
 								alt={featuredStamp.description ?? featuredStamp.prompt}
-								fill
-								sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-								className="object-cover"
-								unoptimized
+								className="object-cover w-full h-full absolute inset-0"
 							/>
 						) : (
 							<div className="absolute inset-0 flex items-center justify-center">
@@ -60,12 +51,12 @@ export function StyleShowcase({ styles }: StyleShowcaseProps) {
 								{count} {count === 1 ? "stamp" : "stamps"}
 							</p>
 						</div>
-						<Link
+						<a
 							href={`/generate?style=${encodeURIComponent(style)}`}
 							className="shrink-0 ml-3 text-sm text-stone-600 hover:text-stamp-navy transition-colors"
 						>
 							Create {capitalize(style)} &rarr;
-						</Link>
+						</a>
 					</div>
 				</div>
 			))}

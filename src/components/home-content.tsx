@@ -1,17 +1,15 @@
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { StampFan } from "@/components/stamp-fan";
+import { StampImage } from "@/components/stamp-image";
 import { StampModal } from "@/components/stamp-modal";
-import type { Stamp } from "@/db/schema";
+import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 
 export function HomeContent() {
 	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(30);
-	const [selectedStamp, setSelectedStamp] = useState<Stamp | null>(null);
+	const [selectedStamp, setSelectedStamp] = useState<PublicStamp | null>(null);
 
 	function handleGenerated(stamp: {
 		id: string;
@@ -21,26 +19,14 @@ export function HomeContent() {
 		enhancedPrompt?: string;
 		description?: string;
 	}) {
-		const newStamp: Stamp = {
+		const newStamp: PublicStamp = {
 			id: stamp.id,
 			prompt: stamp.prompt,
 			enhancedPrompt: stamp.enhancedPrompt ?? null,
 			description: stamp.description ?? null,
 			imageUrl: stamp.imageUrl,
-			thumbnailUrl: null,
-			referenceImageUrl: null,
-			imageExt: null,
 			style: stamp.style ?? "vintage",
 			isPublic: true,
-			userIp: null,
-			userId: null,
-			locationCity: null,
-			locationCountry: null,
-			locationLat: null,
-			locationLng: null,
-			userTimezone: null,
-			userAgent: null,
-			referrer: null,
 			createdAt: new Date(),
 		};
 		setRecentStamps((prev) => [newStamp, ...prev]);
@@ -59,10 +45,7 @@ export function HomeContent() {
 					/>
 				</div>
 
-				<h1
-					className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
+				<h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight font-stamp">
 					Stamps, builders
 				</h1>
 			</section>
@@ -79,10 +62,7 @@ export function HomeContent() {
 								<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-500">
 									Fresh from the press
 								</p>
-								<h2
-									className="mt-3 text-3xl font-semibold tracking-tight text-stone-950 sm:text-4xl"
-									style={{ fontFamily: "var(--font-stamp)" }}
-								>
+								<h2 className="mt-3 text-3xl font-semibold tracking-tight text-stone-950 sm:text-4xl font-stamp">
 									Latest stamps
 								</h2>
 								<p className="mt-3 max-w-xl text-sm leading-6 text-stone-600 sm:text-base">
@@ -100,7 +80,7 @@ export function HomeContent() {
 									</p>
 								</div>
 								<Link
-									href="/collections"
+									to="/collections"
 									className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-stone-950 px-4 py-2 text-sm font-medium text-stone-50 transition-all duration-200 hover:bg-stone-800 hover:shadow-lg"
 								>
 									View all
@@ -118,13 +98,13 @@ export function HomeContent() {
 										onClick={() => setSelectedStamp(stamp)}
 									>
 										<div className="relative aspect-square overflow-hidden rounded-[1.1rem] bg-stone-100">
-											<Image
+											<StampImage
 												src={stamp.imageUrl}
 												alt={stamp.prompt}
-												fill
-												unoptimized
-												sizes="(max-width: 640px) 45vw, (max-width: 1024px) 28vw, 196px"
-												className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+												loading="lazy"
+												width={196}
+												height={196}
+												className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
 											/>
 										</div>
 										<div className="px-1 pb-1 pt-3">
@@ -155,10 +135,7 @@ export function HomeContent() {
 			)}
 
 			<section className="py-16 text-center">
-				<p
-					className="text-sm text-gray-600"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
+				<p className="text-sm text-gray-600 font-stamp">
 					20 free stamps per day. Sign in for 100.
 				</p>
 			</section>

@@ -114,10 +114,12 @@ export async function searchConversations(
 	apiKey: string,
 	query: string,
 	limit = 20,
+	tag?: string,
 ): Promise<{ data: AgentStateSearchResult[] }> {
 	const url = new URL(`${BASE_URL}/conversations/search`);
 	url.searchParams.set("q", query);
 	url.searchParams.set("limit", String(limit));
+	if (tag) url.searchParams.set("tag", tag);
 	const res = await agentStateFetch(url.toString(), apiKey);
 	return res.json() as Promise<{ data: AgentStateSearchResult[] }>;
 }

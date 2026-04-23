@@ -259,7 +259,7 @@ describe("credits", () => {
 
 	describe("addCredits", () => {
 		it("adds purchased credits and creates transaction", async () => {
-			const { db, updateSet, insertValues } = createMockCreditsDb({
+			const { db, mockPrepare, insertValues } = createMockCreditsDb({
 				userId: "user_123",
 				dailyLimit: 100,
 				dailyUsed: 50,
@@ -271,12 +271,12 @@ describe("credits", () => {
 
 			await addCredits(db, "user_123", 50, "purchase");
 
-			// Should update purchased credits
-			expect(updateSet).toHaveBeenCalledWith(
-				expect.objectContaining({ purchasedCredits: 60 }),
+			// Should use atomic SQL UPDATE with purchased_credits + amount
+			expect(mockPrepare).toHaveBeenCalledWith(
+				expect.stringContaining("purchased_credits = purchased_credits +"),
 			);
 
-			// Should insert a transaction record
+			// Should insert a transaction record with correct balance
 			expect(insertValues).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId: "user_123",

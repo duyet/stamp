@@ -1,41 +1,42 @@
-"use client";
-
-import Image from "next/image";
-import type { Stamp } from "@/db/schema";
+import { memo } from "react";
+import { StampImage } from "@/components/stamp-image";
+import type { PublicStamp } from "@/db/schema";
+import { TEXT_COLORS } from "@/lib/constants";
 
 interface StampCardProps {
-	stamp: Stamp;
+	stamp: PublicStamp;
 	onClick?: () => void;
 }
 
-export function StampCard({ stamp, onClick }: StampCardProps) {
+export const StampCard = memo(function StampCard({
+	stamp,
+	onClick,
+}: StampCardProps) {
 	const content = (
 		<>
 			<div className="stamp-border group-hover:scale-105 transition-transform duration-200">
 				<div className="relative aspect-square">
-					<Image
+					<StampImage
 						src={stamp.imageUrl}
 						alt={stamp.prompt}
-						fill
-						unoptimized
-						sizes="(max-width: 768px) 50vw, 25vw"
-						className="object-cover"
+						loading="lazy"
+						className="object-cover w-full h-full absolute inset-0"
 					/>
 				</div>
 			</div>
 			<div className="p-3">
-				<p className="text-sm text-gray-700 truncate">
+				<p className={`text-sm ${TEXT_COLORS.dark} truncate`}>
 					{stamp.description || stamp.prompt}
 				</p>
 				<div className="mt-2 flex items-center justify-between">
-					<span className="text-xs text-gray-500 capitalize">
+					<span className={`text-xs ${TEXT_COLORS.muted} capitalize`}>
 						{stamp.style}
 					</span>
 					<a
 						href={stamp.imageUrl}
 						download={`stamp-${stamp.id}.png`}
 						onClick={(e) => e.stopPropagation()}
-						className="text-xs text-gray-500 hover:text-gray-800 transition"
+						className={`text-xs ${TEXT_COLORS.muted} ${TEXT_COLORS.hover} transition`}
 					>
 						Download
 					</a>
@@ -61,4 +62,4 @@ export function StampCard({ stamp, onClick }: StampCardProps) {
 			{content}
 		</div>
 	);
-}
+});

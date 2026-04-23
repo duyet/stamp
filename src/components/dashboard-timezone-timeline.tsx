@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 import type { TimezoneStats } from "@/types/analytics";
 
@@ -192,7 +190,7 @@ export function DashboardTimezoneTimeline({
 							className="absolute z-30 pointer-events-none -translate-x-1/2 -translate-y-full"
 							style={{ left: tooltip.x, top: tooltip.y }}
 						>
-							<div className="bg-stone-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap shadow-lg">
+							<div className="bg-stone-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
 								{tooltip.label}
 							</div>
 							{/* Caret */}

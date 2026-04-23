@@ -1,7 +1,6 @@
 /**
  * Shared test helpers for API route and unit tests.
  */
-import type { NextRequest } from "next/server";
 import { vi } from "vitest";
 import type { Database } from "@/db";
 
@@ -13,12 +12,12 @@ export function createJsonRequest(
 	method: string,
 	body: Record<string, unknown>,
 	headers: Record<string, string> = {},
-): NextRequest {
+): Request {
 	return new Request(url, {
 		method,
 		headers: { "Content-Type": "application/json", ...headers },
 		body: JSON.stringify(body),
-	}) as unknown as NextRequest;
+	});
 }
 
 /**
@@ -27,21 +26,12 @@ export function createJsonRequest(
 export function createGetRequest(
 	url: string,
 	params: Record<string, string> = {},
-): NextRequest {
+): Request {
 	const parsed = new URL(url);
 	for (const [key, value] of Object.entries(params)) {
 		parsed.searchParams.set(key, value);
 	}
-	return new Request(parsed.toString()) as unknown as NextRequest;
-}
-
-/**
- * Create a Next.js dynamic route `params` object (Promise-based, as of Next 15+).
- */
-export function createRouteParams<T extends Record<string, string>>(
-	params: T,
-): { params: Promise<T> } {
-	return { params: Promise.resolve(params) };
+	return new Request(parsed.toString());
 }
 
 /**
@@ -55,14 +45,19 @@ export function createMockRateLimitDb(
 		windowStart: Date;
 	} | null,
 ) {
-	// Mutable state that gets updated by SQL operations
-	let currentState = existing ? { ...existing } : null;
+	// Mutable state — stores integer ms timestamps to match refactored rate limiter
+	let currentState = existing
+		? {
+				userIp: existing.userIp,
+				generationsCount: existing.generationsCount,
+				windowStartMs: existing.windowStart.getTime(),
+			}
+		: null;
 
 	const insertValues = vi.fn().mockResolvedValue(undefined);
 	const updateSet = vi
 		.fn()
 		.mockImplementation((fields: Record<string, unknown>) => {
-			// Simulate Drizzle update().set() by updating currentState directly
 			if (currentState && fields.generationsCount !== undefined) {
 				currentState = { ...currentState, ...fields };
 			}
@@ -71,40 +66,54 @@ export function createMockRateLimitDb(
 			};
 		});
 
-	// Mock D1 client for raw SQL
+	// Mock D1 client for raw SQL (integer ms timestamps)
+	const WINDOW_MS = 24 * 60 * 60 * 1000;
 	const mockPrepare = vi.fn().mockImplementation((sql: string) => {
 		return {
-			bind: vi.fn().mockImplementation((..._args: unknown[]) => {
+			bind: vi.fn().mockImplementation((...args: unknown[]) => {
 				return {
-					run: vi.fn().mockImplementation(() => {
-						// Simulate atomic UPDATE for rate limit
-						if (
-							sql.includes("UPDATE rate_limits") &&
-							sql.includes("generations_count = generations_count + 1")
-						) {
-							// Check if within limit (20 is max per day)
-							// If count is already at limit, don't increment
-							if (currentState && currentState.generationsCount < 20) {
-								currentState.generationsCount += 1;
-								return { meta: { changes: 1 } };
-							}
-							return { meta: { changes: 0 } };
-						}
-						return { meta: { changes: 0 } };
-					}),
 					first: vi.fn().mockImplementation(() => {
-						// Simulate RETURNING clause
-						if (
-							sql.includes("UPDATE rate_limits") &&
-							sql.includes("RETURNING generations_count")
-						) {
-							if (currentState && currentState.generationsCount < 20) {
-								currentState.generationsCount += 1;
-								return Promise.resolve({
-									generations_count: currentState.generationsCount,
-								});
+						// UPDATE ... RETURNING — atomic increment (NOT INSERT)
+						if (sql.trim().startsWith("UPDATE") && sql.includes("RETURNING")) {
+							if (currentState) {
+								const windowStartMs = Date.now() - WINDOW_MS;
+								if (
+									currentState.windowStartMs >= windowStartMs &&
+									currentState.generationsCount < 20
+								) {
+									currentState.generationsCount += 1;
+									return Promise.resolve({
+										generations_count: currentState.generationsCount,
+									});
+								}
 							}
 							return Promise.resolve(null);
+						}
+						// INSERT ... ON CONFLICT DO UPDATE ... RETURNING
+						if (sql.includes("INSERT") && sql.includes("ON CONFLICT")) {
+							if (!currentState) {
+								const ip = args[0] as string;
+								const now = args[2] as number;
+								currentState = {
+									userIp: ip,
+									generationsCount: 1,
+									windowStartMs: now,
+								};
+								return Promise.resolve({
+									generations_count: 1,
+									window_start: now,
+								});
+							}
+							// Existing record — simulate CASE logic
+							const windowStartThreshold = args[3] as number;
+							if (currentState.windowStartMs < windowStartThreshold) {
+								currentState.generationsCount = 1;
+								currentState.windowStartMs = args[5] as number;
+							}
+							return Promise.resolve({
+								generations_count: currentState.generationsCount,
+								window_start: currentState.windowStartMs,
+							});
 						}
 						return Promise.resolve(null);
 					}),
@@ -236,6 +245,96 @@ export function createMockCreditsDb(
 						return { meta: { changes: 0 } };
 					}),
 					first: vi.fn().mockImplementation(() => {
+						// Simulate checkAndDeductCredit daily: UPDATE ... daily_used + ? ... RETURNING daily_used, daily_limit, purchased_credits
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("daily_used = daily_used +") &&
+							sql.includes("RETURNING daily_used")
+						) {
+							const cost = args[0] as number;
+							if (
+								currentState &&
+								currentState.dailyUsed + cost <= currentState.dailyLimit
+							) {
+								currentState.dailyUsed += cost;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									daily_used: currentState.dailyUsed,
+									daily_limit: currentState.dailyLimit,
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
+						// Simulate checkAndDeductCredit purchased: UPDATE ... purchased_credits - ? ... RETURNING purchased_credits
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("purchased_credits = purchased_credits -") &&
+							sql.includes("RETURNING purchased_credits")
+						) {
+							const cost = args[0] as number;
+							if (currentState && currentState.purchasedCredits >= cost) {
+								currentState.purchasedCredits -= cost;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
+						// Simulate daily credit deduction with RETURNING
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("daily_used = daily_used +") &&
+							sql.includes("RETURNING daily_used")
+						) {
+							const cost = args[0] as number;
+							if (
+								currentState &&
+								currentState.dailyUsed + cost <= currentState.dailyLimit
+							) {
+								currentState.dailyUsed += cost;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									daily_used: currentState.dailyUsed,
+									daily_limit: currentState.dailyLimit,
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
+						// Simulate purchased credit deduction with RETURNING
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("purchased_credits = purchased_credits -") &&
+							sql.includes("RETURNING purchased_credits")
+						) {
+							const cost = args[0] as number;
+							if (currentState && currentState.purchasedCredits >= cost) {
+								currentState.purchasedCredits -= cost;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
+						// Simulate atomic addCredits: UPDATE ... purchased_credits + ? ... RETURNING
+						if (
+							sql.includes("UPDATE user_credits") &&
+							sql.includes("purchased_credits = purchased_credits +") &&
+							sql.includes("RETURNING purchased_credits")
+						) {
+							const amount = args[0] as number;
+							if (currentState) {
+								currentState.purchasedCredits += amount;
+								currentState.updatedAt = args[1] as number;
+								return Promise.resolve({
+									purchased_credits: currentState.purchasedCredits,
+								});
+							}
+							return Promise.resolve(null);
+						}
 						// Simulate INSERT ... ON CONFLICT ... RETURNING
 						if (
 							sql.includes("INSERT INTO user_credits") &&

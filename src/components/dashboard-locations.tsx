@@ -1,5 +1,3 @@
-"use client";
-
 import type { LocationStats } from "@/types/analytics";
 
 interface DashboardLocationsProps {

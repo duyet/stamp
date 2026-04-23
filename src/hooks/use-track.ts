@@ -1,7 +1,5 @@
-"use client";
-
 import { useCallback } from "react";
-import type { EventType } from "@/app/api/track/route";
+import type { EventType } from "@/routes/api/track";
 
 type Metadata = Record<string, unknown>;
 

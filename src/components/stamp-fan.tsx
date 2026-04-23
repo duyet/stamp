@@ -1,6 +1,4 @@
-"use client";
-
-import Image from "next/image";
+import { StampImage } from "@/components/stamp-image";
 
 const POSITIONS = [
 	"stamp-fan-far-left",
@@ -26,24 +24,20 @@ export function StampFan({ images = [], onClickStamp }: StampFanProps) {
 							className="stamp-border w-full h-full"
 							onClick={() => onClickStamp(idx)}
 						>
-							<Image
+							<StampImage
 								src={images[idx]}
 								alt=""
-								width={130}
-								height={130}
-								unoptimized
+								fetchPriority="high"
 								className="w-full h-full object-cover"
 							/>
 						</button>
 					) : (
 						<div className="stamp-border">
 							{images[idx] ? (
-								<Image
+								<StampImage
 									src={images[idx]}
 									alt=""
-									width={130}
-									height={130}
-									unoptimized
+									fetchPriority="high"
 									className="w-full h-full object-cover"
 								/>
 							) : (

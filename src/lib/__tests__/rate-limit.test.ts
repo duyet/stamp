@@ -15,17 +15,15 @@ describe("checkRateLimit", () => {
 	});
 
 	it("allows new user and creates record", async () => {
-		const { db, insertValues } = createMockRateLimitDb(null);
+		const { db, mockPrepare } = createMockRateLimitDb(null);
 
 		const result = await checkRateLimit(db, "1.2.3.4");
 
 		expect(result.allowed).toBe(true);
 		expect(result.remaining).toBe(19); // 20 - 1 = 19
-		expect(insertValues).toHaveBeenCalledWith(
-			expect.objectContaining({
-				userIp: "1.2.3.4",
-				generationsCount: 1,
-			}),
+		// Uses atomic INSERT ... ON CONFLICT via raw SQL
+		expect(mockPrepare).toHaveBeenCalledWith(
+			expect.stringContaining("INSERT INTO rate_limits"),
 		);
 	});
 

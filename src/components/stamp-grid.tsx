@@ -1,7 +1,5 @@
-"use client";
-
+import { Link } from "@tanstack/react-router";
 import { nanoid } from "nanoid";
-import Link from "next/link";
 import { memo } from "react";
 import { StampIcon } from "@/components/icons";
 import { StampCard } from "@/components/stamp-card";
@@ -29,7 +27,7 @@ function StampGrid() {
 	if (stamps.length === 0) {
 		return (
 			<div className="text-center py-20 px-4">
-				<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-stone-100 mb-6 shadow-sm text-stone-400">
+				<div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-stone-100 mb-6 text-stone-400">
 					<span className="w-10 h-10 inline-block">
 						<StampIcon />
 					</span>
@@ -41,8 +39,8 @@ function StampGrid() {
 					Be the first to create a unique AI-generated postage stamp.
 				</p>
 				<Link
-					href="/generate"
-					className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-stone-900 text-white rounded-full font-medium text-base hover:bg-stone-800 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 button-ripple"
+					to="/generate"
+					className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-stone-900 text-white rounded-full font-medium text-base hover:bg-stone-800 hover:-translate-y-0.5 transition-all duration-200 button-ripple"
 				>
 					Create your first stamp
 				</Link>

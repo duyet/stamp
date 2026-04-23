@@ -1,6 +1,4 @@
-"use client";
-
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { memo, useEffect, useState } from "react";
 import { DashboardLocations } from "@/components/dashboard-locations";
 import { DashboardMap } from "@/components/dashboard-map";
@@ -195,10 +193,7 @@ function DashboardContent() {
 			{/* Style Showcase */}
 			{styleStamps.length > 0 && (
 				<section>
-					<h2
-						className="text-2xl font-semibold text-stamp-navy mb-6"
-						style={{ fontFamily: "var(--font-stamp)" }}
-					>
+					<h2 className="text-2xl font-semibold text-stamp-navy mb-6 font-stamp">
 						Style Showcase
 					</h2>
 					<StyleShowcase styles={styleStamps} />
@@ -298,7 +293,7 @@ function DashboardContent() {
 						<button
 							type="button"
 							onClick={() => (window.location.href = "/generate")}
-							className="px-6 py-3 bg-stone-900 text-white rounded-full text-sm font-medium hover:bg-stone-800 active:scale-[0.98] transition-all duration-200 shadow-lg hover:shadow-xl"
+							className="px-6 py-3 bg-stone-900 text-white rounded-full text-sm font-medium hover:bg-stone-800 active:scale-[0.98] transition-all duration-200"
 						>
 							Create your first stamp
 						</button>
@@ -319,14 +314,11 @@ export function RecentStampsSection() {
 	return (
 		<section className="py-12">
 			<div className="flex items-baseline justify-between mb-8">
-				<h2
-					className="text-2xl font-semibold text-stamp-navy"
-					style={{ fontFamily: "var(--font-stamp)" }}
-				>
+				<h2 className="text-2xl font-semibold text-stamp-navy font-stamp">
 					Recent Stamps
 				</h2>
 				<Link
-					href="/collections"
+					to="/collections"
 					className="text-sm text-stone-600 hover:text-stamp-navy transition-colors"
 				>
 					View all &rarr;

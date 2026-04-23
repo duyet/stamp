@@ -20,6 +20,7 @@ export const stamps = sqliteTable(
 		style: text("style").default("vintage"),
 		isPublic: integer("is_public", { mode: "boolean" }).default(true),
 		userIp: text("user_ip"),
+		sessionToken: text("session_token"),
 		userId: text("user_id"),
 		locationCity: text("location_city"),
 		locationCountry: text("location_country"),
@@ -34,6 +35,7 @@ export const stamps = sqliteTable(
 	},
 	(table) => [
 		index("idx_stamps_user").on(table.userId),
+		index("idx_stamps_session_token").on(table.sessionToken),
 		index("idx_stamps_public_created").on(table.isPublic, table.createdAt),
 		index("idx_stamps_public_style_created").on(
 			table.isPublic,
@@ -41,6 +43,12 @@ export const stamps = sqliteTable(
 			table.createdAt,
 		),
 		index("idx_stamps_created").on(table.createdAt),
+		index("idx_stamps_country").on(table.locationCountry),
+		index("idx_stamps_city_country").on(
+			table.locationCity,
+			table.locationCountry,
+		),
+		index("idx_stamps_timezone").on(table.userTimezone),
 	],
 );
 
@@ -59,6 +67,19 @@ export const rateLimits = sqliteTable(
 
 export type Stamp = typeof stamps.$inferSelect;
 export type NewStamp = typeof stamps.$inferInsert;
+
+/** Stamp fields safe for public API responses — excludes PII (IP, UA, referrer, location). */
+export type PublicStamp = Pick<
+	Stamp,
+	| "id"
+	| "prompt"
+	| "enhancedPrompt"
+	| "description"
+	| "imageUrl"
+	| "style"
+	| "isPublic"
+	| "createdAt"
+>;
 
 export const events = sqliteTable(
 	"events",
@@ -113,6 +134,16 @@ export const analyticsRateLimits = sqliteTable("analytics_rate_limits", {
 	generationsCount: integer("generations_count").notNull().default(1),
 	windowStart: integer("window_start").notNull(),
 });
+
+export const trackRateLimits = sqliteTable(
+	"track_rate_limits",
+	{
+		userIp: text("user_ip").primaryKey(),
+		eventCount: integer("event_count").notNull().default(1),
+		windowStart: integer("window_start").notNull(),
+	},
+	(table) => [index("idx_track_rate_limits_ip").on(table.userIp)],
+);
 
 /**
  * Daily stats summary table for analytics optimization.

@@ -1,8 +1,6 @@
-"use client";
-
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, UploadIcon } from "@/components/icons";
+import { StampImage } from "@/components/stamp-image";
 import { IMAGE_CONSTANTS } from "@/lib/constants";
 
 export interface ReferenceData {
@@ -179,20 +177,19 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					/>
 				</button>
 			) : (
-				<div className="flex items-center gap-3 p-3 border border-stone-200 rounded-lg bg-stone-50 animate-form-enter">
+				<div className="flex items-center gap-3 p-3 rounded-lg bg-stone-50 animate-form-enter">
 					<div className="w-16 h-16 rounded overflow-hidden shrink-0 relative">
 						{processing && (
 							<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
 								<div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
 							</div>
 						)}
-						<Image
+						<StampImage
 							src={preview}
-							alt="Reference photo"
 							width={64}
 							height={64}
+							alt="Reference upload"
 							className="object-cover w-full h-full"
-							unoptimized
 						/>
 					</div>
 					<span className="text-xs text-stone-600">
