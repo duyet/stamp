@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/button";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { getClerkPublishableKey } from "@/lib/clerk-config";
 import appCss from "@/styles/globals.css?url";
 
 /**
@@ -74,13 +75,17 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+	const clerkPublishableKey = getClerkPublishableKey();
+
 	return (
 		<html lang="en">
 			<head>
 				<HeadContent />
 			</head>
 			<body className="antialiased min-h-screen flex flex-col font-[var(--font-serif,Georgia,serif)]">
-				<ClerkProvider>{children}</ClerkProvider>
+				<ClerkProvider publishableKey={clerkPublishableKey}>
+					{children}
+				</ClerkProvider>
 				<Scripts />
 			</body>
 		</html>

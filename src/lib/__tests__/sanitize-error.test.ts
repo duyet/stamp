@@ -17,7 +17,7 @@ describe("sanitizeErrorForLogging", () => {
 
 	it("redacts api_key patterns", () => {
 		const result = sanitizeErrorForLogging(
-			new Error("api_key=sk_live_abc123def456"),
+			new Error("api_key=demo-demo-demo-key"),
 		);
 		expect(result).toBe("api_key=***");
 	});
@@ -28,7 +28,7 @@ describe("sanitizeErrorForLogging", () => {
 	});
 
 	it("redacts token patterns", () => {
-		const result = sanitizeErrorForLogging(new Error("token=ghp_abcdef123456"));
+		const result = sanitizeErrorForLogging(new Error("token=demo-demo-token"));
 		expect(result).toBe("token=***");
 	});
 
@@ -44,16 +44,16 @@ describe("sanitizeErrorForLogging", () => {
 
 	it("redacts bearer patterns", () => {
 		const result = sanitizeErrorForLogging(
-			new Error("bearer abcdef123456token"),
+			new Error("bearer demo-demo-demo-token"),
 		);
 		expect(result).toBe("bearer=***");
 	});
 
 	it("redacts OpenAI-style sk- keys", () => {
 		const result = sanitizeErrorForLogging(
-			new Error("Invalid key: sk-proj-abcdefghijklmnopqrstuvwxyz123456"),
+			new Error("Invalid key: sk-proj-demo-demo-demo-demo-1234"),
 		);
-		expect(result).not.toContain("sk-proj-abcdefghij");
+		expect(result).not.toContain("sk-proj-demo-demo");
 		expect(result).toContain("sk-***");
 	});
 
@@ -66,10 +66,10 @@ describe("sanitizeErrorForLogging", () => {
 
 	it("handles multiple sensitive patterns in one message", () => {
 		const result = sanitizeErrorForLogging(
-			new Error("api_key=sk_live_abc token=ghp_xyz password=secret123"),
+			new Error("api_key=demo-key token=demo-token password=secret123"),
 		);
-		expect(result).not.toContain("sk_live_abc");
-		expect(result).not.toContain("ghp_xyz");
+		expect(result).not.toContain("demo-key");
+		expect(result).not.toContain("demo-token");
 		expect(result).not.toContain("secret123");
 	});
 });

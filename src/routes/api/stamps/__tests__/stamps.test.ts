@@ -1,12 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getDb } from "@/db";
+import { getEnv } from "@/lib/env";
 import { createGetRequest, createSelectChain } from "@/test-utils";
+import { GET } from "../../stamps";
 
 vi.mock("@/db", () => ({
 	getDb: vi.fn(),
 }));
 
-import { getDb } from "@/db";
-import { GET } from "../../stamps";
+vi.mock("@/lib/env", () => ({
+	getEnv: vi.fn(),
+}));
 
 const URL = "http://localhost/api/stamps";
 
@@ -35,6 +39,9 @@ describe("GET /api/stamps", () => {
 	];
 
 	let mockChain: ReturnType<typeof createSelectChain>;
+	const mockBucket = {
+		head: vi.fn(),
+	};
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -42,6 +49,10 @@ describe("GET /api/stamps", () => {
 		vi.mocked(getDb).mockReturnValue({
 			select: vi.fn().mockReturnValue(mockChain),
 		} as never);
+		vi.mocked(getEnv).mockReturnValue({
+			STAMPS_BUCKET: mockBucket,
+		} as never);
+		mockBucket.head.mockResolvedValue({});
 	});
 
 	it("returns stamps with default pagination", async () => {
@@ -49,7 +60,6 @@ describe("GET /api/stamps", () => {
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
-		// Dates are serialized to ISO strings in JSON
 		const expectedStamps = mockResults.map((stamp) => ({
 			...stamp,
 			createdAt: stamp.createdAt.toISOString(),
@@ -61,7 +71,7 @@ describe("GET /api/stamps", () => {
 
 	it("uses default limit of 50", async () => {
 		await GET(createGetRequest(URL));
-		expect(mockChain.limit).toHaveBeenCalledWith(51); // limit + 1 for hasMore check
+		expect(mockChain.limit).toHaveBeenCalledWith(51);
 	});
 
 	it("generates cursor when hasMore", async () => {
@@ -86,7 +96,6 @@ describe("GET /api/stamps", () => {
 		const res = await GET(createGetRequest(URL, { limit: "2" }));
 		const data = (await res.json()) as Record<string, unknown>;
 
-		// The mock chain returns the full array, so we need to handle that
 		expect(Array.isArray(data.stamps)).toBe(true);
 		expect(data.hasMore).toBe(true);
 		expect(data.nextCursor).toBeDefined();
@@ -96,7 +105,7 @@ describe("GET /api/stamps", () => {
 		const cursor = new Date("2024-01-01T10:00:00Z").toISOString();
 		await GET(createGetRequest(URL, { cursor, limit: "10" }));
 
-		expect(mockChain.limit).toHaveBeenCalledWith(11); // limit + 1
+		expect(mockChain.limit).toHaveBeenCalledWith(11);
 	});
 
 	it("caps limit at 100", async () => {
@@ -114,6 +123,21 @@ describe("GET /api/stamps", () => {
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(data.stamps).toEqual([]);
+	});
+
+	it("filters out stamps with missing image objects", async () => {
+		mockBucket.head.mockImplementation(async (key: string) => {
+			return key.startsWith("stamps/stamp1.") ? null : {};
+		});
+
+		const res = await GET(createGetRequest(URL, { limit: "2" }));
+		const data = (await res.json()) as {
+			stamps: Array<{ id: string }>;
+			hasMore: boolean;
+		};
+
+		expect(data.stamps.map((stamp) => stamp.id)).toEqual(["stamp2"]);
+		expect(data.hasMore).toBe(false);
 	});
 
 	it("returns 500 on database error", async () => {

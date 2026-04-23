@@ -104,22 +104,30 @@ describe("GET /api/stamps/$id/image", () => {
 
 		expect(res.status).toBe(404);
 		expect(data.error).toContain("Image not found");
+		expect(mockBucket.get).toHaveBeenCalledTimes(4);
 	});
 
-	it("returns 404 when neither png nor jpg exists", async () => {
+	it("falls back to legacy webp files when imageExt is missing", async () => {
 		mockDb.query.stamps.findFirst.mockResolvedValue({
 			imageExt: null,
 			isPublic: true,
 			userId: null,
 			userIp: null,
 		});
-		mockBucket.get.mockResolvedValue(null);
+		mockBucket.get
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(null)
+			.mockResolvedValueOnce(mockR2Object(new ArrayBuffer(8)));
 
 		const res = await GET(mockRequest(), "abc123def456");
-		const data = (await res.json()) as Record<string, unknown>;
 
-		expect(res.status).toBe(404);
-		expect(data.error).toContain("Image not found");
+		expect(res.status).toBe(200);
+		expect(res.headers.get("Content-Type")).toBe("image/webp");
+		expect(mockBucket.get).toHaveBeenNthCalledWith(
+			4,
+			"stamps/abc123def456.webp",
+		);
 	});
 
 	it("uses correct R2 key with stamp ID", async () => {

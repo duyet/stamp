@@ -9,6 +9,10 @@ import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
 import { hashIp } from "@/lib/hash-ip";
 import { getSessionToken } from "@/lib/session-cookie";
+import {
+	getStampImageKeys,
+	isValidStampImageExtension,
+} from "@/lib/stamp-image";
 
 const CONTENT_TYPE_MAP: Record<string, string> = {
 	png: "image/png",
@@ -17,7 +21,6 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
 	webp: "image/webp",
 };
 
-const VALID_EXTENSIONS = ["png", "jpg", "jpeg", "webp"] as const;
 const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const MAX_ID_LENGTH = 100;
 
@@ -31,7 +34,6 @@ export async function GET(request: Request, id: string): Promise<Response> {
 		);
 
 	try {
-		// Validate ID format to prevent injection attacks
 		if (!ID_PATTERN.test(id) || id.length > MAX_ID_LENGTH) {
 			return jsonError("Invalid ID format", 400);
 		}
@@ -40,12 +42,9 @@ export async function GET(request: Request, id: string): Promise<Response> {
 		const db = getDb();
 		const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
 
-		// Support reference images stored under references/ prefix
 		const isReference = id.startsWith("ref_");
-		const prefix = isReference ? "references" : "stamps";
 		const cleanId = isReference ? id.slice(4) : id;
 
-		// Validate cleanId is not empty after prefix removal
 		if (!cleanId || !ID_PATTERN.test(cleanId)) {
 			return jsonError("Invalid ID format", 400);
 		}
@@ -53,8 +52,9 @@ export async function GET(request: Request, id: string): Promise<Response> {
 		let object: R2ObjectBody | null = null;
 		let contentType = "image/png";
 
-		// For stamps, get extension from database first
 		if (!isReference) {
+			let imageExt: string | null = null;
+
 			const stamp = await db.query.stamps.findFirst({
 				where: eq(stamps.id, id),
 				columns: {
@@ -66,7 +66,10 @@ export async function GET(request: Request, id: string): Promise<Response> {
 				},
 			});
 
-			// Ownership check: private stamps require authentication or IP match
+			if (stamp?.imageExt && !isValidStampImageExtension(stamp.imageExt)) {
+				return jsonError("Invalid image extension", 400);
+			}
+
 			if (stamp && stamp.isPublic === false) {
 				const { userId } = await getAuthUserId();
 				const rawIp = getClientIp(request.headers, null);
@@ -78,34 +81,30 @@ export async function GET(request: Request, id: string): Promise<Response> {
 				}
 			}
 
-			if (stamp?.imageExt) {
-				const ext = stamp.imageExt;
-				// Validate extension is in allowlist
-				if (!(VALID_EXTENSIONS as readonly string[]).includes(ext)) {
-					return jsonError("Invalid image extension", 400);
-				}
-				// Direct GET using exact extension from DB
-				object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
-				if (object) {
-					contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
-				}
-			}
+			imageExt = stamp?.imageExt ?? null;
 
-			// Fallback for stamps without imageExt in DB (legacy data)
-			if (!object) {
-				object = await bucket.get(`${prefix}/${cleanId}.png`);
-				if (object) contentType = "image/png";
+			for (const key of getStampImageKeys(cleanId, imageExt)) {
+				object = await bucket.get(key);
+				if (!object) {
+					continue;
+				}
+
+				const ext = key.slice(key.lastIndexOf(".") + 1);
+				contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
+				break;
 			}
 		} else {
-			// Reference images: try webp first (newer format), then png (legacy)
-			object = await bucket.get(`${prefix}/${cleanId}.webp`);
-			if (object) {
-				contentType = "image/webp";
-			}
+			for (const key of getStampImageKeys(cleanId, null, {
+				isReference: true,
+			})) {
+				object = await bucket.get(key);
+				if (!object) {
+					continue;
+				}
 
-			if (!object) {
-				object = await bucket.get(`${prefix}/${cleanId}.png`);
-				contentType = "image/png";
+				const ext = key.slice(key.lastIndexOf(".") + 1);
+				contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
+				break;
 			}
 		}
 
@@ -113,7 +112,6 @@ export async function GET(request: Request, id: string): Promise<Response> {
 			return jsonError("Image not found", 404);
 		}
 
-		// Stream R2 body directly — avoids buffering images into Worker memory
 		return withSecurityHeaders(
 			new Response(object.body, {
 				headers: {

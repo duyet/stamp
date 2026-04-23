@@ -3,6 +3,8 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { jsonResponse } from "@/lib/api-utils";
+import { getEnv } from "@/lib/env";
+import { hasRenderableStampImage } from "@/lib/stamp-image";
 import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 
 interface StampsApiResponse {
@@ -10,31 +12,51 @@ interface StampsApiResponse {
 		id: string;
 		prompt: string;
 		imageUrl: string;
+		thumbnailUrl: string | null;
 		style: string | null;
 		isPublic: boolean | null;
 		createdAt: Date;
 		description: string | null;
 	}>;
-	nextCursor?: string; // ISO timestamp for next page
+	nextCursor?: string;
 	hasMore: boolean;
+}
+
+function buildWhereClause(style?: string, cursorDate?: Date) {
+	if (style) {
+		return cursorDate
+			? and(
+					eq(stamps.isPublic, true),
+					eq(stamps.style, style),
+					sql`${stamps.createdAt} < ${cursorDate.getTime() / 1000}`,
+				)
+			: and(eq(stamps.isPublic, true), eq(stamps.style, style));
+	}
+
+	return cursorDate
+		? and(
+				eq(stamps.isPublic, true),
+				sql`${stamps.createdAt} < ${cursorDate.getTime() / 1000}`,
+			)
+		: eq(stamps.isPublic, true);
 }
 
 export async function GET(request: Request): Promise<Response> {
 	try {
 		const db = getDb();
+		const env = getEnv();
+		const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
 
 		const url = new URL(request.url);
 		const limitParam = Number(url.searchParams.get("limit") || 50);
 		const cursorParam = url.searchParams.get("cursor");
 		const styleParam = url.searchParams.get("style");
 
-		// Validate pagination parameters
 		const limit = Math.max(
 			1,
 			Math.min(Number.isFinite(limitParam) ? limitParam : 50, 100),
 		);
 
-		// Parse cursor (ISO timestamp)
 		let cursorDate: Date | undefined;
 		if (cursorParam) {
 			const parsed = new Date(cursorParam);
@@ -43,7 +65,6 @@ export async function GET(request: Request): Promise<Response> {
 			}
 		}
 
-		// Validate style parameter against allowlist
 		const style =
 			styleParam &&
 			(Object.keys(STAMP_STYLE_PRESETS) as readonly string[]).includes(
@@ -52,47 +73,75 @@ export async function GET(request: Request): Promise<Response> {
 				? styleParam
 				: undefined;
 
-		// Build where clause with cursor-based pagination
-		const whereClause = style
-			? cursorDate
-				? and(
-						eq(stamps.isPublic, true),
-						eq(stamps.style, style),
-						// Cursor pagination: createdAt < cursorDate
-						sql`${stamps.createdAt} < ${cursorDate.getTime() / 1000}`,
-					)
-				: and(eq(stamps.isPublic, true), eq(stamps.style, style))
-			: cursorDate
-				? and(
-						eq(stamps.isPublic, true),
-						sql`${stamps.createdAt} < ${cursorDate.getTime() / 1000}`,
-					)
-				: eq(stamps.isPublic, true);
+		const validStamps: Array<{
+			id: string;
+			prompt: string;
+			imageUrl: string;
+			thumbnailUrl: string | null;
+			style: string | null;
+			isPublic: boolean | null;
+			createdAt: Date;
+			description: string | null;
+			imageExt: string | null;
+		}> = [];
 
-		// Select only columns needed for stamp listing (reduces data transfer)
-		// Fetch limit + 1 to determine if there are more results
-		const queryResults = await db
-			.select({
-				id: stamps.id,
-				prompt: stamps.prompt,
-				imageUrl: stamps.imageUrl,
-				style: stamps.style,
-				isPublic: stamps.isPublic,
-				createdAt: stamps.createdAt,
-				description: stamps.description,
-			})
-			.from(stamps)
-			.where(whereClause)
-			.orderBy(desc(stamps.createdAt))
-			.limit(limit + 1); // Fetch one extra to check for more results
+		let batchCursor = cursorDate;
 
-		// Determine if there are more results
-		const hasMore = queryResults.length > limit;
-		const paginatedStamps = hasMore
-			? queryResults.slice(0, limit)
-			: queryResults;
+		while (validStamps.length < limit + 1) {
+			const queryResults = await db
+				.select({
+					id: stamps.id,
+					prompt: stamps.prompt,
+					imageUrl: stamps.imageUrl,
+					thumbnailUrl: stamps.thumbnailUrl,
+					style: stamps.style,
+					isPublic: stamps.isPublic,
+					createdAt: stamps.createdAt,
+					description: stamps.description,
+					imageExt: stamps.imageExt,
+				})
+				.from(stamps)
+				.where(buildWhereClause(style, batchCursor))
+				.orderBy(desc(stamps.createdAt))
+				.limit(limit + 1);
 
-		// Generate next cursor from the last item's createdAt timestamp
+			if (queryResults.length === 0) {
+				break;
+			}
+
+			const availability = await Promise.all(
+				queryResults.map(async (stamp) => ({
+					stamp,
+					isRenderable: await hasRenderableStampImage(
+						bucket,
+						stamp.id,
+						stamp.imageExt,
+					),
+				})),
+			);
+
+			for (const { stamp, isRenderable } of availability) {
+				if (!isRenderable) {
+					continue;
+				}
+
+				validStamps.push(stamp);
+				if (validStamps.length >= limit + 1) {
+					break;
+				}
+			}
+
+			if (queryResults.length < limit + 1) {
+				break;
+			}
+
+			const lastStamp = queryResults[queryResults.length - 1];
+			batchCursor = new Date(lastStamp.createdAt.getTime() - 1);
+		}
+
+		const hasMore = validStamps.length > limit;
+		const paginatedStamps = hasMore ? validStamps.slice(0, limit) : validStamps;
+
 		const nextCursor =
 			hasMore && paginatedStamps.length > 0
 				? new Date(
@@ -101,13 +150,11 @@ export async function GET(request: Request): Promise<Response> {
 				: undefined;
 
 		const responseData: StampsApiResponse = {
-			stamps: paginatedStamps,
+			stamps: paginatedStamps.map(({ imageExt: _imageExt, ...stamp }) => stamp),
 			nextCursor,
 			hasMore,
 		};
 
-		// Cache for 60 seconds, stale for 300 seconds (5 min)
-		// This allows quick page loads while still getting fresh data
 		return jsonResponse(responseData, 200, {
 			"Cache-Control":
 				"public, max-age=60, stale-while-revalidate=300, stale-if-error=86400",
