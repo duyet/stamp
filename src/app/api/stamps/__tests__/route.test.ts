@@ -5,7 +5,12 @@ vi.mock("@/db", () => ({
 	getDb: vi.fn(),
 }));
 
+vi.mock("@/lib/env", () => ({
+	getEnv: vi.fn(),
+}));
+
 import { getDb } from "@/db";
+import { getEnv } from "@/lib/env";
 import { GET } from "../route";
 
 const URL = "http://localhost/api/stamps";
@@ -35,6 +40,9 @@ describe("GET /api/stamps", () => {
 	];
 
 	let mockChain: ReturnType<typeof createSelectChain>;
+	const mockBucket = {
+		head: vi.fn(),
+	};
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -42,6 +50,10 @@ describe("GET /api/stamps", () => {
 		vi.mocked(getDb).mockReturnValue({
 			select: vi.fn().mockReturnValue(mockChain),
 		} as never);
+		vi.mocked(getEnv).mockReturnValue({
+			STAMPS_BUCKET: mockBucket,
+		} as never);
+		mockBucket.head.mockResolvedValue({});
 	});
 
 	it("returns stamps with default pagination", async () => {
@@ -114,6 +126,21 @@ describe("GET /api/stamps", () => {
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(data.stamps).toEqual([]);
+	});
+
+	it("filters out stamps with missing image objects", async () => {
+		mockBucket.head.mockImplementation(async (key: string) => {
+			return key.startsWith("stamps/stamp1.") ? null : {};
+		});
+
+		const res = await GET(createGetRequest(URL, { limit: "2" }));
+		const data = (await res.json()) as {
+			stamps: Array<{ id: string }>;
+			hasMore: boolean;
+		};
+
+		expect(data.stamps.map((stamp) => stamp.id)).toEqual(["stamp2"]);
+		expect(data.hasMore).toBe(false);
 	});
 
 	it("returns 500 on database error", async () => {

@@ -3,6 +3,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { getEnv } from "@/lib/env";
+import {
+	getStampImageKeys,
+	isValidStampImageExtension,
+} from "@/lib/stamp-image";
 
 const CONTENT_TYPE_MAP: Record<string, string> = {
 	png: "image/png",
@@ -11,7 +15,6 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
 	webp: "image/webp",
 };
 
-const VALID_EXTENSIONS = ["png", "jpg", "jpeg", "webp"] as const;
 const ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const MAX_ID_LENGTH = 100;
 
@@ -33,7 +36,6 @@ export async function GET(
 
 		// Support reference images stored under references/ prefix
 		const isReference = id.startsWith("ref_");
-		const prefix = isReference ? "references" : "stamps";
 		const cleanId = isReference ? id.slice(4) : id;
 
 		// Validate cleanId is not empty after prefix removal
@@ -44,44 +46,45 @@ export async function GET(
 		let object: R2ObjectBody | null = null;
 		let contentType = "image/png";
 
-		// For stamps, get extension from database first
 		if (!isReference) {
+			let imageExt: string | null = null;
+
 			const stamp = await db.query.stamps.findFirst({
 				where: eq(stamps.id, id),
 				columns: { imageExt: true },
 			});
 
-			if (stamp?.imageExt) {
-				const ext = stamp.imageExt;
-				// Validate extension is in allowlist
-				if (!(VALID_EXTENSIONS as readonly string[]).includes(ext)) {
-					return NextResponse.json(
-						{ error: "Invalid image extension" },
-						{ status: 400 },
-					);
-				}
-				// Direct GET using exact extension from DB
-				object = await bucket.get(`${prefix}/${cleanId}.${ext}`);
-				if (object) {
-					contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
-				}
+			if (stamp?.imageExt && !isValidStampImageExtension(stamp.imageExt)) {
+				return NextResponse.json(
+					{ error: "Invalid image extension" },
+					{ status: 400 },
+				);
 			}
 
-			// Fallback for stamps without imageExt in DB (legacy data)
-			if (!object) {
-				object = await bucket.get(`${prefix}/${cleanId}.png`);
-				if (object) contentType = "image/png";
+			imageExt = stamp?.imageExt ?? null;
+
+			for (const key of getStampImageKeys(cleanId, imageExt)) {
+				object = await bucket.get(key);
+				if (!object) {
+					continue;
+				}
+
+				const ext = key.slice(key.lastIndexOf(".") + 1);
+				contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
+				break;
 			}
 		} else {
-			// Reference images: try webp first (newer format), then png (legacy)
-			object = await bucket.get(`${prefix}/${cleanId}.webp`);
-			if (object) {
-				contentType = "image/webp";
-			}
+			for (const key of getStampImageKeys(cleanId, null, {
+				isReference: true,
+			})) {
+				object = await bucket.get(key);
+				if (!object) {
+					continue;
+				}
 
-			if (!object) {
-				object = await bucket.get(`${prefix}/${cleanId}.png`);
-				contentType = "image/png";
+				const ext = key.slice(key.lastIndexOf(".") + 1);
+				contentType = CONTENT_TYPE_MAP[ext] ?? "image/png";
+				break;
 			}
 		}
 

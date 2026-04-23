@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { STAMP_STYLES } from "@/lib/constants";
+import { getEnv } from "@/lib/env";
+import { hasRenderableStampImage } from "@/lib/stamp-image";
 
 interface StampsApiResponse {
 	stamps: Array<{
@@ -19,9 +21,30 @@ interface StampsApiResponse {
 	hasMore: boolean;
 }
 
+function buildWhereClause(style?: string, cursorDate?: Date) {
+	if (style) {
+		return cursorDate
+			? and(
+					eq(stamps.isPublic, true),
+					eq(stamps.style, style),
+					sql`${stamps.createdAt} < ${cursorDate.getTime() / 1000}`,
+				)
+			: and(eq(stamps.isPublic, true), eq(stamps.style, style));
+	}
+
+	return cursorDate
+		? and(
+				eq(stamps.isPublic, true),
+				sql`${stamps.createdAt} < ${cursorDate.getTime() / 1000}`,
+			)
+		: eq(stamps.isPublic, true);
+}
+
 export async function GET(request: Request) {
 	try {
 		const db = getDb();
+		const env = getEnv();
+		const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
 
 		const url = new URL(request.url);
 		const limitParam = Number(url.searchParams.get("limit") || 50);
@@ -49,46 +72,74 @@ export async function GET(request: Request) {
 				? styleParam
 				: undefined;
 
-		// Build where clause with cursor-based pagination
-		const whereClause = style
-			? cursorDate
-				? and(
-						eq(stamps.isPublic, true),
-						eq(stamps.style, style),
-						// Cursor pagination: createdAt < cursorDate
-						sql`${stamps.createdAt} < ${cursorDate.getTime() / 1000}`,
-					)
-				: and(eq(stamps.isPublic, true), eq(stamps.style, style))
-			: cursorDate
-				? and(
-						eq(stamps.isPublic, true),
-						sql`${stamps.createdAt} < ${cursorDate.getTime() / 1000}`,
-					)
-				: eq(stamps.isPublic, true);
+		const validStamps: Array<{
+			id: string;
+			prompt: string;
+			imageUrl: string;
+			thumbnailUrl: string | null;
+			style: string | null;
+			isPublic: boolean | null;
+			createdAt: Date;
+			description: string | null;
+			imageExt: string | null;
+		}> = [];
 
-		// Select only columns needed for stamp listing (reduces data transfer by ~60%)
-		// Fetch limit + 1 to determine if there are more results
-		const queryResults = await db
-			.select({
-				id: stamps.id,
-				prompt: stamps.prompt,
-				imageUrl: stamps.imageUrl,
-				thumbnailUrl: stamps.thumbnailUrl,
-				style: stamps.style,
-				isPublic: stamps.isPublic,
-				createdAt: stamps.createdAt,
-				description: stamps.description,
-			})
-			.from(stamps)
-			.where(whereClause)
-			.orderBy(desc(stamps.createdAt))
-			.limit(limit + 1); // Fetch one extra to check for more results
+		let batchCursor = cursorDate;
 
-		// Determine if there are more results
-		const hasMore = queryResults.length > limit;
-		const paginatedStamps = hasMore
-			? queryResults.slice(0, limit)
-			: queryResults;
+		while (validStamps.length < limit + 1) {
+			const queryResults = await db
+				.select({
+					id: stamps.id,
+					prompt: stamps.prompt,
+					imageUrl: stamps.imageUrl,
+					thumbnailUrl: stamps.thumbnailUrl,
+					style: stamps.style,
+					isPublic: stamps.isPublic,
+					createdAt: stamps.createdAt,
+					description: stamps.description,
+					imageExt: stamps.imageExt,
+				})
+				.from(stamps)
+				.where(buildWhereClause(style, batchCursor))
+				.orderBy(desc(stamps.createdAt))
+				.limit(limit + 1);
+
+			if (queryResults.length === 0) {
+				break;
+			}
+
+			const availability = await Promise.all(
+				queryResults.map(async (stamp) => ({
+					stamp,
+					isRenderable: await hasRenderableStampImage(
+						bucket,
+						stamp.id,
+						stamp.imageExt,
+					),
+				})),
+			);
+
+			for (const { stamp, isRenderable } of availability) {
+				if (!isRenderable) {
+					continue;
+				}
+
+				validStamps.push(stamp);
+				if (validStamps.length >= limit + 1) {
+					break;
+				}
+			}
+
+			if (queryResults.length < limit + 1) {
+				break;
+			}
+
+			const lastStamp = queryResults[queryResults.length - 1];
+			batchCursor = new Date(lastStamp.createdAt.getTime() - 1);
+		}
+
+		const hasMore = validStamps.length > limit;
+		const paginatedStamps = hasMore ? validStamps.slice(0, limit) : validStamps;
 
 		// Generate next cursor from the last item's createdAt timestamp
 		const nextCursor =
@@ -99,7 +150,7 @@ export async function GET(request: Request) {
 				: undefined;
 
 		const responseData: StampsApiResponse = {
-			stamps: paginatedStamps,
+			stamps: paginatedStamps.map(({ imageExt: _imageExt, ...stamp }) => stamp),
 			nextCursor,
 			hasMore,
 		};
