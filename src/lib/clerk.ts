@@ -6,6 +6,8 @@
  */
 
 import { verifyToken } from "@clerk/backend";
+import { getClerkSecretKey } from "@/lib/clerk-config";
+import { sanitizeErrorForLogging } from "@/lib/sanitize-error";
 
 /**
  * Verify a Clerk session token and return the userId.
@@ -17,13 +19,17 @@ export async function verifySessionToken(
 	token: string,
 ): Promise<string | null> {
 	try {
-		const secretKey = process.env.CLERK_SECRET_KEY;
+		const secretKey = getClerkSecretKey();
 		if (!secretKey) {
 			throw new Error("CLERK_SECRET_KEY is not set");
 		}
 		const payload = await verifyToken(token, { secretKey });
 		return payload.sub as string;
-	} catch {
+	} catch (error) {
+		console.error(
+			"Clerk session verification failed",
+			sanitizeErrorForLogging(error),
+		);
 		return null;
 	}
 }

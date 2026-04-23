@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
+import { getClerkPublishableKey } from "@/lib/clerk-config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -57,12 +58,14 @@ export default function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const clerkPublishableKey = getClerkPublishableKey();
+
 	return (
 		<html lang="en">
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased min-h-screen flex flex-col`}
 			>
-				<ClerkProvider>
+				<ClerkProvider publishableKey={clerkPublishableKey}>
 					<Header />
 					<main className="flex-1">{children}</main>
 					<Footer />
