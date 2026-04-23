@@ -74,7 +74,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 
 		return (
 			<div className="space-y-4">
-				<div className="rounded-[1.7rem] border border-stone-300/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,243,235,0.95))] p-4 shadow-[0_20px_45px_-40px_rgba(67,42,18,0.55)]">
+				<div className="p-1">
 					<div className="flex items-center justify-between gap-3">
 						<div>
 							<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
@@ -91,7 +91,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 								<SignInButton mode="modal">
 									<button
 										type="button"
-										className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-400 transition-colors hover:text-stone-700"
+										className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-stone-400 transition-colors hover:text-stone-700"
 										aria-label="Sign in"
 									>
 										<AvatarIcon />
@@ -125,7 +125,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 							disabled={disabled}
 							aria-label="Describe your stamp"
 							aria-describedby="prompt-hint"
-							className={`min-h-[128px] w-full resize-none overflow-hidden rounded-[1.3rem] border border-stone-200 bg-white px-4 py-4 text-sm leading-7 text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-stone-400 focus:ring-4 focus:ring-stone-900/5 disabled:opacity-50 ${
+							className={`min-h-[128px] w-full resize-none overflow-hidden rounded-[1.3rem] bg-[rgba(255,255,255,0.8)] px-4 py-4 text-sm leading-7 text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:bg-white focus:ring-4 focus:ring-stone-900/5 disabled:opacity-50 ${
 								isShaking ? "animate-shake" : ""
 							}`}
 						/>
@@ -145,7 +145,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 					</div>
 				</div>
 
-				<div className="rounded-[1.5rem] border border-stone-200/80 bg-white/65 p-4">
+				<div className="p-1">
 					<div className="mb-3 flex items-center justify-between gap-3">
 						<div>
 							<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
@@ -163,10 +163,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									key={group.label ?? "default"}
 									type="button"
 									onClick={() => setActiveGroupIndex(groupIndex)}
-									className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+									className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
 										activeGroupIndex === groupIndex
-											? "border-stone-900 bg-stone-900 text-white"
-											: "border-stone-200 bg-white text-stone-500 hover:border-stone-300 hover:text-stone-700"
+											? "bg-stone-900 text-white"
+											: "bg-white/80 text-stone-500 hover:bg-white hover:text-stone-700"
 									}`}
 								>
 									{group.label ?? "Ideas"}
@@ -194,7 +194,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									}
 								}}
 								disabled={loading}
-								className="shrink-0 rounded-full border border-stone-200 bg-[linear-gradient(180deg,#fff,#f7f1e6)] px-3 py-1.5 text-xs text-stone-600 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-400 hover:bg-white hover:text-stone-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
+								className="shrink-0 rounded-full bg-[rgba(255,255,255,0.85)] px-3 py-1.5 text-xs text-stone-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-stone-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
 							>
 								{example}
 							</button>

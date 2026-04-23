@@ -154,10 +154,10 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 							? "cursor-not-allowed border-stone-200 bg-stone-50/80 opacity-50"
 							: isDragging
 								? "scale-[1.01] border-stone-700 bg-stone-950/5"
-								: "border-stone-300/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,242,232,0.95))] hover:border-stone-500 hover:bg-white"
+								: "border-stone-300/70 bg-[rgba(255,255,255,0.62)] hover:border-stone-500 hover:bg-white/90"
 					}`}
 				>
-					<div className="flex h-11 w-11 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-700 shadow-sm">
+					<div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-stone-700 shadow-sm">
 						<UploadIcon />
 					</div>
 					<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
@@ -183,8 +183,8 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					/>
 				</button>
 			) : (
-				<div className="animate-form-enter flex items-center gap-4 rounded-[1.4rem] border border-stone-200 bg-[linear-gradient(180deg,#fffefb,#f6f1e8)] p-4">
-					<div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-[1rem] border border-stone-200 bg-white">
+				<div className="animate-form-enter flex items-center gap-4 rounded-[1.4rem] bg-[rgba(255,255,255,0.68)] p-4">
+					<div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-[1rem] bg-white">
 						{processing && (
 							<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
 								<div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
@@ -215,7 +215,7 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					<button
 						type="button"
 						onClick={handleClear}
-						className="shrink-0 rounded-full border border-stone-200 p-2 text-stone-400 transition-colors hover:border-stone-300 hover:text-stone-700 disabled:cursor-not-allowed disabled:opacity-50"
+						className="shrink-0 rounded-full bg-white p-2 text-stone-400 transition-colors hover:text-stone-700 disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={disabled || processing}
 					>
 						<CloseIcon />

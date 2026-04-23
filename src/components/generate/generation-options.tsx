@@ -26,7 +26,7 @@ export function GenerationOptions({
 	const clerk = useClerk();
 
 	return (
-		<div className="rounded-[1.5rem] border border-stone-200/80 bg-white/65 p-4">
+		<div className="p-1">
 			<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 				<div>
 					<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
