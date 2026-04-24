@@ -45,7 +45,7 @@ export function useStamps(
 			try {
 				setLoading(true);
 				nextCursorRef.current = null;
-				const styleQuery = style ? `&style=${style}` : "";
+				const styleQuery = style ? `&style=${encodeURIComponent(style)}` : "";
 				const r = await fetch(`/api/stamps?limit=${pageSize}${styleQuery}`, {
 					signal: controller.signal,
 				});
@@ -84,9 +84,9 @@ export function useStamps(
 		const controller = new AbortController();
 		try {
 			setLoadingMore(true);
-			const styleQuery = style ? `&style=${style}` : "";
+			const styleQuery = style ? `&style=${encodeURIComponent(style)}` : "";
 			const r = await fetch(
-				`/api/stamps?limit=${pageSize}&cursor=${nextCursorRef.current}${styleQuery}`,
+				`/api/stamps?limit=${pageSize}&cursor=${encodeURIComponent(nextCursorRef.current)}${styleQuery}`,
 				{ signal: controller.signal },
 			);
 			const data = (await r.json()) as {

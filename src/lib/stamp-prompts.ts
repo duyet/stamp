@@ -271,18 +271,18 @@ export const PROMPT_GROUPS: readonly PromptGroup[] = [
 		label: "Ideas",
 		className: "text-stone-600",
 		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
-		prompts: getRandomPrompts(12),
+		prompts: ALL_PROMPTS.slice(0, 12),
 	},
 	{
 		label: "Animals",
 		className: "text-stone-600",
 		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
-		prompts: getRandomPrompts(8),
+		prompts: ANIMALS.slice(0, 8),
 	},
 	{
 		label: "Nature",
 		className: "text-stone-600",
 		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
-		prompts: getRandomPrompts(8),
+		prompts: NATURE.slice(0, 8),
 	},
 ] as const;

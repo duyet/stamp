@@ -64,23 +64,26 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 		);
 
 		const [shuffledPrompts, setShuffledPrompts] = useState<string[]>(() => {
-			return getRandomPrompts(12);
+			return [...PROMPT_GROUPS[0].prompts];
 		});
 
-		// biome-ignore lint/correctness/useExhaustiveDependencies: activeGroupIndex used as trigger signal
 		useEffect(() => {
-			setShuffledPrompts(getRandomPrompts(8));
+			setShuffledPrompts(
+				activeGroupIndex === 0
+					? getRandomPrompts(8)
+					: [...PROMPT_GROUPS[activeGroupIndex].prompts],
+			);
 		}, [activeGroupIndex]);
 
 		return (
 			<div className="space-y-5">
-				<div className="p-1">
+				<div>
 					<div className="flex items-center justify-between gap-3">
 						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
 								Prompt
 							</p>
-							<p className="mt-1 text-sm text-stone-600">
+							<p className="mt-1 text-sm leading-6 text-stone-600">
 								{referenceImage
 									? "Add extra direction for the uploaded image."
 									: "Describe the scene, subject, or mood you want on the stamp."}
@@ -91,7 +94,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 								<SignInButton mode="modal">
 									<button
 										type="button"
-										className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-stone-400 transition-colors hover:text-stone-700"
+										className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition-colors hover:border-stone-400 hover:text-stone-900"
 										aria-label="Sign in"
 									>
 										<AvatarIcon />
@@ -125,13 +128,13 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 							disabled={disabled}
 							aria-label="Describe your stamp"
 							aria-describedby="prompt-hint"
-							className={`min-h-[144px] w-full resize-none overflow-hidden rounded-[1.6rem] bg-[rgba(255,252,247,0.86)] px-5 py-5 text-[15px] leading-8 text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:bg-white focus:ring-4 focus:ring-stone-900/5 disabled:opacity-50 ${
+							className={`min-h-[178px] w-full resize-none overflow-hidden rounded-[1rem] border border-stone-200 bg-white px-5 py-4 text-base leading-8 text-stone-950 outline-none transition-all duration-200 placeholder:text-stone-400 focus:border-stone-500 focus:ring-4 focus:ring-stone-900/5 disabled:opacity-50 ${
 								isShaking ? "animate-shake" : ""
 							}`}
 						/>
 					</div>
 
-					<div className="mt-3 flex items-center justify-between text-xs text-stone-500">
+					<div className="mt-3 flex items-center justify-between gap-3 text-sm text-stone-600">
 						<span id="prompt-hint">
 							{value.length > 0 && referenceImage
 								? "Nice. This will be combined with your reference photo."
@@ -139,19 +142,19 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									? "Ready to generate whenever you are."
 									: "Start simple, then layer in place, texture, and mood."}
 						</span>
-						<span className="rounded-full bg-white/72 px-2.5 py-1 tabular-nums text-stone-600">
+						<span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 tabular-nums text-stone-600">
 							{value.length}/500
 						</span>
 					</div>
 				</div>
 
-				<div className="p-1">
+				<div>
 					<div className="mb-3 flex items-center justify-between gap-3">
 						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
+							<p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
 								Quick prompts
 							</p>
-							<p className="mt-1 text-sm text-stone-600">
+							<p className="mt-1 text-sm leading-6 text-stone-600">
 								Use a suggestion as-is or stack a few together.
 							</p>
 						</div>
@@ -163,10 +166,10 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									key={group.label ?? "default"}
 									type="button"
 									onClick={() => setActiveGroupIndex(groupIndex)}
-									className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+									className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
 										activeGroupIndex === groupIndex
 											? "bg-stone-900 text-white"
-											: "bg-white/68 text-stone-500 hover:bg-white hover:text-stone-700"
+											: "border border-stone-200 bg-white text-stone-600 hover:border-stone-400 hover:text-stone-900"
 									}`}
 								>
 									{group.label ?? "Ideas"}
@@ -194,7 +197,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									}
 								}}
 								disabled={loading}
-								className="shrink-0 rounded-full bg-[rgba(255,255,255,0.7)] px-3 py-1.5 text-xs text-stone-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-stone-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
+								className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-400 hover:text-stone-950 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
 							>
 								{example}
 							</button>

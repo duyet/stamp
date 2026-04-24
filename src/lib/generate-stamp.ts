@@ -1,5 +1,4 @@
 import { STAMP_STYLE_PRESETS, type StampStyle } from "./stamp-prompts";
-import { capitalize } from "./text-utils";
 
 interface GenerateStampResult {
 	imageData: Uint8Array;
@@ -60,6 +59,44 @@ function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
 	const subject = userPrompt.trim() || "a decorative design";
 	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers. The stamp fills the entire image with NO outer padding or frame - ONLY the stamp itself visible, NOTHING else.`;
+}
+
+export async function describeStamp(
+	ai: Ai,
+	userPrompt: string,
+	enhancedPrompt: string,
+	style: StampStyle,
+): Promise<string> {
+	const preset = STAMP_STYLE_PRESETS[style];
+	const sourcePrompt = userPrompt.trim() || enhancedPrompt.trim();
+	const fallback = `${preset.name} stamp from ${sourcePrompt || "a reference image"}`;
+
+	try {
+		const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
+			messages: [
+				{
+					role: "system",
+					content:
+						"Write one short display caption for an AI-generated postage stamp. Use plain English, no markdown, no quotes, no labels. Keep it under 14 words.",
+				},
+				{
+					role: "user",
+					content: `Style: ${preset.name}\nUser prompt: ${userPrompt || "(reference image only)"}\nGeneration prompt: ${enhancedPrompt}`,
+				},
+			],
+			max_tokens: 60,
+			temperature: 0.4,
+		})) as { response?: string };
+
+		const description = response.response?.trim().replace(/^["']|["']$/g, "");
+		return description || fallback;
+	} catch (err) {
+		console.warn(
+			"[Generate] Description generation failed, using fallback:",
+			err instanceof Error ? err.message : String(err),
+		);
+		return fallback;
+	}
 }
 
 /**
@@ -166,8 +203,12 @@ export async function generateStamp(
 		return Uint8Array.from(atob(response.image), (c) => c.charCodeAt(0));
 	})();
 
-	// Simple description from user prompt (no additional AI call)
-	const description = capitalize(userPrompt) || "Custom stamp";
+	const description = await describeStamp(
+		ai,
+		userPrompt,
+		enhancedPrompt,
+		style,
+	);
 
 	return {
 		imageData: imageResult,

@@ -6,7 +6,14 @@ import { jsonResponse } from "@/lib/api-utils";
 import { isAdmin } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
-import { capitalize } from "@/lib/text-utils";
+import { describeStamp } from "@/lib/generate-stamp";
+import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
+
+function normalizeStyle(style: string | null): StampStyle {
+	return style && style in STAMP_STYLE_PRESETS
+		? (style as StampStyle)
+		: "vintage";
+}
 
 export async function POST(_request: Request): Promise<Response> {
 	try {
@@ -34,6 +41,7 @@ export async function POST(_request: Request): Promise<Response> {
 				id: stamps.id,
 				prompt: stamps.prompt,
 				enhancedPrompt: stamps.enhancedPrompt,
+				style: stamps.style,
 			})
 			.from(stamps)
 			.where(isNull(stamps.description));
@@ -49,8 +57,12 @@ export async function POST(_request: Request): Promise<Response> {
 			await Promise.all(
 				batch.map(async (stamp) => {
 					try {
-						// Simple description from prompt (no AI call needed)
-						const description = capitalize(stamp.prompt) || "Custom stamp";
+						const description = await describeStamp(
+							ai,
+							stamp.prompt,
+							stamp.enhancedPrompt ?? stamp.prompt,
+							normalizeStyle(stamp.style),
+						);
 
 						await db
 							.update(stamps)

@@ -211,44 +211,43 @@ export function GenerateForm({
 					e.preventDefault();
 					handleSubmit();
 				}}
-				className="space-y-5 sm:space-y-4"
+				className="grid gap-5 rounded-[1.25rem] border border-stone-200 bg-[#fffdf9] p-4 shadow-[0_22px_70px_-54px_rgba(61,43,24,0.55)] sm:p-5 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-start"
 			>
-				{/* Reference image upload */}
-				<ImageUpload
-					onSelected={(data) => {
-						setReference(data ? data.referenceImageData : null);
-						// Auto-enable HD when reference is selected
-						if (data) {
-							setHd(true);
-						}
-					}}
-					disabled={loading}
-				/>
+				<div className="space-y-5">
+					<ImageUpload
+						onSelected={(data) => {
+							setReference(data ? data.referenceImageData : null);
+							if (data) {
+								setHd(true);
+							}
+						}}
+						disabled={loading}
+					/>
 
-				{/* Prompt input with suggestions */}
-				<PromptInput
-					ref={promptInputRef}
-					value={prompt}
-					onChange={setPrompt}
-					onStyleChange={setStyle}
-					disabled={loading}
-					loading={loading}
-					referenceImage={!!reference}
-				/>
+					<StyleSelector currentStyle={style} onStyleChange={setStyle} />
+				</div>
 
-				{/* Style selector */}
-				<StyleSelector currentStyle={style} onStyleChange={setStyle} />
+				<div className="space-y-5">
+					<PromptInput
+						ref={promptInputRef}
+						value={prompt}
+						onChange={setPrompt}
+						onStyleChange={setStyle}
+						disabled={loading}
+						loading={loading}
+						referenceImage={!!reference}
+					/>
 
-				{/* Actions row */}
-				<GenerationOptions
-					isPublic={isPublic}
-					onPublicChange={setIsPublic}
-					hd={hd}
-					onHdChange={setHd}
-					loading={loading}
-					disabled={!prompt.trim() && !reference}
-					referenceImage={!!reference}
-				/>
+					<GenerationOptions
+						isPublic={isPublic}
+						onPublicChange={setIsPublic}
+						hd={hd}
+						onHdChange={setHd}
+						loading={loading}
+						disabled={!prompt.trim() && !reference}
+						referenceImage={!!reference}
+					/>
+				</div>
 			</form>
 
 			{/* Loading skeleton */}

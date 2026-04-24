@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/button";
 import { RefreshIcon } from "@/components/icons";
 import { SectionHeading } from "@/components/section-heading";
@@ -29,6 +29,7 @@ export default function CollectionsPage({
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(initialStyle);
 	const [retryKey, setRetryKey] = useState(0);
 	const [selectedStamp, setSelectedStamp] = useState<PublicStamp | null>(null);
+	const loadMoreRef = useRef<HTMLDivElement | null>(null);
 	const { stamps, loading, loadingMore, error, setStamps, hasMore, loadMore } =
 		useStamps(
 			COLLECTIONS_PAGE_SIZE,
@@ -41,7 +42,22 @@ export default function CollectionsPage({
 		setSelectedStyle(initialStyle);
 	}, [initialStyle]);
 
-	// Display stamps directly — server-side filtering handles style selection
+	useEffect(() => {
+		const target = loadMoreRef.current;
+		if (!target || !hasMore) return;
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (entry.isIntersecting && !loadingMore) {
+					loadMore();
+				}
+			},
+			{ rootMargin: "600px 0px" },
+		);
+
+		observer.observe(target);
+		return () => observer.disconnect();
+	}, [hasMore, loadMore, loadingMore]);
 
 	// Memoized empty state message for selected style
 	const emptyStateMessage = useMemo(() => {
@@ -145,7 +161,7 @@ export default function CollectionsPage({
 						))}
 					</div>
 					{hasMore && (
-						<div className="mt-8 flex justify-center">
+						<div ref={loadMoreRef} className="mt-8 flex justify-center">
 							<button
 								type="button"
 								onClick={loadMore}

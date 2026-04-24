@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { CloseIcon, UploadIcon } from "@/components/icons";
-import { StampImage } from "@/components/stamp-image";
 import { IMAGE_CONSTANTS } from "@/lib/constants";
 
 export interface ReferenceData {
@@ -140,74 +139,79 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 
 	return (
 		<div>
+			<input
+				ref={inputRef}
+				id="reference-upload"
+				type="file"
+				accept="image/jpeg,image/png,image/webp"
+				onChange={(e) => {
+					const file = e.target.files?.[0];
+					e.currentTarget.value = "";
+					if (file) handleFile(file);
+				}}
+				className="sr-only"
+				disabled={disabled}
+			/>
 			{!preview ? (
 				<button
 					type="button"
+					onClick={() => {
+						if (inputRef.current) {
+							inputRef.current.value = "";
+							inputRef.current.click();
+						}
+					}}
 					onDrop={handleDrop}
 					onDragOver={handleDragOver}
 					onDragEnter={handleDragEnter}
 					onDragLeave={handleDragLeave}
-					onClick={() => inputRef.current?.click()}
-					disabled={disabled}
-					className={`flex w-full flex-col items-center justify-center gap-2 rounded-[1.8rem] border border-dashed px-5 py-8 text-center transition-all duration-200 ${
+					aria-disabled={disabled}
+					className={`flex min-h-[260px] w-full flex-col items-center justify-center gap-3 rounded-[1rem] border-2 border-dashed px-5 py-8 text-center transition-all duration-200 ${
 						disabled
 							? "cursor-not-allowed border-stone-200 bg-stone-50/80 opacity-50"
 							: isDragging
-								? "scale-[1.01] border-stone-700 bg-stone-950/5"
-								: "border-stone-300/60 bg-[rgba(255,252,247,0.62)] hover:border-stone-500 hover:bg-white/90"
+								? "scale-[1.01] cursor-copy border-stone-800 bg-stone-100"
+								: "cursor-pointer border-stone-300 bg-white hover:border-stone-700 hover:bg-stone-50"
 					}`}
 				>
-					<div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-stone-700">
+					<div className="flex h-12 w-12 items-center justify-center rounded-full bg-stone-950 text-white">
 						<UploadIcon />
 					</div>
-					<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
+					<p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
 						Reference image
 					</p>
-					<span className="text-sm font-medium text-stone-700">
-						{isDragging ? "Drop your photo here" : "Upload a reference photo"}
+					<span className="text-base font-semibold text-stone-950">
+						{isDragging ? "Drop image here" : "Click to upload image"}
 					</span>
-					<span className="max-w-xs text-xs leading-5 text-stone-500">
+					<span className="max-w-xs text-sm leading-6 text-stone-600">
 						JPG, PNG, or WebP up to 5MB. We resize it for the model and use it
 						to steer the stamp composition.
 					</span>
-					<input
-						ref={inputRef}
-						type="file"
-						accept="image/jpeg,image/png,image/webp"
-						onChange={(e) => {
-							const file = e.target.files?.[0];
-							if (file) handleFile(file);
-						}}
-						className="hidden"
-						disabled={disabled}
-					/>
 				</button>
 			) : (
-				<div className="animate-form-enter flex items-center gap-4 rounded-[1.6rem] bg-[rgba(255,252,247,0.72)] p-4">
-					<div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-[1rem] bg-white">
+				<div className="animate-form-enter flex items-center gap-4 rounded-[1rem] border border-stone-200 bg-white p-4">
+					<div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-[0.75rem] bg-stone-100">
 						{processing && (
 							<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
 								<div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
 							</div>
 						)}
-						<StampImage
+						<img
 							src={preview}
-							width={72}
-							height={72}
 							alt="Reference upload"
-							className="object-cover w-full h-full"
+							className="h-full w-full object-cover"
 						/>
 					</div>
 					<div className="min-w-0 flex-1">
-						<p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-stone-500">
+						<p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
 							Image attached
 						</p>
-						<p className="mt-1 text-sm font-medium text-stone-800">
+						<p className="mt-1 text-sm font-semibold text-stone-950">
 							{processing
 								? "Processing your reference..."
 								: "Reference photo ready for generation"}
 						</p>
-						<p className="mt-1 text-xs leading-5 text-stone-500">
+						<p className="mt-1 text-xs leading-5 text-stone-600">
 							HD mode stays on so the generated stamp can track the uploaded
 							composition more closely.
 						</p>
@@ -215,8 +219,9 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					<button
 						type="button"
 						onClick={handleClear}
-						className="shrink-0 rounded-full bg-white p-2 text-stone-400 transition-colors hover:text-stone-700 disabled:cursor-not-allowed disabled:opacity-50"
+						className="shrink-0 rounded-full border border-stone-200 bg-white p-2 text-stone-500 transition-colors hover:border-stone-400 hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={disabled || processing}
+						aria-label="Remove reference image"
 					>
 						<CloseIcon />
 					</button>

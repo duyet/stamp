@@ -84,9 +84,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body className="min-h-screen antialiased flex flex-col">
-				<ClerkProvider publishableKey={clerkPublishableKey}>
-					{children}
-				</ClerkProvider>
+				{clerkPublishableKey ? (
+					<ClerkProvider publishableKey={clerkPublishableKey}>
+						{children}
+					</ClerkProvider>
+				) : (
+					children
+				)}
 				<Scripts />
 			</body>
 		</html>

@@ -19,13 +19,14 @@ export function GeneratePageClient({
 	}, [track]);
 
 	return (
-		<div className="max-w-5xl mx-auto px-6 py-10 sm:py-14 animate-page-fade-in">
-			<div className="text-center mb-8">
-				<h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3 hero-gradient font-stamp">
+		<div className="mx-auto max-w-6xl animate-page-fade-in px-4 py-8 sm:px-6 sm:py-12">
+			<div className="mb-7 max-w-2xl">
+				<h1 className="font-stamp text-3xl font-bold tracking-tight text-stone-950 sm:text-4xl md:text-5xl">
 					Create your stamp
 				</h1>
-				<p className="text-base text-stone-600">
-					Describe what you want, pick a style, and let AI do the rest.
+				<p className="mt-3 max-w-xl text-sm leading-6 text-stone-600 sm:text-base">
+					Upload a reference image, choose a print style, then add a short
+					prompt for the final stamp.
 				</p>
 			</div>
 			<GenerateForm initialPrompt={initialPrompt} initialStyle={initialStyle} />
