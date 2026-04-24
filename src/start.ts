@@ -1,5 +1,6 @@
 import { clerkMiddleware } from "@clerk/tanstack-react-start/server";
 import { createMiddleware, createStart } from "@tanstack/react-start";
+import { getClerkPublishableKey } from "@/lib/clerk-config";
 
 const securityHeadersMiddleware = createMiddleware().server(
 	async ({ next }) => {
@@ -22,6 +23,17 @@ const securityHeadersMiddleware = createMiddleware().server(
 	},
 );
 
-export const startInstance = createStart(() => ({
-	requestMiddleware: [clerkMiddleware(), securityHeadersMiddleware],
-}));
+export const startInstance = createStart(() => {
+	const clerkPublishableKey = getClerkPublishableKey();
+
+	if (clerkPublishableKey && !process.env.CLERK_PUBLISHABLE_KEY?.trim()) {
+		process.env.CLERK_PUBLISHABLE_KEY = clerkPublishableKey;
+	}
+
+	return {
+		requestMiddleware: [
+			...(clerkPublishableKey ? [clerkMiddleware()] : []),
+			securityHeadersMiddleware,
+		],
+	};
+});
