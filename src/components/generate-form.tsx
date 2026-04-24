@@ -15,6 +15,9 @@ interface GeneratedStamp {
 	id: string;
 	imageUrl: string;
 	prompt: string;
+	style?: string;
+	enhancedPrompt?: string;
+	description?: string;
 	remaining: number;
 	generationTimeMs?: number;
 }
@@ -130,6 +133,9 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				remaining?: number;
 				generationTimeMs?: number;
 				resetAt?: number;
+				style?: string;
+				enhancedPrompt?: string;
+				description?: string;
 			};
 
 			if (!res.ok) {
@@ -150,17 +156,24 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 				id: data.id,
 				imageUrl: data.imageUrl,
 				prompt,
+				style: data.style,
+				enhancedPrompt: data.enhancedPrompt,
+				description: data.description,
 				remaining: data.remaining ?? 0,
 				generationTimeMs: data.generationTimeMs,
 			};
 
 			setResults([newStamp, ...results]);
-			onGenerated?.({
-				id: data.id,
-				imageUrl: data.imageUrl,
-				prompt,
-				style,
-			});
+			if (isPublic) {
+				onGenerated?.({
+					id: data.id,
+					imageUrl: data.imageUrl,
+					prompt,
+					style: data.style ?? style,
+					enhancedPrompt: data.enhancedPrompt,
+					description: data.description,
+				});
+			}
 
 			// Clear prompt after successful generation
 			setPrompt("");

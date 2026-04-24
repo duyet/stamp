@@ -16,8 +16,7 @@ export async function GET(request: Request): Promise<Response> {
 		});
 
 		return jsonResponse(responseData, 200, {
-			"Cache-Control":
-				"public, max-age=60, stale-while-revalidate=300, stale-if-error=86400",
+			"Cache-Control": "no-store",
 		});
 	} catch (error) {
 		console.error("Failed to fetch stamps:", error);

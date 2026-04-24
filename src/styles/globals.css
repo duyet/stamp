@@ -14,20 +14,16 @@
 		"Optima", "Avenir Next", "Segoe UI Variable", "Helvetica Neue", sans-serif;
 
 	/* System — black & white vintage */
-	--color-background: #f7f1e6;
+	--color-background: #fffefd;
 	--color-text-primary: #1e1a15;
 	--color-text-secondary: #5c5144;
 	--color-text-muted: #8f8270;
-	--color-border: #d8cdbd;
-	--color-surface: #f3ebde;
+	--color-border: #ebe5db;
+	--color-surface: #ffffff;
 }
 
 body {
-	background:
-		radial-gradient(circle at top, rgba(181, 133, 79, 0.17), transparent 28%),
-		radial-gradient(circle at 20% 20%, rgba(110, 85, 52, 0.07), transparent 22%),
-		radial-gradient(circle at 80% 12%, rgba(120, 74, 47, 0.08), transparent 20%),
-		linear-gradient(180deg, #fbf8f2 0%, #f3eadb 52%, #eadfce 100%);
+	background: linear-gradient(180deg, #ffffff 0%, #fffdf9 48%, #fbf7f0 100%);
 	color: var(--color-text-primary);
 	font-family: var(--font-body);
 	min-height: 100vh;
@@ -40,10 +36,10 @@ body::before {
 	inset: 0;
 	pointer-events: none;
 	background-image:
-		linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.22)),
+		linear-gradient(rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.58)),
 		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
 	mix-blend-mode: multiply;
-	opacity: 0.55;
+	opacity: 0.28;
 }
 
 ::selection {
@@ -190,10 +186,9 @@ body::before {
 
 .paper-panel {
 	position: relative;
-	border: 1px solid rgba(128, 101, 70, 0.16);
 	background:
-		linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(246, 238, 226, 0.9));
-	box-shadow: 0 30px 80px -58px rgba(67, 45, 23, 0.44);
+		linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(252, 249, 244, 0.94));
+	box-shadow: 0 26px 72px -58px rgba(67, 45, 23, 0.34);
 }
 
 .paper-panel::before {
