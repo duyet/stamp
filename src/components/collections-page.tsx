@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/button";
 import { RefreshIcon } from "@/components/icons";
 import { SectionHeading } from "@/components/section-heading";
@@ -9,23 +9,37 @@ import { StampModal } from "@/components/stamp-modal";
 import { StyleFilterChips } from "@/components/style-filter-chips";
 import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
+import type { PublicStampResult } from "@/lib/public-stamps";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 
 const ALL_STYLES = "all" as const;
 type StyleFilter = StampStyle | typeof ALL_STYLES;
 
-const PAGE_SIZE = 20;
+export const COLLECTIONS_PAGE_SIZE = 20;
 
-export default function CollectionsPage() {
-	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
+interface CollectionsPageProps {
+	initialStyle?: StyleFilter;
+	initialData?: PublicStampResult;
+}
+
+export default function CollectionsPage({
+	initialStyle = ALL_STYLES,
+	initialData,
+}: CollectionsPageProps) {
+	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(initialStyle);
 	const [retryKey, setRetryKey] = useState(0);
 	const [selectedStamp, setSelectedStamp] = useState<PublicStamp | null>(null);
 	const { stamps, loading, loadingMore, error, setStamps, hasMore, loadMore } =
 		useStamps(
-			PAGE_SIZE,
+			COLLECTIONS_PAGE_SIZE,
 			retryKey,
 			selectedStyle === ALL_STYLES ? undefined : selectedStyle,
+			initialData,
 		);
+
+	useEffect(() => {
+		setSelectedStyle(initialStyle);
+	}, [initialStyle]);
 
 	// Display stamps directly — server-side filtering handles style selection
 
@@ -83,6 +97,11 @@ export default function CollectionsPage() {
 					options={filterOptions}
 					selectedValue={selectedStyle}
 					onChange={setSelectedStyle}
+					getHref={(value) =>
+						value === ALL_STYLES
+							? "/collections"
+							: `/collections?style=${value}`
+					}
 					className="mt-5"
 				/>
 			</div>

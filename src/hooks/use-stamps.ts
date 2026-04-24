@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PublicStamp } from "@/db/schema";
+import type { PublicStampResult } from "@/lib/public-stamps";
 import type { StampStyle } from "@/lib/stamp-prompts";
 
 /**
@@ -8,17 +9,34 @@ import type { StampStyle } from "@/lib/stamp-prompts";
  * @param retryKey - Optional key that changes to trigger a refetch
  * @param style - Optional style filter passed to the API
  */
-export function useStamps(pageSize: number, retryKey = 0, style?: StampStyle) {
-	const [stamps, setStamps] = useState<PublicStamp[]>([]);
-	const [loading, setLoading] = useState(true);
+export function useStamps(
+	pageSize: number,
+	retryKey = 0,
+	style?: StampStyle,
+	initialData?: PublicStampResult,
+) {
+	const [stamps, setStamps] = useState<PublicStamp[]>(
+		initialData?.stamps ?? [],
+	);
+	const [loading, setLoading] = useState(!initialData);
 	const [loadingMore, setLoadingMore] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [hasMore, setHasMore] = useState(false);
-	const nextCursorRef = useRef<string | null>(null);
+	const [hasMore, setHasMore] = useState(initialData?.hasMore ?? false);
+	const nextCursorRef = useRef<string | null>(initialData?.nextCursor ?? null);
 	const abortRef = useRef<AbortController | null>(null);
+	const skippedInitialFetchRef = useRef(false);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: retryKey triggers refetch on retry
 	useEffect(() => {
+		if (initialData && !skippedInitialFetchRef.current) {
+			skippedInitialFetchRef.current = true;
+			setStamps(initialData.stamps);
+			nextCursorRef.current = initialData.nextCursor ?? null;
+			setHasMore(initialData.hasMore);
+			setLoading(false);
+			return;
+		}
+
 		abortRef.current?.abort();
 		const controller = new AbortController();
 		abortRef.current = controller;
