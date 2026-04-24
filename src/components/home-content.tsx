@@ -8,6 +8,7 @@ import { StampImage } from "@/components/stamp-image";
 import { StyleFilterChips } from "@/components/style-filter-chips";
 import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
+import { formatDateShort } from "@/lib/date-utils";
 import type { PublicStampResult } from "@/lib/public-stamps";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
 import { capitalize } from "@/lib/text-utils";
@@ -18,13 +19,6 @@ type HomeStyleFilter = StampStyle | typeof ALL_STYLES;
 
 interface HomeContentProps {
 	initialData?: PublicStampResult;
-}
-
-function formatStampDate(date: Date | number | string) {
-	return new Date(date).toLocaleDateString("en-US", {
-		month: "short",
-		day: "numeric",
-	});
 }
 
 function isStampStyle(style: string): style is StampStyle {
@@ -159,7 +153,7 @@ export function HomeContent({ initialData }: HomeContentProps) {
 												<span>
 													{capitalize(featuredStamp.style || "vintage")}
 												</span>
-												<span>{formatStampDate(featuredStamp.createdAt)}</span>
+												<span>{formatDateShort(featuredStamp.createdAt)}</span>
 											</div>
 										</div>
 									</button>

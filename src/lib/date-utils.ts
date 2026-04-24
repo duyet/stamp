@@ -3,7 +3,7 @@
  * Centralized date formatting for consistency across the application
  */
 
-type DateInput = Date | number;
+type DateInput = Date | number | string;
 
 /**
  * Convert Date or timestamp to Date object
@@ -19,6 +19,7 @@ function toDate(input: DateInput): Date {
  */
 export function formatDateShort(ts: DateInput): string {
 	return toDate(ts).toLocaleDateString("en-US", {
+		timeZone: "UTC",
 		month: "short",
 		day: "numeric",
 	});
@@ -31,6 +32,7 @@ export function formatDateShort(ts: DateInput): string {
  */
 export function formatDateLong(ts: DateInput): string {
 	return toDate(ts).toLocaleDateString("en-US", {
+		timeZone: "UTC",
 		year: "numeric",
 		month: "long",
 		day: "numeric",
