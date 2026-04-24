@@ -15,10 +15,10 @@ const PAGE_SIZE = 20;
 
 // Filter button className helper to eliminate duplication
 const getFilterButtonClass = (isActive: boolean) =>
-	`px-3 py-1.5 rounded-full text-xs transition-colors duration-200 ${
+	`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
 		isActive
-			? "bg-stone-900 text-white"
-			: "bg-white text-stone-500 hover:text-stone-900 border border-stone-200"
+			? "bg-gray-900 text-white"
+			: "bg-gray-100 text-gray-700 hover:bg-gray-200"
 	}`;
 
 export default function CollectionsPage() {
@@ -59,18 +59,16 @@ export default function CollectionsPage() {
 	}
 
 	return (
-		<div className="max-w-4xl mx-auto px-6 py-12 bg-white">
+		<div className="max-w-5xl mx-auto px-6 py-20">
 			<div className="text-center mb-8">
-				<p className="text-[10px] uppercase tracking-[0.22em] text-stone-400">
-					Collection
-				</p>
-				<h1 className="mt-1 text-2xl font-normal text-stone-900 tracking-tight font-stamp">
-					Stamps by the community
+				<h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-3 font-stamp">
+					Collections
 				</h1>
+				<p className="text-gray-600">Stamps created by the community</p>
 			</div>
 
 			{/* Style filter buttons */}
-			<div className="flex flex-wrap justify-center gap-1.5 mb-8">
+			<div className="flex flex-wrap justify-center gap-2 mb-8">
 				<button
 					type="button"
 					onClick={() => setSelectedStyle(ALL_STYLES)}
@@ -120,7 +118,7 @@ export default function CollectionsPage() {
 				</div>
 			) : (
 				<>
-					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3 gap-y-6">
+					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 						{stamps.map((stamp) => (
 							<StampCard
 								key={stamp.id}
@@ -130,14 +128,14 @@ export default function CollectionsPage() {
 						))}
 					</div>
 					{hasMore && (
-						<div className="flex justify-center mt-10">
+						<div className="flex justify-center mt-8">
 							<button
 								type="button"
 								onClick={loadMore}
 								disabled={loadingMore}
-								className="px-4 py-2 text-xs text-stone-500 hover:text-stone-900 border border-stone-200 rounded-full transition-colors duration-200 disabled:opacity-50"
+								className="px-6 py-3 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
 							>
-								{loadingMore ? "Loading..." : "Load more"}
+								{loadingMore ? "Loading..." : "Load more stamps"}
 							</button>
 						</div>
 					)}
