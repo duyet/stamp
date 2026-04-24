@@ -31,11 +31,17 @@ interface GenerateFormProps {
 		enhancedPrompt?: string;
 		description?: string;
 	}) => void;
+	initialPrompt?: string;
+	initialStyle?: StampStyle;
 }
 
-export function GenerateForm({ onGenerated }: GenerateFormProps) {
-	const [prompt, setPrompt] = useState("");
-	const [style, setStyle] = useState<StampStyle>("vintage");
+export function GenerateForm({
+	onGenerated,
+	initialPrompt = "",
+	initialStyle = "vintage",
+}: GenerateFormProps) {
+	const [prompt, setPrompt] = useState(initialPrompt);
+	const [style, setStyle] = useState<StampStyle>(initialStyle);
 	const [isPublic, setIsPublic] = useState(true);
 	const { copied, copy } = useCopy();
 	const [loading, setLoading] = useState(false);
@@ -53,6 +59,14 @@ export function GenerateForm({ onGenerated }: GenerateFormProps) {
 	useEffect(() => {
 		if (!isSignedIn) setHd(false);
 	}, [isSignedIn]);
+
+	useEffect(() => {
+		setPrompt(initialPrompt);
+	}, [initialPrompt]);
+
+	useEffect(() => {
+		setStyle(initialStyle);
+	}, [initialStyle]);
 
 	// Countdown timer for rate limit
 	useEffect(() => {

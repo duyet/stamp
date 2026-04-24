@@ -191,28 +191,9 @@ body::before {
 	box-shadow: 0 26px 72px -58px rgba(67, 45, 23, 0.34);
 }
 
-.paper-panel::before {
-	content: "";
-	position: absolute;
-	inset: 1px;
-	border-radius: inherit;
-	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 30%),
-		linear-gradient(135deg, rgba(132, 96, 58, 0.05), transparent 55%);
-	pointer-events: none;
-}
-
 .paper-panel > * {
 	position: relative;
 	z-index: 1;
-}
-
-.paper-grid {
-	background-image:
-		linear-gradient(rgba(120, 91, 58, 0.045) 1px, transparent 1px),
-		linear-gradient(90deg, rgba(120, 91, 58, 0.045) 1px, transparent 1px);
-	background-position: center;
-	background-size: 24px 24px;
 }
 
 /* Form card entrance */

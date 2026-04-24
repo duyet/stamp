@@ -1,8 +1,17 @@
 import { useEffect } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { useTrack } from "@/hooks/use-track";
+import type { StampStyle } from "@/lib/stamp-prompts";
 
-export function GeneratePageClient() {
+interface GeneratePageClientProps {
+	initialPrompt?: string;
+	initialStyle?: StampStyle;
+}
+
+export function GeneratePageClient({
+	initialPrompt,
+	initialStyle,
+}: GeneratePageClientProps) {
 	const { track } = useTrack();
 
 	useEffect(() => {
@@ -19,7 +28,7 @@ export function GeneratePageClient() {
 					Describe what you want, pick a style, and let AI do the rest.
 				</p>
 			</div>
-			<GenerateForm />
+			<GenerateForm initialPrompt={initialPrompt} initialStyle={initialStyle} />
 		</div>
 	);
 }

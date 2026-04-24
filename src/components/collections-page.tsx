@@ -77,7 +77,7 @@ export default function CollectionsPage({
 
 	return (
 		<div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-			<div className="paper-panel paper-grid rounded-[2.2rem] px-5 py-6 sm:px-7 sm:py-7">
+			<div className="paper-panel rounded-[2.2rem] px-5 py-6 sm:px-7 sm:py-7">
 				<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 					<SectionHeading
 						eyebrow="Collections"

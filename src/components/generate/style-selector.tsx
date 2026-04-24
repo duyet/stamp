@@ -18,7 +18,7 @@ export function StyleSelector({
 					Style shelf
 				</p>
 				<p className="mt-1 text-sm text-stone-600">
-					Pick the stamp language before you generate.
+					Choose a style before generating.
 				</p>
 			</div>
 			<div className="pointer-events-none absolute top-[4.8rem] bottom-4 left-1 z-10 w-8 bg-gradient-to-r from-[rgba(246,241,231,0.95)] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
