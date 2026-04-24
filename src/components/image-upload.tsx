@@ -149,20 +149,26 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					onDragLeave={handleDragLeave}
 					onClick={() => inputRef.current?.click()}
 					disabled={disabled}
-					className={`flex flex-col w-full items-center justify-center gap-2 px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200 bg-transparent ${
+					className={`flex w-full flex-col items-center justify-center gap-2 rounded-[1.8rem] border border-dashed px-5 py-8 text-center transition-all duration-200 ${
 						disabled
-							? "border-stone-200 bg-stone-50 cursor-not-allowed opacity-50"
+							? "cursor-not-allowed border-stone-200 bg-stone-50/80 opacity-50"
 							: isDragging
-								? "border-stamp-blue bg-stamp-blue/5 scale-[1.02]"
-								: "border-stone-300 hover:border-stone-400 hover:bg-stone-50"
+								? "scale-[1.01] border-stone-700 bg-stone-950/5"
+								: "border-stone-300/60 bg-[rgba(255,252,247,0.62)] hover:border-stone-500 hover:bg-white/90"
 					}`}
 				>
-					<UploadIcon />
-					<span className="text-xs text-stone-500">
+					<div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-stone-700">
+						<UploadIcon />
+					</div>
+					<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
+						Reference image
+					</p>
+					<span className="text-sm font-medium text-stone-700">
 						{isDragging ? "Drop your photo here" : "Upload a reference photo"}
 					</span>
-					<span className="text-[10px] text-stone-400">
-						JPG, PNG, WebP up to 5MB
+					<span className="max-w-xs text-xs leading-5 text-stone-500">
+						JPG, PNG, or WebP up to 5MB. We resize it for the model and use it
+						to steer the stamp composition.
 					</span>
 					<input
 						ref={inputRef}
@@ -177,8 +183,8 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					/>
 				</button>
 			) : (
-				<div className="flex items-center gap-3 p-3 rounded-lg bg-stone-50 animate-form-enter">
-					<div className="w-16 h-16 rounded overflow-hidden shrink-0 relative">
+				<div className="animate-form-enter flex items-center gap-4 rounded-[1.6rem] bg-[rgba(255,252,247,0.72)] p-4">
+					<div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-[1rem] bg-white">
 						{processing && (
 							<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
 								<div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
@@ -186,21 +192,30 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 						)}
 						<StampImage
 							src={preview}
-							width={64}
-							height={64}
+							width={72}
+							height={72}
 							alt="Reference upload"
 							className="object-cover w-full h-full"
 						/>
 					</div>
-					<span className="text-xs text-stone-600">
-						{processing
-							? "Processing..."
-							: "Reference photo ready (HD required)"}
-					</span>
+					<div className="min-w-0 flex-1">
+						<p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-stone-500">
+							Image attached
+						</p>
+						<p className="mt-1 text-sm font-medium text-stone-800">
+							{processing
+								? "Processing your reference..."
+								: "Reference photo ready for generation"}
+						</p>
+						<p className="mt-1 text-xs leading-5 text-stone-500">
+							HD mode stays on so the generated stamp can track the uploaded
+							composition more closely.
+						</p>
+					</div>
 					<button
 						type="button"
 						onClick={handleClear}
-						className="shrink-0 p-1 text-stone-400 hover:text-stone-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						className="shrink-0 rounded-full bg-white p-2 text-stone-400 transition-colors hover:text-stone-700 disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={disabled || processing}
 					>
 						<CloseIcon />

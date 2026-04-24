@@ -82,7 +82,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<head>
 				<HeadContent />
 			</head>
-			<body className="antialiased min-h-screen flex flex-col font-[var(--font-serif,Georgia,serif)]">
+			<body className="min-h-screen antialiased flex flex-col">
 				<ClerkProvider publishableKey={clerkPublishableKey}>
 					{children}
 				</ClerkProvider>
@@ -111,7 +111,7 @@ function RootComponent() {
 	return (
 		<>
 			<Header />
-			<main className="flex-1">
+			<main className="relative flex-1 pt-4 sm:pt-5">
 				<Outlet />
 			</main>
 			<Footer />
