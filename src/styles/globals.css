@@ -188,6 +188,38 @@ body::before {
 	padding: 1.5rem;
 }
 
+.paper-panel {
+	position: relative;
+	border: 1px solid rgba(128, 101, 70, 0.16);
+	background:
+		linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(246, 238, 226, 0.9));
+	box-shadow: 0 30px 80px -58px rgba(67, 45, 23, 0.44);
+}
+
+.paper-panel::before {
+	content: "";
+	position: absolute;
+	inset: 1px;
+	border-radius: inherit;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 30%),
+		linear-gradient(135deg, rgba(132, 96, 58, 0.05), transparent 55%);
+	pointer-events: none;
+}
+
+.paper-panel > * {
+	position: relative;
+	z-index: 1;
+}
+
+.paper-grid {
+	background-image:
+		linear-gradient(rgba(120, 91, 58, 0.045) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(120, 91, 58, 0.045) 1px, transparent 1px);
+	background-position: center;
+	background-size: 24px 24px;
+}
+
 /* Form card entrance */
 @keyframes form-enter {
 	from {

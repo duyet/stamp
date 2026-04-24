@@ -5,12 +5,12 @@ export const Route = createFileRoute("/")({
 	head: () => ({
 		meta: [
 			{
-				title: "stamp.builders — AI Stamp Generator",
+				title: "stamp.builders — AI Stamp Showcase and Generator",
 			},
 			{
 				name: "description",
 				content:
-					"Create unique vintage postage stamps with AI. Describe your vision and get beautiful folk art stamp illustrations. Free, no account needed.",
+					"Browse a live wall of AI-made postage stamps, then write your own prompt to turn memory, place, or mood into a collectible print.",
 			},
 		],
 	}),

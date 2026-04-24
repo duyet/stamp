@@ -6,12 +6,34 @@ import { StampImage } from "@/components/stamp-image";
 import { StampModal } from "@/components/stamp-modal";
 import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
+import { capitalize } from "@/lib/text-utils";
+
+const LOADING_CARD_KEYS = ["first", "second", "third"] as const;
+
+function formatStampDate(date: Date | number) {
+	return new Date(date).toLocaleDateString("en-US", {
+		month: "short",
+		day: "numeric",
+	});
+}
 
 export function HomeContent() {
-	const { stamps: recentStamps, setStamps: setRecentStamps } = useStamps(30);
+	const {
+		stamps: recentStamps,
+		setStamps: setRecentStamps,
+		loading,
+		error,
+	} = useStamps(30);
 	const [selectedStamp, setSelectedStamp] = useState<PublicStamp | null>(null);
-	const [featuredStamp, ...supportingStamps] = recentStamps;
-	const heroStamps = supportingStamps.slice(0, 4);
+	const [featuredStamp, ...remainingStamps] = recentStamps;
+	const heroSideStamps = remainingStamps.slice(0, 2);
+	const showcaseStamps = recentStamps.slice(0, 5);
+	const spotlightStamps = recentStamps.slice(5, 8);
+	const styleChips = [
+		...new Set(recentStamps.map((stamp) => stamp.style || "vintage")),
+	]
+		.slice(0, 6)
+		.map((style) => capitalize(style));
 
 	function handleGenerated(stamp: {
 		id: string;
@@ -35,256 +57,410 @@ export function HomeContent() {
 	}
 
 	return (
-		<div className="mx-auto max-w-6xl px-4 pb-18 sm:px-6 lg:px-8">
-			<section className="relative pt-6 pb-10 sm:pt-8">
-				<div className="pointer-events-none absolute inset-x-10 top-4 h-40 bg-[radial-gradient(circle_at_top,rgba(109,79,47,0.14),transparent_68%)] blur-2xl" />
-				<div className="grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(340px,0.98fr)] lg:items-end">
-					<div className="order-2 max-w-2xl lg:order-1">
-						<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-500">
-							Postal atelier
-						</p>
-						<h1 className="mt-5 max-w-xl font-stamp text-5xl leading-[0.93] tracking-tight text-stone-950 sm:text-6xl lg:text-7xl">
-							Write a scene. Watch it turn into something worth framing.
-						</h1>
-						<p className="mt-5 max-w-xl text-base leading-7 text-stone-700 sm:text-lg">
-							Stamp.builders treats each generation like a tiny printed edition.
-							Use a prompt, a place, a memory, or a reference photo, then let
-							the image lead the page instead of the interface.
-						</p>
-						<div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-							<a href="#generate">
-								<Button variant="cta" size="lg" className="w-full sm:w-auto">
-									Start a new edition
-								</Button>
-							</a>
-							<Link
-								to="/collections"
-								className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white/80 px-6 py-3 text-sm font-medium text-stone-800 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-400 hover:bg-white"
-							>
-								Browse collections
-								<span aria-hidden="true">&rarr;</span>
-							</Link>
-						</div>
-						<div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-stone-600">
-							<span>20 free stamps each day</span>
-							<span className="text-stone-400">/</span>
-							<span>Reference image support</span>
-							<span className="text-stone-400">/</span>
-							<span>Public wall curated from real renders</span>
-						</div>
-					</div>
-
-					<div className="order-1 lg:order-2">
-						{featuredStamp ? (
-							<div className="relative mx-auto w-full max-w-[560px]">
-								<button
-									type="button"
-									className="group relative block w-full text-left"
-									onClick={() => setSelectedStamp(featuredStamp)}
+		<div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+			<section className="relative pt-6 pb-8 sm:pt-8 sm:pb-10">
+				<div className="paper-panel paper-grid overflow-hidden rounded-[2.5rem] px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+					<div className="relative grid gap-10 lg:grid-cols-[minmax(0,0.78fr)_minmax(320px,1.02fr)] lg:items-center">
+						<div className="max-w-2xl">
+							<p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-stone-500">
+								Live stamp wall
+							</p>
+							<h1 className="mt-5 max-w-2xl font-stamp text-5xl leading-[0.92] tracking-tight text-stone-950 sm:text-6xl lg:text-[5.25rem]">
+								A homepage that starts with the stamps, not the controls.
+							</h1>
+							<p className="mt-5 max-w-xl text-base leading-7 text-stone-700 sm:text-lg">
+								Browse the latest public editions first, open any piece for a
+								closer look, then head into the studio when you are ready to
+								make your own.
+							</p>
+							<div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+								<Link
+									to="/collections"
+									className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white/80 px-6 py-3 text-sm font-medium text-stone-800 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-400 hover:bg-white"
 								>
-									<div className="relative mx-auto aspect-[1/1] w-[min(100%,420px)] overflow-hidden rounded-[2.6rem] bg-stone-200 shadow-[0_36px_90px_-42px_rgba(58,39,21,0.58)]">
-										<StampImage
-											src={featuredStamp.imageUrl}
-											alt={featuredStamp.prompt}
-											width={720}
-											height={720}
-											fetchPriority="high"
-											className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-										/>
-										<div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(18,14,11,0.72))] px-6 py-6 text-stone-50">
-											<p className="text-[10px] uppercase tracking-[0.24em] text-stone-200/80">
-												Featured on the wall
-											</p>
-											<p className="mt-2 max-w-sm font-stamp text-2xl leading-tight">
-												{featuredStamp.description || featuredStamp.prompt}
-											</p>
+									Explore the wall
+									<span aria-hidden="true">&rarr;</span>
+								</Link>
+								<a href="#generate">
+									<Button variant="cta" size="lg" className="w-full sm:w-auto">
+										Start a new edition
+									</Button>
+								</a>
+							</div>
+							<div className="mt-8 grid gap-3 sm:grid-cols-3">
+								<div className="rounded-[1.4rem] border border-stone-200/80 bg-white/75 px-4 py-4">
+									<p className="text-[10px] uppercase tracking-[0.26em] text-stone-500">
+										Daily run
+									</p>
+									<p className="mt-2 font-stamp text-2xl text-stone-950">
+										20 free
+									</p>
+									<p className="mt-1 text-sm leading-6 text-stone-600">
+										New stamps each day without signing in.
+									</p>
+								</div>
+								<div className="rounded-[1.4rem] border border-stone-200/80 bg-white/75 px-4 py-4">
+									<p className="text-[10px] uppercase tracking-[0.26em] text-stone-500">
+										Public wall
+									</p>
+									<p className="mt-2 font-stamp text-2xl text-stone-950">
+										{loading ? "Loading" : `${recentStamps.length}+`}
+									</p>
+									<p className="mt-1 text-sm leading-6 text-stone-600">
+										Recent pieces ready to open and study.
+									</p>
+								</div>
+								<div className="rounded-[1.4rem] border border-stone-200/80 bg-white/75 px-4 py-4">
+									<p className="text-[10px] uppercase tracking-[0.26em] text-stone-500">
+										Inputs
+									</p>
+									<p className="mt-2 font-stamp text-2xl text-stone-950">
+										Prompt + photo
+									</p>
+									<p className="mt-1 text-sm leading-6 text-stone-600">
+										Reference images help guide layout and mood.
+									</p>
+								</div>
+							</div>
+							{styleChips.length > 0 && (
+								<div className="mt-7 flex flex-wrap gap-2">
+									{styleChips.map((style) => (
+										<span
+											key={style}
+											className="rounded-full border border-stone-300/90 bg-white/70 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-stone-600"
+										>
+											{style}
+										</span>
+									))}
+								</div>
+							)}
+						</div>
+
+						<div className="min-w-0">
+							{featuredStamp ? (
+								<div className="space-y-4">
+									<div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_170px]">
+										<button
+											type="button"
+											className="group relative overflow-hidden rounded-[2.2rem] border border-stone-200/80 bg-stone-200 text-left shadow-[0_30px_80px_-48px_rgba(58,39,21,0.58)]"
+											onClick={() => setSelectedStamp(featuredStamp)}
+										>
+											<StampImage
+												src={featuredStamp.imageUrl}
+												alt={featuredStamp.prompt}
+												width={960}
+												height={960}
+												fetchPriority="high"
+												className="aspect-[1.08/1] h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+											/>
+											<div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(20,14,9,0.82))] px-5 py-5 text-stone-50 sm:px-6 sm:py-6">
+												<div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] uppercase tracking-[0.24em] text-stone-200/85">
+													<span>Featured edition</span>
+													<span>
+														{capitalize(featuredStamp.style || "vintage")}
+													</span>
+													<span>
+														{formatStampDate(featuredStamp.createdAt)}
+													</span>
+												</div>
+												<p className="mt-3 max-w-lg font-stamp text-2xl leading-tight sm:text-[2rem]">
+													{featuredStamp.description || featuredStamp.prompt}
+												</p>
+											</div>
+										</button>
+
+										<div className="grid grid-cols-2 gap-4 lg:grid-cols-1">
+											{heroSideStamps.map((stamp) => (
+												<button
+													key={stamp.id}
+													type="button"
+													className="group overflow-hidden rounded-[1.6rem] border border-stone-200/80 bg-stone-200 text-left shadow-[0_24px_60px_-44px_rgba(58,39,21,0.5)]"
+													onClick={() => setSelectedStamp(stamp)}
+												>
+													<StampImage
+														src={stamp.imageUrl}
+														alt={stamp.prompt}
+														width={320}
+														height={320}
+														className="aspect-square h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+													/>
+												</button>
+											))}
+											{heroSideStamps.length === 0 && (
+												<div className="rounded-[1.6rem] border border-dashed border-stone-300 bg-white/70 p-5 text-sm leading-6 text-stone-500">
+													New public stamps appear here as soon as they are
+													generated.
+												</div>
+											)}
 										</div>
 									</div>
-								</button>
-								{heroStamps[0] && (
-									<button
-										type="button"
-										className="absolute -left-2 top-[7%] hidden w-[120px] rotate-[-10deg] overflow-hidden rounded-[1.5rem] shadow-[0_24px_45px_-32px_rgba(58,39,21,0.55)] md:block"
-										onClick={() => setSelectedStamp(heroStamps[0])}
-									>
-										<StampImage
-											src={heroStamps[0].imageUrl}
-											alt={heroStamps[0].prompt}
-											width={240}
-											height={240}
-											className="aspect-square h-full w-full object-cover"
-										/>
-									</button>
-								)}
-								{heroStamps[1] && (
-									<button
-										type="button"
-										className="absolute -right-2 top-[12%] hidden w-[132px] rotate-[9deg] overflow-hidden rounded-[1.6rem] shadow-[0_24px_45px_-32px_rgba(58,39,21,0.55)] md:block"
-										onClick={() => setSelectedStamp(heroStamps[1])}
-									>
-										<StampImage
-											src={heroStamps[1].imageUrl}
-											alt={heroStamps[1].prompt}
-											width={264}
-											height={264}
-											className="aspect-square h-full w-full object-cover"
-										/>
-									</button>
-								)}
-								{heroStamps[2] && (
-									<button
-										type="button"
-										className="absolute left-[8%] bottom-2 hidden w-[112px] rotate-[7deg] overflow-hidden rounded-[1.4rem] shadow-[0_24px_45px_-32px_rgba(58,39,21,0.5)] lg:block"
-										onClick={() => setSelectedStamp(heroStamps[2])}
-									>
-										<StampImage
-											src={heroStamps[2].imageUrl}
-											alt={heroStamps[2].prompt}
-											width={224}
-											height={224}
-											className="aspect-square h-full w-full object-cover"
-										/>
-									</button>
-								)}
-								{heroStamps[3] && (
-									<button
-										type="button"
-										className="absolute right-[10%] bottom-0 hidden w-[124px] rotate-[-8deg] overflow-hidden rounded-[1.5rem] shadow-[0_24px_45px_-32px_rgba(58,39,21,0.5)] lg:block"
-										onClick={() => setSelectedStamp(heroStamps[3])}
-									>
-										<StampImage
-											src={heroStamps[3].imageUrl}
-											alt={heroStamps[3].prompt}
-											width={248}
-											height={248}
-											className="aspect-square h-full w-full object-cover"
-										/>
-									</button>
-								)}
-							</div>
-						) : (
-							<div className="mx-auto max-w-[500px] py-10">
-								<p className="text-sm text-stone-500">
-									New public stamps will appear here as soon as the first ones
-									are generated.
-								</p>
-							</div>
-						)}
+
+									<div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+										<div className="rounded-[1.6rem] border border-stone-200/80 bg-white/78 px-5 py-5">
+											<p className="text-[10px] uppercase tracking-[0.28em] text-stone-500">
+												Curator note
+											</p>
+											<p className="mt-3 font-stamp text-2xl leading-tight text-stone-950">
+												{featuredStamp.description || featuredStamp.prompt}
+											</p>
+											<p className="mt-3 text-sm leading-6 text-stone-600">
+												Open the piece to inspect it full-size, then keep moving
+												through the wall. The homepage now works like a small
+												exhibit before it works like a tool.
+											</p>
+										</div>
+										<div className="rounded-[1.6rem] border border-stone-200/80 bg-[#231a14] px-5 py-5 text-stone-100">
+											<p className="text-[10px] uppercase tracking-[0.28em] text-stone-300">
+												Next stop
+											</p>
+											<p className="mt-3 font-stamp text-2xl leading-tight">
+												Go from showcase to studio.
+											</p>
+											<p className="mt-3 text-sm leading-6 text-stone-300">
+												When something on the wall sparks an idea, jump straight
+												into making another edition.
+											</p>
+											<a
+												href="#generate"
+												className="mt-5 inline-flex text-sm font-medium text-white transition hover:text-stone-200"
+											>
+												Open the generator &rarr;
+											</a>
+										</div>
+									</div>
+								</div>
+							) : (
+								<div className="rounded-[2rem] border border-dashed border-stone-300 bg-white/70 px-6 py-12 text-center text-stone-600">
+									The showcase will fill with public stamps as soon as the next
+									editions arrive.
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			</section>
 
-			{recentStamps.length > 0 && (
-				<section className="pb-10">
-					<div className="flex items-end justify-between gap-6">
-						<div>
-							<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
-								Gallery sweep
-							</p>
-							<h2 className="mt-3 font-stamp text-3xl text-stone-950 sm:text-4xl">
-								Recent pieces from the public wall.
-							</h2>
-						</div>
-						<Link
-							to="/collections"
-							className="hidden text-sm text-stone-600 transition-colors hover:text-stone-950 sm:inline-flex"
-						>
-							View all &rarr;
-						</Link>
+			<section className="py-10">
+				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+					<div className="max-w-2xl">
+						<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
+							Stamp showcase
+						</p>
+						<h2 className="mt-3 font-stamp text-3xl leading-tight text-stone-950 sm:text-4xl">
+							The latest public editions, arranged like a gallery wall.
+						</h2>
 					</div>
-					<div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-						{recentStamps.slice(0, 6).map((stamp, index) => (
-							<button
-								key={`showcase-${stamp.id}`}
-								type="button"
-								className={`group block text-left ${index === 0 ? "sm:col-span-2 lg:col-span-2" : ""}`}
-								onClick={() => setSelectedStamp(stamp)}
-							>
-								<div className="relative overflow-hidden rounded-[2rem] bg-stone-200 shadow-[0_24px_60px_-42px_rgba(58,39,21,0.5)]">
+					<Link
+						to="/collections"
+						className="text-sm text-stone-600 transition-colors hover:text-stone-950"
+					>
+						Open the full collection &rarr;
+					</Link>
+				</div>
+
+				{error ? (
+					<div className="mt-6 rounded-[1.8rem] border border-amber-200 bg-amber-50/80 px-5 py-4 text-sm leading-6 text-amber-900">
+						The public wall could not load just now. You can still make a new
+						stamp below while the feed catches up.
+					</div>
+				) : loading && recentStamps.length === 0 ? (
+					<div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+						<div className="animate-pulse rounded-[2rem] bg-white/70 p-3">
+							<div className="aspect-[1.2/1] rounded-[1.6rem] bg-stone-200/80" />
+						</div>
+						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+							{LOADING_CARD_KEYS.map((key) => (
+								<div
+									key={key}
+									className="animate-pulse rounded-[1.7rem] bg-white/70 p-3"
+								>
+									<div className="aspect-square rounded-[1.3rem] bg-stone-200/80" />
+								</div>
+							))}
+						</div>
+					</div>
+				) : showcaseStamps.length > 0 ? (
+					<div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+						<div className="grid gap-4">
+							{showcaseStamps[0] && (
+								<button
+									type="button"
+									className="group overflow-hidden rounded-[2rem] border border-stone-200/80 bg-stone-200 text-left shadow-[0_24px_60px_-46px_rgba(58,39,21,0.46)]"
+									onClick={() => setSelectedStamp(showcaseStamps[0])}
+								>
 									<StampImage
-										src={stamp.imageUrl}
-										alt={stamp.prompt}
-										width={720}
+										src={showcaseStamps[0].imageUrl}
+										alt={showcaseStamps[0].prompt}
+										width={960}
 										height={720}
 										loading="lazy"
-										className={`w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] ${
-											index === 0 ? "aspect-[1.65/1]" : "aspect-square"
-										}`}
+										className="aspect-[1.24/1] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
 									/>
-								</div>
-								<div className="px-1 pt-3">
-									<div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.24em] text-stone-400">
-										<span>{stamp.style || "stamp"}</span>
-										<span>
-											{new Date(stamp.createdAt).toLocaleDateString("en-US", {
-												month: "short",
-												day: "numeric",
-											})}
-										</span>
+									<div className="bg-white/92 px-5 py-4">
+										<div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] uppercase tracking-[0.24em] text-stone-400">
+											<span>
+												{capitalize(showcaseStamps[0].style || "vintage")}
+											</span>
+											<span>
+												{formatStampDate(showcaseStamps[0].createdAt)}
+											</span>
+										</div>
+										<p className="mt-2 font-stamp text-2xl leading-tight text-stone-950">
+											{showcaseStamps[0].description ||
+												showcaseStamps[0].prompt}
+										</p>
 									</div>
-									<p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-700">
-										{stamp.description || stamp.prompt}
-									</p>
-								</div>
-							</button>
-						))}
+								</button>
+							)}
+
+							<div className="grid gap-4 sm:grid-cols-2">
+								{showcaseStamps.slice(1, 5).map((stamp) => (
+									<button
+										key={stamp.id}
+										type="button"
+										className="group overflow-hidden rounded-[1.7rem] border border-stone-200/80 bg-white/78 text-left shadow-[0_18px_50px_-42px_rgba(58,39,21,0.4)]"
+										onClick={() => setSelectedStamp(stamp)}
+									>
+										<div className="overflow-hidden bg-stone-200">
+											<StampImage
+												src={stamp.imageUrl}
+												alt={stamp.prompt}
+												width={520}
+												height={520}
+												loading="lazy"
+												className="aspect-square w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+											/>
+										</div>
+										<div className="px-4 py-4">
+											<div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] uppercase tracking-[0.24em] text-stone-400">
+												<span>{capitalize(stamp.style || "vintage")}</span>
+												<span>{formatStampDate(stamp.createdAt)}</span>
+											</div>
+											<p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-700">
+												{stamp.description || stamp.prompt}
+											</p>
+										</div>
+									</button>
+								))}
+							</div>
+						</div>
+
+						<div className="space-y-4">
+							<div className="paper-panel rounded-[2rem] px-5 py-5">
+								<p className="text-[10px] uppercase tracking-[0.28em] text-stone-500">
+									Wall notes
+								</p>
+								<p className="mt-3 font-stamp text-2xl leading-tight text-stone-950">
+									Every prompt becomes a small collectible scene.
+								</p>
+								<p className="mt-3 text-sm leading-6 text-stone-600">
+									The homepage is meant to feel browseable first: click into a
+									piece, compare styles, then drift into the studio with better
+									visual context.
+								</p>
+							</div>
+
+							{spotlightStamps.map((stamp) => (
+								<button
+									key={`spotlight-${stamp.id}`}
+									type="button"
+									className="flex w-full items-center gap-4 rounded-[1.5rem] border border-stone-200/80 bg-white/80 p-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-300"
+									onClick={() => setSelectedStamp(stamp)}
+								>
+									<div className="h-20 w-20 shrink-0 overflow-hidden rounded-[1.1rem] bg-stone-200">
+										<StampImage
+											src={stamp.imageUrl}
+											alt={stamp.prompt}
+											width={160}
+											height={160}
+											loading="lazy"
+											className="h-full w-full object-cover"
+										/>
+									</div>
+									<div className="min-w-0">
+										<p className="text-[10px] uppercase tracking-[0.24em] text-stone-400">
+											{capitalize(stamp.style || "vintage")} /{" "}
+											{formatStampDate(stamp.createdAt)}
+										</p>
+										<p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-700">
+											{stamp.description || stamp.prompt}
+										</p>
+									</div>
+								</button>
+							))}
+						</div>
 					</div>
-				</section>
-			)}
+				) : (
+					<div className="mt-6 rounded-[1.8rem] border border-dashed border-stone-300 bg-white/70 px-6 py-10 text-center text-stone-500">
+						The public wall is still empty. Create the first stamp and the
+						showcase will begin here.
+					</div>
+				)}
+			</section>
 
 			<section
 				id="generate"
-				className="scroll-mt-24 grid gap-10 border-t border-stone-200/80 py-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]"
+				className="scroll-mt-24 border-t border-stone-200/80 py-12"
 			>
-				<div className="max-w-md">
-					<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-stone-500">
-						Print room
-					</p>
-					<h2 className="mt-4 font-stamp text-4xl leading-tight text-stone-950">
-						Build the next piece with words, reference, and tone.
-					</h2>
-					<p className="mt-4 text-sm leading-7 text-stone-600">
-						The controls stay deliberately quiet here. Write the scene, attach a
-						photo if you want tighter composition, and let the result arrive
-						like a finished print.
-					</p>
-					<div className="mt-8 space-y-4 text-sm leading-6 text-stone-600">
-						<p>
-							The strongest prompts usually name subject, setting, and material
-							in one breath.
+				<div className="grid gap-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:items-start">
+					<div className="max-w-md">
+						<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-stone-500">
+							Studio desk
 						</p>
-						<p className="font-stamp text-xl leading-8 text-stone-900">
-							“Rainy Saigon alley, scooters, amber windows, engraved blue ink,
-							quiet midnight mood.”
+						<h2 className="mt-4 font-stamp text-4xl leading-tight text-stone-950">
+							Make the next edition once the wall has done its work.
+						</h2>
+						<p className="mt-4 text-sm leading-7 text-stone-600">
+							Keep the generator quieter and more focused: one prompt, an
+							optional reference image, and a style direction strong enough to
+							feel like a printed keepsake.
 						</p>
-						<p>You get 20 free stamps per day, or 100 when signed in.</p>
+						<div className="paper-panel mt-8 rounded-[1.8rem] px-5 py-5">
+							<p className="text-[10px] uppercase tracking-[0.28em] text-stone-500">
+								Prompt recipe
+							</p>
+							<div className="mt-4 space-y-4 text-sm leading-6 text-stone-600">
+								<p>Name the subject, the setting, and the print mood.</p>
+								<p className="font-stamp text-xl leading-8 text-stone-900">
+									“Rainy Saigon alley, scooters, amber windows, engraved blue
+									ink, quiet midnight mood.”
+								</p>
+								<p>
+									Reference images help tighten framing when you already know
+									the scene.
+								</p>
+							</div>
+						</div>
 					</div>
-				</div>
-				<div className="min-w-0">
-					<GenerateForm onGenerated={handleGenerated} />
+
+					<div className="paper-panel rounded-[2.25rem] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+						<GenerateForm onGenerated={handleGenerated} />
+					</div>
 				</div>
 			</section>
 
-			<section className="border-t border-stone-200/80 py-14">
-				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-					<div>
+			<section className="border-t border-stone-200/80 py-12">
+				<div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+					<div className="max-w-2xl">
 						<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
 							Open edition
 						</p>
-						<p className="mt-3 font-stamp text-3xl text-stone-900">
-							20 free daily prints. Sign in and the wall gets deeper.
+						<p className="mt-3 font-stamp text-3xl leading-tight text-stone-950">
+							Follow the wall when you want inspiration. Enter the studio when
+							you want ownership.
 						</p>
 					</div>
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-						<a href="#generate">
-							<Button variant="cta">Make another stamp</Button>
-						</a>
 						<Link
 							to="/collections"
-							className="text-sm text-stone-600 transition-colors hover:text-stone-950"
+							className="inline-flex items-center justify-center gap-2 rounded-full border border-stone-300 bg-white/80 px-6 py-3 text-sm font-medium text-stone-800 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-400 hover:bg-white"
 						>
-							See the full gallery &rarr;
+							Browse collections
+							<span aria-hidden="true">&rarr;</span>
 						</Link>
+						<a href="#generate">
+							<Button variant="cta">Create a stamp</Button>
+						</a>
 					</div>
 				</div>
 			</section>

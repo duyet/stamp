@@ -31,21 +31,21 @@ export const Route = createRootRoute({
 			{ charSet: "utf-8" },
 			{ name: "viewport", content: "width=device-width, initial-scale=1" },
 			{
-				title: "stamp.builders — AI Stamp Generator",
+				title: "stamp.builders — AI Stamp Showcase and Generator",
 			},
 			{
 				name: "description",
 				content:
-					"Create unique vintage postage stamps with AI. Describe your vision and get beautiful folk art stamp illustrations. Free, no account needed.",
+					"Browse a live wall of AI-made postage stamps, then write your own prompt to turn memory, place, or mood into a collectible print.",
 			},
 			{
 				property: "og:title",
-				content: "stamp.builders — AI Stamp Generator",
+				content: "stamp.builders — AI Stamp Showcase and Generator",
 			},
 			{
 				property: "og:description",
 				content:
-					"Create unique vintage postage stamps with AI. Free, no account needed.",
+					"Browse a live wall of AI-made postage stamps, then turn your own prompt into a collectible print.",
 			},
 			{ property: "og:url", content: "https://stamp.duyet.net" },
 			{ property: "og:site_name", content: "stamp.builders" },
@@ -54,11 +54,12 @@ export const Route = createRootRoute({
 			{ name: "twitter:card", content: "summary_large_image" },
 			{
 				name: "twitter:title",
-				content: "stamp.builders — AI Stamp Generator",
+				content: "stamp.builders — AI Stamp Showcase and Generator",
 			},
 			{
 				name: "twitter:description",
-				content: "Create unique vintage postage stamps with AI.",
+				content:
+					"Browse a live wall of AI-made postage stamps, then make your own.",
 			},
 			{ name: "robots", content: "index, follow" },
 		],

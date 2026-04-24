@@ -10,8 +10,8 @@ export function Footer() {
 							stamp.builders
 						</p>
 						<p className="mt-3 font-stamp text-2xl text-stone-950">
-							A tiny postal studio for making prompts feel printed, kept, and
-							worth pinning to the wall.
+							A public stamp wall and tiny postal studio for prompts worth
+							keeping, framing, and returning to.
 						</p>
 					</div>
 					<nav className="flex flex-wrap items-center gap-x-6 gap-y-3">
