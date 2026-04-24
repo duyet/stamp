@@ -42,7 +42,7 @@ export function getClerkPublishableKey(): string | undefined {
 			console.warn(
 				"CLERK_PUBLISHABLE_KEY is not set; falling back to NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY at runtime",
 			);
-		} else if (!runtimeKey && !publicKey) {
+		} else if (!runtimeKey && !publicKey && !browserKey) {
 			console.error(
 				"Clerk publishable key is missing; set CLERK_PUBLISHABLE_KEY in Cloudflare Workers",
 			);
