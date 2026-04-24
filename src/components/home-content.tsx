@@ -275,7 +275,7 @@ export function HomeContent({ initialData }: HomeContentProps) {
 						className="max-w-sm"
 					/>
 
-					<div className="paper-panel rounded-[1.7rem] px-4 py-4 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+					<div>
 						<GenerateForm onGenerated={handleGenerated} />
 					</div>
 				</div>

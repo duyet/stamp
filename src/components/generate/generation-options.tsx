@@ -24,6 +24,8 @@ export function GenerationOptions({
 }: GenerationOptionsProps) {
 	const { isSignedIn } = useAuth();
 	const clerk = useClerk();
+	const canUseHd = isSignedIn === true;
+	const hdChecked = canUseHd ? hd : false;
 
 	return (
 		<div className="rounded-[1rem] border border-stone-200 bg-white p-4">
@@ -39,9 +41,10 @@ export function GenerationOptions({
 							label="Public"
 						/>
 						<Toggle
-							checked={hd}
+							checked={hdChecked}
 							onChange={(checked) => {
-								if (!isSignedIn) {
+								if (!canUseHd) {
+									onHdChange(false);
 									clerk.openSignIn();
 									return;
 								}
@@ -67,7 +70,7 @@ export function GenerationOptions({
 						</>
 					) : referenceImage ? (
 						"Generate from photo"
-					) : hd ? (
+					) : hdChecked ? (
 						"Generate HD (5 credits)"
 					) : (
 						"Generate stamp"

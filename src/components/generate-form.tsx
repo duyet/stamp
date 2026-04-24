@@ -217,8 +217,10 @@ export function GenerateForm({
 					<ImageUpload
 						onSelected={(data) => {
 							setReference(data ? data.referenceImageData : null);
-							if (data) {
+							if (data && isSignedIn) {
 								setHd(true);
+							} else if (!isSignedIn) {
+								setHd(false);
 							}
 						}}
 						disabled={loading}
