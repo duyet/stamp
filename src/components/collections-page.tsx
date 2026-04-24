@@ -1,9 +1,12 @@
+import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/button";
 import { RefreshIcon } from "@/components/icons";
+import { SectionHeading } from "@/components/section-heading";
 import { StampCard } from "@/components/stamp-card";
 import { StampGridSkeleton } from "@/components/stamp-grid-skeleton";
 import { StampModal } from "@/components/stamp-modal";
+import { StyleFilterChips } from "@/components/style-filter-chips";
 import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
@@ -12,14 +15,6 @@ const ALL_STYLES = "all" as const;
 type StyleFilter = StampStyle | typeof ALL_STYLES;
 
 const PAGE_SIZE = 20;
-
-// Filter button className helper to eliminate duplication
-const getFilterButtonClass = (isActive: boolean) =>
-	`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-		isActive
-			? "bg-gray-900 text-white"
-			: "bg-gray-100 text-gray-700 hover:bg-gray-200"
-	}`;
 
 export default function CollectionsPage() {
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(ALL_STYLES);
@@ -44,6 +39,14 @@ export default function CollectionsPage() {
 		return styleName ? `No ${styleName} stamps yet.` : "No stamps found.";
 	}, [selectedStyle]);
 
+	const filterOptions: { value: StyleFilter; label: string }[] = [
+		{ value: ALL_STYLES, label: "All" },
+		...Object.entries(STAMP_STYLE_PRESETS).map(([key, { name }]) => ({
+			value: key as StampStyle,
+			label: name,
+		})),
+	];
+
 	// Trigger refetch on retry
 	function handleRetry() {
 		setRetryKey((prev) => prev + 1);
@@ -59,40 +62,35 @@ export default function CollectionsPage() {
 	}
 
 	return (
-		<div className="max-w-5xl mx-auto px-6 py-20">
-			<div className="text-center mb-8">
-				<h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-3 font-stamp">
-					Collections
-				</h1>
-				<p className="text-gray-600">Stamps created by the community</p>
-			</div>
-
-			{/* Style filter buttons */}
-			<div className="flex flex-wrap justify-center gap-2 mb-8">
-				<button
-					type="button"
-					onClick={() => setSelectedStyle(ALL_STYLES)}
-					className={getFilterButtonClass(selectedStyle === ALL_STYLES)}
-				>
-					All Styles
-				</button>
-				{Object.entries(STAMP_STYLE_PRESETS).map(([key, { name }]) => (
-					<button
-						key={key}
-						type="button"
-						onClick={() => setSelectedStyle(key as StampStyle)}
-						className={getFilterButtonClass(selectedStyle === key)}
+		<div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+			<div className="paper-panel paper-grid rounded-[2.2rem] px-5 py-6 sm:px-7 sm:py-7">
+				<div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+					<SectionHeading
+						eyebrow="Collections"
+						title="Public stamp collections"
+						description="Browse recent community editions and filter them by style."
+					/>
+					<Link
+						to="/generate"
+						className="inline-flex items-center gap-2 text-sm font-medium text-stone-700 transition hover:text-stone-950"
 					>
-						{name}
-					</button>
-				))}
+						Create a stamp
+						<span aria-hidden="true">&rarr;</span>
+					</Link>
+				</div>
+
+				<StyleFilterChips<StyleFilter>
+					options={filterOptions}
+					selectedValue={selectedStyle}
+					onChange={setSelectedStyle}
+					className="mt-5"
+				/>
 			</div>
 
-			{/* Stamps grid */}
 			{error ? (
-				<div className="text-center py-20">
-					<div className="max-w-md mx-auto">
-						<p className="text-red-600 mb-4">{error}</p>
+				<div className="py-16 text-center">
+					<div className="mx-auto max-w-md">
+						<p className="mb-4 text-sm leading-6 text-red-600">{error}</p>
 						<Button onClick={handleRetry} size="sm">
 							<RefreshIcon />
 							Try again
@@ -100,14 +98,14 @@ export default function CollectionsPage() {
 					</div>
 				</div>
 			) : loading ? (
-				<StampGridSkeleton count={8} />
+				<StampGridSkeleton count={8} className="mt-6" />
 			) : stamps.length === 0 ? (
-				<div className="text-center py-20">
-					<div className="max-w-sm mx-auto">
-						<p className="text-gray-700 mb-2 text-base font-medium">
+				<div className="py-16 text-center">
+					<div className="mx-auto max-w-sm">
+						<p className="mb-2 text-base font-medium text-stone-700">
 							No stamps found.
 						</p>
-						<p className="text-sm text-gray-500 mb-6">{emptyStateMessage}</p>
+						<p className="mb-6 text-sm text-stone-500">{emptyStateMessage}</p>
 						<Button
 							variant="cta"
 							onClick={() => (window.location.href = "/generate")}
@@ -118,7 +116,7 @@ export default function CollectionsPage() {
 				</div>
 			) : (
 				<>
-					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+					<div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
 						{stamps.map((stamp) => (
 							<StampCard
 								key={stamp.id}
@@ -128,12 +126,12 @@ export default function CollectionsPage() {
 						))}
 					</div>
 					{hasMore && (
-						<div className="flex justify-center mt-8">
+						<div className="mt-8 flex justify-center">
 							<button
 								type="button"
 								onClick={loadMore}
 								disabled={loadingMore}
-								className="px-6 py-3 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+								className="rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-stone-800 active:scale-[0.98] disabled:opacity-50"
 							>
 								{loadingMore ? "Loading..." : "Load more stamps"}
 							</button>
@@ -142,7 +140,6 @@ export default function CollectionsPage() {
 				</>
 			)}
 
-			{/* Stamp overlay modal */}
 			{selectedStamp && (
 				<StampModal
 					stamp={selectedStamp}
