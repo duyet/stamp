@@ -77,7 +77,7 @@ export async function describeStamp(
 				{
 					role: "system",
 					content:
-						"Write a very short description for an AI-generated postage stamp. Use plain English, no markdown, no quotes, no labels. Use one sentence, or two only if needed. Keep the whole description under 22 words.",
+						"Write a short, elegant art caption for the finished postage stamp. Describe what it looks and feels like, not the prompt mechanics. Use plain English, no markdown, no quotes, no labels. Use one polished sentence, or two only if needed. Keep it under 18 words.",
 				},
 				{
 					role: "user",
