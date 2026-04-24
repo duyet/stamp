@@ -151,10 +151,11 @@ export function GenerateForm({
 				style?: string;
 				enhancedPrompt?: string;
 				description?: string;
+				code?: string;
 			};
 
 			if (!res.ok) {
-				if (res.status === 429) {
+				if (res.status === 429 && data.code !== "UPSTREAM_AI_LIMIT") {
 					setIsRateLimited(true);
 					if (data.resetAt) {
 						setResetAt(data.resetAt);

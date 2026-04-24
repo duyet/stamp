@@ -11,6 +11,8 @@ export const IMAGE_CONSTANTS = {
 	MAX_UPLOAD_SIZE_BYTES: 5 * 1024 * 1024,
 	/** FLUX.2 img2img max dimension */
 	FLUX_MAX_DIMENSION: 512,
+	/** Reference image dimension sent to model to reduce upstream usage */
+	REFERENCE_MODEL_DIMENSION: 384,
 	/** HD generation output dimension */
 	HD_DIMENSION: 1024,
 	/** Standard generation output dimension */

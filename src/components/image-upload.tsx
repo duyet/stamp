@@ -3,7 +3,7 @@ import { CloseIcon, UploadIcon } from "@/components/icons";
 import { IMAGE_CONSTANTS } from "@/lib/constants";
 
 export interface ReferenceData {
-	referenceImageData: string; // base64-encoded PNG
+	referenceImageData: string; // base64-encoded JPEG
 }
 
 interface ImageUploadProps {
@@ -34,8 +34,8 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 				// Calculate scale to fit within max dimension
 				const scale = Math.min(
 					1,
-					IMAGE_CONSTANTS.FLUX_MAX_DIMENSION / img.width,
-					IMAGE_CONSTANTS.FLUX_MAX_DIMENSION / img.height,
+					IMAGE_CONSTANTS.REFERENCE_MODEL_DIMENSION / img.width,
+					IMAGE_CONSTANTS.REFERENCE_MODEL_DIMENSION / img.height,
 				);
 				const width = Math.floor(img.width * scale);
 				const height = Math.floor(img.height * scale);
@@ -54,14 +54,14 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 				// Draw resized image
 				ctx.drawImage(img, 0, 0, width, height);
 
-				// Convert to blob as PNG
+				// Convert to JPEG so the reference sent to Workers AI stays small.
 				canvas.toBlob(
 					(blob) => {
 						if (blob) resolve(blob);
 						else reject(new Error("Canvas to blob failed"));
 					},
-					"image/png",
-					0.9,
+					"image/jpeg",
+					0.82,
 				);
 			};
 			img.onerror = () => reject(new Error("Failed to load image"));

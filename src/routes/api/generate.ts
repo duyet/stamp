@@ -94,6 +94,10 @@ interface BackgroundEventParams {
 	hasReference: boolean;
 }
 
+const UPSTREAM_AI_LIMIT_CODE = "UPSTREAM_AI_LIMIT";
+const UPSTREAM_AI_LIMIT_MESSAGE =
+	"The image generator has reached its upstream free allocation for today. Please try again later.";
+
 // --- Extracted Functions ---
 
 function extractLocation(headers: Headers) {
@@ -227,6 +231,19 @@ async function performGeneration(
 		description,
 		generationTimeMs: Date.now() - genStart,
 	};
+}
+
+function getErrorMessage(error: unknown): string {
+	return error instanceof Error ? error.message : String(error);
+}
+
+function isWorkersAiDailyAllocationError(error: unknown): boolean {
+	const message = getErrorMessage(error).toLowerCase();
+	return (
+		message.includes("4006") &&
+		message.includes("daily free allocation") &&
+		message.includes("neurons")
+	);
 }
 
 function logGenerationMetrics(
@@ -558,6 +575,15 @@ export async function POST(request: Request): Promise<Response> {
 			}
 		}
 		console.error("Stamp generation failed:", sanitizeErrorForLogging(error));
+		if (isWorkersAiDailyAllocationError(error)) {
+			return jsonResponse(
+				{
+					error: UPSTREAM_AI_LIMIT_MESSAGE,
+					code: UPSTREAM_AI_LIMIT_CODE,
+				},
+				429,
+			);
+		}
 		return jsonResponse(
 			{ error: "Failed to generate stamp. Please try again." },
 			500,

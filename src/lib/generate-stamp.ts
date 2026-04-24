@@ -119,9 +119,18 @@ async function buildMultipartInput(
 		const arrayBuffer = new ArrayBuffer(referenceImageData.byteLength);
 		const view = new Uint8Array(arrayBuffer);
 		view.set(referenceImageData);
-		const file = new File([arrayBuffer], "reference.png", {
-			type: "image/png",
-		});
+		const isJpeg =
+			referenceImageData[0] === 0xff &&
+			referenceImageData[1] === 0xd8 &&
+			referenceImageData[2] === 0xff;
+		const mimeType = isJpeg ? "image/jpeg" : "image/png";
+		const file = new File(
+			[arrayBuffer],
+			`reference.${isJpeg ? "jpg" : "png"}`,
+			{
+				type: mimeType,
+			},
+		);
 		form.append("input_image_0", file);
 	}
 	return form;

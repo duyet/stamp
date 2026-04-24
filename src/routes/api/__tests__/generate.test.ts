@@ -327,6 +327,21 @@ describe("POST /api/generate", () => {
 			expect(res.status).toBe(500);
 			expect(data.error).toContain("Failed to generate stamp");
 		});
+
+		it("returns upstream limit message when Workers AI free allocation is exhausted", async () => {
+			vi.mocked(generateStamp).mockRejectedValue(
+				new Error(
+					"4006: you have used up your daily free allocation of 10,000 neurons",
+				),
+			);
+
+			const res = await POST(req({ prompt: "a cat" }));
+			const data = (await res.json()) as Record<string, unknown>;
+
+			expect(res.status).toBe(429);
+			expect(data.code).toBe("UPSTREAM_AI_LIMIT");
+			expect(data.error).toContain("upstream free allocation");
+		});
 	});
 
 	describe("reference-based generation", () => {
