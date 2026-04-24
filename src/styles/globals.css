@@ -1,35 +1,59 @@
 @import "tailwindcss";
 
 @theme {
-	/* Vintage identity — monochrome, aged paper */
+	/* Print-room palette */
 	--color-stamp-navy: #1a1a1a;
 	--color-stamp-blue: #555555;
 	--color-stamp-yellow: #999999;
 	--color-stamp-red: #666666;
 	--color-stamp-green: #777777;
-	--font-stamp: var(--font-serif, "Georgia", serif);
+	--font-stamp:
+		"Iowan Old Style", "Palatino Linotype", "Book Antiqua", "URW Palladio L",
+		serif;
+	--font-body:
+		"Optima", "Avenir Next", "Segoe UI Variable", "Helvetica Neue", sans-serif;
 
 	/* System — black & white vintage */
-	--color-background: #f8f7f4;
-	--color-text-primary: #1a1a1a;
-	--color-text-secondary: #4a4a4a;
-	--color-text-muted: #888888;
-	--color-border: #d4d4d4;
-	--color-surface: #f0efec;
+	--color-background: #f7f1e6;
+	--color-text-primary: #1e1a15;
+	--color-text-secondary: #5c5144;
+	--color-text-muted: #8f8270;
+	--color-border: #d8cdbd;
+	--color-surface: #f3ebde;
 }
 
 body {
 	background:
-		radial-gradient(circle at top, rgba(174, 140, 97, 0.16), transparent 32%),
-		linear-gradient(180deg, #fcfaf5 0%, #f6f1e7 56%, #efe7da 100%);
+		radial-gradient(circle at top, rgba(181, 133, 79, 0.17), transparent 28%),
+		radial-gradient(circle at 20% 20%, rgba(110, 85, 52, 0.07), transparent 22%),
+		radial-gradient(circle at 80% 12%, rgba(120, 74, 47, 0.08), transparent 20%),
+		linear-gradient(180deg, #fbf8f2 0%, #f3eadb 52%, #eadfce 100%);
 	color: var(--color-text-primary);
-	font-family: var(--font-serif, "Georgia", serif);
+	font-family: var(--font-body);
 	min-height: 100vh;
+	text-rendering: optimizeLegibility;
+}
+
+body::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	background-image:
+		linear-gradient(rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.22)),
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+	mix-blend-mode: multiply;
+	opacity: 0.55;
+}
+
+::selection {
+	background: rgba(95, 63, 31, 0.16);
+	color: var(--color-text-primary);
 }
 
 /* Stamp perforated edge effect */
 .stamp-border {
-	background: white;
+	background: #fffdf9;
 	padding: 12px;
 	mask:
 		radial-gradient(circle at 6px 0, transparent 4px, black 4.5px) -6px 0 / 12px
@@ -116,7 +140,7 @@ body {
 
 /* Modal stamp — flat, no shadow */
 .stamp-modal-shadow {
-	border: 1px solid var(--color-border);
+	border: 1px solid rgba(122, 97, 66, 0.15);
 }
 
 /* Modal appear animation */
@@ -182,4 +206,10 @@ body {
 /* Font utility — replaces inline style={{ fontFamily: "var(--font-stamp)" }} */
 .font-stamp {
 	font-family: var(--font-stamp);
+}
+
+.ink-rule {
+	height: 1px;
+	background:
+		linear-gradient(90deg, transparent, rgba(71, 53, 32, 0.18), transparent);
 }

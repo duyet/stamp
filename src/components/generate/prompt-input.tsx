@@ -73,7 +73,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 		}, [activeGroupIndex]);
 
 		return (
-			<div className="space-y-4">
+			<div className="space-y-5">
 				<div className="p-1">
 					<div className="flex items-center justify-between gap-3">
 						<div>
@@ -125,7 +125,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 							disabled={disabled}
 							aria-label="Describe your stamp"
 							aria-describedby="prompt-hint"
-							className={`min-h-[128px] w-full resize-none overflow-hidden rounded-[1.3rem] bg-[rgba(255,255,255,0.8)] px-4 py-4 text-sm leading-7 text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:bg-white focus:ring-4 focus:ring-stone-900/5 disabled:opacity-50 ${
+							className={`min-h-[144px] w-full resize-none overflow-hidden rounded-[1.6rem] bg-[rgba(255,252,247,0.86)] px-5 py-5 text-[15px] leading-8 text-stone-900 outline-none transition-all duration-200 placeholder:text-stone-400 focus:bg-white focus:ring-4 focus:ring-stone-900/5 disabled:opacity-50 ${
 								isShaking ? "animate-shake" : ""
 							}`}
 						/>
@@ -139,7 +139,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									? "Ready to generate whenever you are."
 									: "Start simple, then layer in place, texture, and mood."}
 						</span>
-						<span className="rounded-full bg-stone-100 px-2.5 py-1 tabular-nums text-stone-600">
+						<span className="rounded-full bg-white/72 px-2.5 py-1 tabular-nums text-stone-600">
 							{value.length}/500
 						</span>
 					</div>
@@ -166,7 +166,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
 										activeGroupIndex === groupIndex
 											? "bg-stone-900 text-white"
-											: "bg-white/80 text-stone-500 hover:bg-white hover:text-stone-700"
+											: "bg-white/68 text-stone-500 hover:bg-white hover:text-stone-700"
 									}`}
 								>
 									{group.label ?? "Ideas"}
@@ -194,7 +194,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									}
 								}}
 								disabled={loading}
-								className="shrink-0 rounded-full bg-[rgba(255,255,255,0.85)] px-3 py-1.5 text-xs text-stone-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-stone-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
+								className="shrink-0 rounded-full bg-[rgba(255,255,255,0.7)] px-3 py-1.5 text-xs text-stone-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-stone-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
 							>
 								{example}
 							</button>

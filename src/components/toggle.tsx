@@ -22,7 +22,7 @@ export function Toggle({
 	return (
 		<label
 			htmlFor={id}
-			className={`relative inline-flex items-center gap-3 rounded-full bg-white/85 px-3 py-2 shadow-sm transition-colors ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-white"} ${className}`}
+			className={`relative inline-flex items-center gap-3 rounded-full bg-white/72 px-3 py-2 transition-colors ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-white"} ${className}`}
 		>
 			<input
 				type="checkbox"

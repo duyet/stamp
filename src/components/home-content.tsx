@@ -41,21 +41,20 @@ export function HomeContent() {
 				<div className="grid gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(340px,0.98fr)] lg:items-end">
 					<div className="order-2 max-w-2xl lg:order-1">
 						<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-stone-500">
-							Public showcase
+							Postal atelier
 						</p>
 						<h1 className="mt-5 max-w-xl font-stamp text-5xl leading-[0.93] tracking-tight text-stone-950 sm:text-6xl lg:text-7xl">
-							Design collectible stamps from a single prompt.
+							Write a scene. Watch it turn into something worth framing.
 						</h1>
 						<p className="mt-5 max-w-xl text-base leading-7 text-stone-700 sm:text-lg">
-							Turn travel memories, mascots, city scenes, and fictional places
-							into tactile postage art. The homepage now leads with the work
-							itself instead of UI chrome, so the newest public stamps become
-							the first thing you feel.
+							Stamp.builders treats each generation like a tiny printed edition.
+							Use a prompt, a place, a memory, or a reference photo, then let
+							the image lead the page instead of the interface.
 						</p>
 						<div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
 							<a href="#generate">
 								<Button variant="cta" size="lg" className="w-full sm:w-auto">
-									Start a new stamp
+									Start a new edition
 								</Button>
 							</a>
 							<Link
@@ -69,9 +68,9 @@ export function HomeContent() {
 						<div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-stone-600">
 							<span>20 free stamps each day</span>
 							<span className="text-stone-400">/</span>
-							<span>Public gallery cleaned to live images only</span>
+							<span>Reference image support</span>
 							<span className="text-stone-400">/</span>
-							<span>Reference images supported</span>
+							<span>Public wall curated from real renders</span>
 						</div>
 					</div>
 
@@ -94,7 +93,7 @@ export function HomeContent() {
 										/>
 										<div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(18,14,11,0.72))] px-6 py-6 text-stone-50">
 											<p className="text-[10px] uppercase tracking-[0.24em] text-stone-200/80">
-												Latest public stamp
+												Featured on the wall
 											</p>
 											<p className="mt-2 max-w-sm font-stamp text-2xl leading-tight">
 												{featuredStamp.description || featuredStamp.prompt}
@@ -180,10 +179,10 @@ export function HomeContent() {
 					<div className="flex items-end justify-between gap-6">
 						<div>
 							<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
-								Fresh from the press
+								Gallery sweep
 							</p>
 							<h2 className="mt-3 font-stamp text-3xl text-stone-950 sm:text-4xl">
-								A moving wall of newly generated stamps.
+								Recent pieces from the public wall.
 							</h2>
 						</div>
 						<Link
@@ -239,24 +238,24 @@ export function HomeContent() {
 			>
 				<div className="max-w-md">
 					<p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-stone-500">
-						Workbench
+						Print room
 					</p>
 					<h2 className="mt-4 font-stamp text-4xl leading-tight text-stone-950">
-						Make the next stamp, not another dashboard tile.
+						Build the next piece with words, reference, and tone.
 					</h2>
 					<p className="mt-4 text-sm leading-7 text-stone-600">
-						Write a scene, attach a reference if you need more control, pick a
-						style, and let the image carry the page. This section stays lighter
-						on framing so the output can do more of the visual work.
+						The controls stay deliberately quiet here. Write the scene, attach a
+						photo if you want tighter composition, and let the result arrive
+						like a finished print.
 					</p>
 					<div className="mt-8 space-y-4 text-sm leading-6 text-stone-600">
 						<p>
-							Strong prompts usually combine subject, setting, and texture in
-							one breath.
+							The strongest prompts usually name subject, setting, and material
+							in one breath.
 						</p>
 						<p className="font-stamp text-xl leading-8 text-stone-900">
-							“Rainy Saigon alley with scooters, warm window light, engraved
-							stamp texture.”
+							“Rainy Saigon alley, scooters, amber windows, engraved blue ink,
+							quiet midnight mood.”
 						</p>
 						<p>You get 20 free stamps per day, or 100 when signed in.</p>
 					</div>
@@ -270,10 +269,10 @@ export function HomeContent() {
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 					<div>
 						<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
-							Credits
+							Open edition
 						</p>
 						<p className="mt-3 font-stamp text-3xl text-stone-900">
-							20 free stamps per day. Sign in for 100.
+							20 free daily prints. Sign in and the wall gets deeper.
 						</p>
 					</div>
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center">

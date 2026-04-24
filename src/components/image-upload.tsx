@@ -149,15 +149,15 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					onDragLeave={handleDragLeave}
 					onClick={() => inputRef.current?.click()}
 					disabled={disabled}
-					className={`flex w-full flex-col items-center justify-center gap-2 rounded-[1.6rem] border-2 border-dashed px-5 py-7 text-center transition-all duration-200 ${
+					className={`flex w-full flex-col items-center justify-center gap-2 rounded-[1.8rem] border border-dashed px-5 py-8 text-center transition-all duration-200 ${
 						disabled
 							? "cursor-not-allowed border-stone-200 bg-stone-50/80 opacity-50"
 							: isDragging
 								? "scale-[1.01] border-stone-700 bg-stone-950/5"
-								: "border-stone-300/70 bg-[rgba(255,255,255,0.62)] hover:border-stone-500 hover:bg-white/90"
+								: "border-stone-300/60 bg-[rgba(255,252,247,0.62)] hover:border-stone-500 hover:bg-white/90"
 					}`}
 				>
-					<div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-stone-700 shadow-sm">
+					<div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-stone-700">
 						<UploadIcon />
 					</div>
 					<p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-stone-500">
@@ -183,7 +183,7 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					/>
 				</button>
 			) : (
-				<div className="animate-form-enter flex items-center gap-4 rounded-[1.4rem] bg-[rgba(255,255,255,0.68)] p-4">
+				<div className="animate-form-enter flex items-center gap-4 rounded-[1.6rem] bg-[rgba(255,252,247,0.72)] p-4">
 					<div className="relative h-18 w-18 shrink-0 overflow-hidden rounded-[1rem] bg-white">
 						{processing && (
 							<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
