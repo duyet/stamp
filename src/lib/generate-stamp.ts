@@ -77,14 +77,14 @@ export async function describeStamp(
 				{
 					role: "system",
 					content:
-						"Write one short display caption for an AI-generated postage stamp. Use plain English, no markdown, no quotes, no labels. Keep it under 14 words.",
+						"Write a very short description for an AI-generated postage stamp. Use plain English, no markdown, no quotes, no labels. Use one sentence, or two only if needed. Keep the whole description under 22 words.",
 				},
 				{
 					role: "user",
 					content: `Style: ${preset.name}\nUser prompt: ${userPrompt || "(reference image only)"}\nGeneration prompt: ${enhancedPrompt}`,
 				},
 			],
-			max_tokens: 60,
+			max_tokens: 45,
 			temperature: 0.4,
 		})) as { response?: string };
 

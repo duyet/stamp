@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { memo } from "react";
 import { StampImage } from "@/components/stamp-image";
 import type { PublicStamp } from "@/db/schema";
@@ -33,7 +34,7 @@ export const StampCard = memo(function StampCard({
 							href={stamp.imageUrl}
 							download={`stamp-${stamp.id}.png`}
 							onClick={(e) => e.stopPropagation()}
-							className="text-xs normal-case tracking-normal text-stone-500 transition hover:text-stone-800"
+							className="relative z-20 text-xs normal-case tracking-normal text-stone-500 transition hover:text-stone-800"
 						>
 							Download
 						</a>
@@ -59,7 +60,13 @@ export const StampCard = memo(function StampCard({
 	}
 
 	return (
-		<div className="group relative overflow-hidden rounded-[1.6rem] border border-stone-200/80 bg-white/82 shadow-[0_18px_50px_-42px_rgba(58,39,21,0.32)] transition">
+		<div className="group relative overflow-hidden rounded-[1.6rem] border border-stone-200/80 bg-white/82 shadow-[0_18px_50px_-42px_rgba(58,39,21,0.32)] transition hover:-translate-y-0.5 hover:border-stone-300">
+			<Link
+				to="/stamps/$id"
+				params={{ id: stamp.id }}
+				className="absolute inset-0 z-10"
+				aria-label={`View stamp: ${stamp.description || stamp.prompt}`}
+			/>
 			{content}
 		</div>
 	);

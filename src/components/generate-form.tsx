@@ -52,6 +52,7 @@ export function GenerateForm({
 	const { isSignedIn } = useAuth();
 	const [hd, setHd] = useState(false);
 	const [reference, setReference] = useState<string | null>(null);
+	const [referenceResetToken, setReferenceResetToken] = useState(0);
 	const [results, setResults] = useState<GeneratedStamp[]>([]);
 	const promptInputRef = useRef<{ triggerError: () => void } | null>(null);
 
@@ -189,9 +190,8 @@ export function GenerateForm({
 				});
 			}
 
-			// Clear prompt after successful generation
-			setPrompt("");
 			setReference(null);
+			setReferenceResetToken((value) => value + 1);
 			setResetAt(null); // Clear countdown on success
 		} catch (err) {
 			setError(
@@ -215,6 +215,7 @@ export function GenerateForm({
 			>
 				<div className="space-y-5">
 					<ImageUpload
+						key={referenceResetToken}
 						onSelected={(data) => {
 							setReference(data ? data.referenceImageData : null);
 							if (data && isSignedIn) {

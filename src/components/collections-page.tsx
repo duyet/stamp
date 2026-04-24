@@ -5,9 +5,7 @@ import { RefreshIcon } from "@/components/icons";
 import { SectionHeading } from "@/components/section-heading";
 import { StampCard } from "@/components/stamp-card";
 import { StampGridSkeleton } from "@/components/stamp-grid-skeleton";
-import { StampModal } from "@/components/stamp-modal";
 import { StyleFilterChips } from "@/components/style-filter-chips";
-import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
 import type { PublicStampResult } from "@/lib/public-stamps";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
@@ -28,15 +26,13 @@ export default function CollectionsPage({
 }: CollectionsPageProps) {
 	const [selectedStyle, setSelectedStyle] = useState<StyleFilter>(initialStyle);
 	const [retryKey, setRetryKey] = useState(0);
-	const [selectedStamp, setSelectedStamp] = useState<PublicStamp | null>(null);
 	const loadMoreRef = useRef<HTMLDivElement | null>(null);
-	const { stamps, loading, loadingMore, error, setStamps, hasMore, loadMore } =
-		useStamps(
-			COLLECTIONS_PAGE_SIZE,
-			retryKey,
-			selectedStyle === ALL_STYLES ? undefined : selectedStyle,
-			initialData,
-		);
+	const { stamps, loading, loadingMore, error, hasMore, loadMore } = useStamps(
+		COLLECTIONS_PAGE_SIZE,
+		retryKey,
+		selectedStyle === ALL_STYLES ? undefined : selectedStyle,
+		initialData,
+	);
 
 	useEffect(() => {
 		setSelectedStyle(initialStyle);
@@ -80,15 +76,6 @@ export default function CollectionsPage({
 	// Trigger refetch on retry
 	function handleRetry() {
 		setRetryKey((prev) => prev + 1);
-	}
-
-	// Handle regeneration from modal
-	function handleRegenerate(newStamp: PublicStamp) {
-		setSelectedStamp(newStamp);
-		setStamps((prev) => {
-			const filtered = prev.filter((s) => s.id !== newStamp.id);
-			return [newStamp, ...filtered];
-		});
 	}
 
 	return (
@@ -153,11 +140,7 @@ export default function CollectionsPage({
 				<>
 					<div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
 						{stamps.map((stamp) => (
-							<StampCard
-								key={stamp.id}
-								stamp={stamp}
-								onClick={() => setSelectedStamp(stamp)}
-							/>
+							<StampCard key={stamp.id} stamp={stamp} />
 						))}
 					</div>
 					{hasMore && (
@@ -173,14 +156,6 @@ export default function CollectionsPage({
 						</div>
 					)}
 				</>
-			)}
-
-			{selectedStamp && (
-				<StampModal
-					stamp={selectedStamp}
-					onClose={() => setSelectedStamp(null)}
-					onRegenerate={handleRegenerate}
-				/>
 			)}
 		</div>
 	);

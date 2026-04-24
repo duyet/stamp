@@ -1,3 +1,4 @@
+import { useAuth } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RefreshIcon } from "@/components/icons";
@@ -16,29 +17,73 @@ interface StampDetailClientProps {
 export function StampDetailClient({
 	stamp: initialStamp,
 }: StampDetailClientProps) {
+	const { isSignedIn } = useAuth();
 	const { copied, copy } = useCopy();
 	const { regenerate, regenerating } = useRegenerateStamp();
-	const [regeneratedStamp, setRegeneratedStamp] = useState<PublicStamp | null>(
-		null,
+	const [displayStamp, setDisplayStamp] = useState(initialStamp);
+	const [isEditingDescription, setIsEditingDescription] = useState(false);
+	const [descriptionDraft, setDescriptionDraft] = useState(
+		initialStamp.description || initialStamp.prompt,
 	);
+	const [descriptionError, setDescriptionError] = useState<string | null>(null);
+	const [savingDescription, setSavingDescription] = useState(false);
 
-	// Use derived state: display regenerated stamp if exists, otherwise initial stamp
-	const displayStamp = regeneratedStamp ?? initialStamp;
+	const canEditDescription = isSignedIn === true;
 
 	async function handleRegenerate() {
 		try {
 			const newStamp = await regenerate(displayStamp);
-			setRegeneratedStamp(newStamp);
 
-			// Update URL to new stamp ID without page reload
 			const newUrl = `/stamps/${newStamp.id}`;
-			window.history.replaceState({}, "", newUrl);
+			window.location.assign(newUrl);
 		} catch (err) {
 			// Error displayed by useRegenerateStamp hook
 			console.debug(
 				"[StampDetail] Regenerate failed:",
 				err instanceof Error ? err.message : String(err),
 			);
+		}
+	}
+
+	async function handleSaveDescription() {
+		const description = descriptionDraft.trim();
+		if (!description) {
+			setDescriptionError("Description cannot be empty.");
+			return;
+		}
+
+		setSavingDescription(true);
+		setDescriptionError(null);
+
+		try {
+			const res = await fetch(`/api/stamps/${displayStamp.id}/description`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ description }),
+			});
+
+			if (!res.ok) {
+				const data = (await res.json().catch(() => null)) as {
+					error?: string;
+				} | null;
+				throw new Error(data?.error || "Failed to update description.");
+			}
+
+			const data = (await res.json()) as {
+				stamp: { description: string };
+			};
+			setDisplayStamp((prev) => ({
+				...prev,
+				description: data.stamp.description,
+			}));
+			setDescriptionDraft(data.stamp.description);
+			setIsEditingDescription(false);
+		} catch (err) {
+			setDescriptionError(
+				err instanceof Error ? err.message : "Failed to update description.",
+			);
+		} finally {
+			setSavingDescription(false);
 		}
 	}
 
@@ -96,10 +141,62 @@ export function StampDetailClient({
 
 					{/* Details */}
 					<div className="flex flex-col">
-						{/* Title/description */}
-						<h1 className="text-2xl sm:text-3xl font-bold text-stone-900 mb-4 font-stamp">
-							{displayStamp.description || displayStamp.prompt}
-						</h1>
+						<div className="mb-4">
+							{isEditingDescription ? (
+								<div className="space-y-3">
+									<textarea
+										value={descriptionDraft}
+										onChange={(e) => setDescriptionDraft(e.target.value)}
+										maxLength={200}
+										rows={3}
+										className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-base leading-6 text-stone-900 outline-none transition focus:border-stone-400"
+										aria-label="Stamp description"
+									/>
+									{descriptionError ? (
+										<p className="text-sm text-red-600">{descriptionError}</p>
+									) : null}
+									<div className="flex flex-wrap gap-2">
+										<button
+											type="button"
+											onClick={handleSaveDescription}
+											disabled={savingDescription}
+											className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:opacity-50"
+										>
+											{savingDescription ? "Saving..." : "Save"}
+										</button>
+										<button
+											type="button"
+											onClick={() => {
+												setDescriptionDraft(
+													displayStamp.description || displayStamp.prompt,
+												);
+												setDescriptionError(null);
+												setIsEditingDescription(false);
+											}}
+											disabled={savingDescription}
+											className="rounded-full bg-stone-100 px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-200 disabled:opacity-50"
+										>
+											Cancel
+										</button>
+									</div>
+								</div>
+							) : (
+								<div className="space-y-3">
+									<h1 className="text-2xl sm:text-3xl font-bold text-stone-900 font-stamp">
+										{displayStamp.description || displayStamp.prompt}
+									</h1>
+									{canEditDescription ? (
+										<button
+											type="button"
+											onClick={() => setIsEditingDescription(true)}
+											className="text-sm font-medium text-stone-600 transition-colors hover:text-stone-950"
+										>
+											Edit description
+										</button>
+									) : null}
+								</div>
+							)}
+						</div>
 
 						{displayStamp.description &&
 							displayStamp.description !== displayStamp.prompt && (

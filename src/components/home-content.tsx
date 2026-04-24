@@ -1,11 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/button";
 import { GenerateForm } from "@/components/generate-form";
 import { SectionHeading } from "@/components/section-heading";
 import { StampCard } from "@/components/stamp-card";
 import { StampImage } from "@/components/stamp-image";
-import { StampModal } from "@/components/stamp-modal";
 import { StyleFilterChips } from "@/components/style-filter-chips";
 import type { PublicStamp } from "@/db/schema";
 import { useStamps } from "@/hooks/use-stamps";
@@ -33,13 +32,13 @@ function isStampStyle(style: string): style is StampStyle {
 }
 
 export function HomeContent({ initialData }: HomeContentProps) {
+	const navigate = useNavigate();
 	const {
 		stamps: recentStamps,
 		setStamps: setRecentStamps,
 		loading,
 		error,
 	} = useStamps(30, 0, undefined, initialData);
-	const [selectedStamp, setSelectedStamp] = useState<PublicStamp | null>(null);
 	const [selectedStyle, setSelectedStyle] =
 		useState<HomeStyleFilter>(ALL_STYLES);
 	const [featuredStamp, ...remainingStamps] = recentStamps;
@@ -98,6 +97,10 @@ export function HomeContent({ initialData }: HomeContentProps) {
 		setRecentStamps((prev) => [newStamp, ...prev]);
 	}
 
+	function openStampPage(id: string) {
+		void navigate({ to: "/stamps/$id", params: { id } });
+	}
+
 	return (
 		<div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
 			<section className="relative pt-5 pb-8 sm:pt-7 sm:pb-10">
@@ -140,7 +143,7 @@ export function HomeContent({ initialData }: HomeContentProps) {
 									<button
 										type="button"
 										className="group relative h-full w-full overflow-hidden rounded-[1.65rem] bg-stone-200 text-left shadow-[0_24px_68px_-54px_rgba(58,39,21,0.38)]"
-										onClick={() => setSelectedStamp(featuredStamp)}
+										onClick={() => openStampPage(featuredStamp.id)}
 									>
 										<StampImage
 											src={featuredStamp.imageUrl}
@@ -158,9 +161,6 @@ export function HomeContent({ initialData }: HomeContentProps) {
 												</span>
 												<span>{formatStampDate(featuredStamp.createdAt)}</span>
 											</div>
-											<p className="mt-2 max-w-lg font-stamp text-[1.55rem] leading-tight sm:text-[1.9rem]">
-												{featuredStamp.description || featuredStamp.prompt}
-											</p>
 										</div>
 									</button>
 								</div>
@@ -171,7 +171,7 @@ export function HomeContent({ initialData }: HomeContentProps) {
 											key={stamp.id}
 											type="button"
 											className="group overflow-hidden rounded-[1.25rem] bg-stone-200 text-left shadow-[0_16px_42px_-38px_rgba(58,39,21,0.34)]"
-											onClick={() => setSelectedStamp(stamp)}
+											onClick={() => openStampPage(stamp.id)}
 										>
 											<StampImage
 												src={stamp.imageUrl}
@@ -251,12 +251,7 @@ export function HomeContent({ initialData }: HomeContentProps) {
 				) : showcaseStamps.length > 0 ? (
 					<div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
 						{showcaseStamps.map((stamp) => (
-							<StampCard
-								key={stamp.id}
-								stamp={stamp}
-								showDownload={false}
-								onClick={() => setSelectedStamp(stamp)}
-							/>
+							<StampCard key={stamp.id} stamp={stamp} showDownload={false} />
 						))}
 					</div>
 				) : (
@@ -280,13 +275,6 @@ export function HomeContent({ initialData }: HomeContentProps) {
 					</div>
 				</div>
 			</section>
-
-			{selectedStamp && (
-				<StampModal
-					stamp={selectedStamp}
-					onClose={() => setSelectedStamp(null)}
-				/>
-			)}
 		</div>
 	);
 }
