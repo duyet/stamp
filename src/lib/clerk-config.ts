@@ -51,7 +51,3 @@ export function getClerkPublishableKey(): string | undefined {
 
 	return runtimeKey || publicKey || browserKey || undefined;
 }
-
-export function getClerkSecretKey(): string | undefined {
-	return process.env.CLERK_SECRET_KEY?.trim() || undefined;
-}

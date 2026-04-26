@@ -7,6 +7,22 @@ interface GenerateStampResult {
 	description: string;
 }
 
+type Flux2KleinModel = {
+	inputs: {
+		multipart: {
+			body: ReadableStream<Uint8Array> | null;
+			contentType: string;
+		};
+	};
+	postProcessedOutputs: { image?: string };
+};
+
+type StampAi = Ai<
+	AiModels & {
+		"@cf/black-forest-labs/flux-2-klein-9b": Flux2KleinModel;
+	}
+>;
+
 /**
  * Enhance a user's rough prompt into a detailed stamp illustration prompt.
  * Uses CF Workers AI Qwen3 30B-A3B (free) to auto-tune the prompt.
@@ -171,6 +187,7 @@ export async function generateStamp(
 	const imageResult = await (async () => {
 		let response: { image?: string };
 		if (hd) {
+			const stampAi = ai as StampAi;
 			// Flux 2 Klein 9B — 1024x1024, fixed 4 steps, supports reference images
 			const form = await buildMultipartInput(
 				{
@@ -182,17 +199,13 @@ export async function generateStamp(
 			);
 			// FormData must be wrapped in Response to get body stream and content-type
 			const formResponse = new Response(form);
-			response = (await ai.run(
-				// @ts-expect-error — model name valid at runtime
-				"@cf/black-forest-labs/flux-2-klein-9b",
-				{
-					multipart: {
-						body: formResponse.body,
-						contentType:
-							formResponse.headers.get("content-type") ?? "multipart/form-data",
-					},
+			response = await stampAi.run("@cf/black-forest-labs/flux-2-klein-9b", {
+				multipart: {
+					body: formResponse.body,
+					contentType:
+						formResponse.headers.get("content-type") ?? "multipart/form-data",
 				},
-			)) as { image?: string };
+			});
 		} else {
 			// Flux 1 Schnell — default, fast, 8 steps (no reference image support)
 			response = (await ai.run("@cf/black-forest-labs/flux-1-schnell", {
