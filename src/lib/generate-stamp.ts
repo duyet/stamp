@@ -120,10 +120,10 @@ export async function describeStamp(
  * Supports reference images via input_image_0, input_image_1, etc.
  * All reference images must be ≤512x512 pixels.
  */
-async function buildMultipartInput(
+function buildMultipartInput(
 	params: Record<string, string>,
 	referenceImageData?: Uint8Array,
-): Promise<FormData> {
+): FormData {
 	const form = new FormData();
 	for (const [key, value] of Object.entries(params)) {
 		form.append(key, value);
@@ -189,7 +189,7 @@ export async function generateStamp(
 		if (hd) {
 			const stampAi = ai as StampAi;
 			// Flux 2 Klein 9B — 1024x1024, fixed 4 steps, supports reference images
-			const form = await buildMultipartInput(
+			const form = buildMultipartInput(
 				{
 					prompt: enhancedPrompt,
 					width: "1024",
