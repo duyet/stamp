@@ -134,7 +134,10 @@ function DashboardContent() {
 		return (
 			<div className="space-y-8">
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-					{Array.from({ length: 4 }, (_, i) => `sk-${i}`).map((id) => (
+					{Array.from(
+						{ length: DASHBOARD.STATS_PER_ROW },
+						(_, i) => `sk-${i}`,
+					).map((id) => (
 						<div
 							key={id}
 							className="h-24 rounded-xl bg-stone-100 animate-pulse"
@@ -204,7 +207,7 @@ function DashboardContent() {
 			{data.dailyTrend.length > 0 && (
 				<section>
 					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-						Generations per day (last 30 days)
+						Generations per day (last {DASHBOARD.DAILY_TREND_DAYS} days)
 					</h2>
 					<div className="bg-white rounded-xl border border-stone-200 p-6">
 						<div className="flex items-end gap-1 h-32">
