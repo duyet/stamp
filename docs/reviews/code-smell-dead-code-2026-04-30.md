@@ -12,7 +12,7 @@
 
 - File: `src/components/stat-card.tsx`
 - Confidence: confident
-- Evidence: `rg -n "from \"@/components/stat-card\"|from '@/components/stat-card'|<StatCard\\b|StatCard\\(" . -g '!**/*test*' -g '!**/__tests__/**'` returned only the component declaration before removal.
+- Evidence: `rg -n "\\bStatCard\\b" . -g '!**/*.test.*' -g '!**/__tests__/**'` returned only the component declaration before removal.
 - Fix: removed the unused component file. No production imports referenced it.
 
 ## Reviewed but kept
