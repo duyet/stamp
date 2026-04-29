@@ -1,6 +1,7 @@
 import { useAuth } from "@clerk/tanstack-react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { CREDITS_CHANGED_EVENT } from "@/components/credit-balance";
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import type { StampStyle } from "@/lib/stamp-prompts";
@@ -194,6 +195,7 @@ export function GenerateForm({
 			setReference(null);
 			setReferenceResetToken((value) => value + 1);
 			setResetAt(null); // Clear countdown on success
+			window.dispatchEvent(new Event(CREDITS_CHANGED_EVENT));
 		} catch (err) {
 			setError(
 				err instanceof Error
