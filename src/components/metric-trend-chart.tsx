@@ -33,7 +33,7 @@ export function MetricTrendChart<T extends { day: number }>({
 	return (
 		<section>
 			<div className="mb-4 flex items-center justify-between gap-4">
-				<h2 className="text-xs font-medium text-stone-600 uppercase tracking-wide">
+				<h2 className="text-xs font-semibold text-stone-600 uppercase tracking-[0.18em]">
 					{title}
 				</h2>
 				<div className="flex flex-wrap justify-end gap-3">
@@ -48,14 +48,14 @@ export function MetricTrendChart<T extends { day: number }>({
 					))}
 				</div>
 			</div>
-			<div className="rounded-xl border border-stone-200 bg-white p-5">
+			<div className="border border-stone-300 bg-white/90 p-5">
 				{data.length === 0 ? (
 					<div className="flex h-32 items-center justify-center text-sm text-stone-400">
 						{emptyLabel}
 					</div>
 				) : (
 					<>
-						<div className="flex h-36 items-end gap-1">
+						<div className="flex h-40 items-end gap-1 border-b border-stone-200 pb-2">
 							{data.map((item) => (
 								<div
 									key={item.day}
@@ -74,7 +74,7 @@ export function MetricTrendChart<T extends { day: number }>({
 										return (
 											<div
 												key={metric.key}
-												className={`w-full rounded-t-sm opacity-75 transition-opacity hover:opacity-100 ${metric.className}`}
+												className={`w-full opacity-75 transition-opacity hover:opacity-100 ${metric.className}`}
 												style={{ height: `${height}px` }}
 											/>
 										);

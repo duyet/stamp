@@ -33,10 +33,10 @@ export function HorizontalBarChart({
 
 	return (
 		<section>
-			<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
+			<h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
 				{title}
 			</h2>
-			<div className="bg-white rounded-xl border border-stone-200 p-6 space-y-3">
+			<div className="space-y-3 border border-stone-300 bg-white/90 p-5">
 				{items.map((item) => {
 					const label = item.label;
 					const count = item.count;
@@ -47,9 +47,9 @@ export function HorizontalBarChart({
 							>
 								{formatLabel ? formatLabel(label) : label}
 							</span>
-							<div className="flex-1 bg-stone-100 rounded-full h-4 overflow-hidden">
+							<div className="h-3 flex-1 overflow-hidden border border-stone-200 bg-stone-100">
 								<div
-									className="h-full bg-stone-800 rounded-full transition-all"
+									className="h-full bg-stone-800 transition-all"
 									style={{
 										width: `${Math.round((count / maxCount) * 100)}%`,
 									}}

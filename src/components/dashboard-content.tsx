@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { memo, useEffect, useState } from "react";
+import { memo, type ReactNode, useEffect, useState } from "react";
 import { DashboardLocations } from "@/components/dashboard-locations";
 import { DashboardMap } from "@/components/dashboard-map";
 import { StyleShowcase } from "@/components/dashboard-style-showcase";
@@ -8,7 +8,6 @@ import { HorizontalBarChart } from "@/components/horizontal-bar-chart";
 import { MetricTable } from "@/components/metric-table";
 import { MetricTrendChart } from "@/components/metric-trend-chart";
 import { StampGridMemo } from "@/components/stamp-grid";
-import { StatCard } from "@/components/stat-card";
 import { DASHBOARD } from "@/lib/constants";
 import type {
 	CountItem,
@@ -124,9 +123,237 @@ function formatWorkersAiReset(resetAt: string): string {
 	})}`;
 }
 
+function clampPercent(value: number, total: number): number {
+	if (total <= 0) return 0;
+	return Math.min(100, Math.max(0, Math.round((value / total) * 100)));
+}
+
+function formatValue(value: number | string): string {
+	return typeof value === "number" ? value.toLocaleString() : value;
+}
+
+function Panel({
+	children,
+	className = "",
+	stamp = false,
+}: {
+	children: ReactNode;
+	className?: string;
+	stamp?: boolean;
+}) {
+	const borderClass = stamp
+		? "stamp-border border border-stone-900 bg-white"
+		: "border border-stone-300 bg-white/90";
+	return <div className={`${borderClass} p-5 ${className}`}>{children}</div>;
+}
+
+function SectionHeader({
+	label,
+	title,
+	description,
+}: {
+	label: string;
+	title: string;
+	description?: string;
+}) {
+	return (
+		<div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+			<div>
+				<p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+					{label}
+				</p>
+				<h2 className="font-stamp text-2xl font-semibold text-stone-900">
+					{title}
+				</h2>
+			</div>
+			{description ? (
+				<p className="max-w-lg text-sm leading-6 text-stone-600">
+					{description}
+				</p>
+			) : null}
+		</div>
+	);
+}
+
+function MetricBlock({
+	label,
+	value,
+	detail,
+	accent = "border-stone-300",
+}: {
+	label: string;
+	value: number | string;
+	detail?: string;
+	accent?: string;
+}) {
+	return (
+		<div className={`border-l-2 ${accent} py-1 pl-4`}>
+			<p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+				{label}
+			</p>
+			<p className="mt-2 text-3xl font-semibold leading-none text-stone-950">
+				{formatValue(value)}
+			</p>
+			{detail ? (
+				<p className="mt-2 text-xs leading-5 text-stone-500">{detail}</p>
+			) : null}
+		</div>
+	);
+}
+
+function ProgressBar({
+	value,
+	total,
+	className = "bg-stone-900",
+}: {
+	value: number;
+	total: number;
+	className?: string;
+}) {
+	return (
+		<div className="h-3 overflow-hidden border border-stone-300 bg-stone-100">
+			<div
+				className={`h-full transition-all ${className}`}
+				style={{ width: `${clampPercent(value, total)}%` }}
+			/>
+		</div>
+	);
+}
+
+function CloudflareUsagePanel({ credits }: { credits: WorkersAiCredits }) {
+	const percentUsed = clampPercent(
+		credits.usedNeuronsToday,
+		credits.dailyFreeNeurons,
+	);
+	const statusDetail =
+		credits.status === "ok"
+			? `${credits.remainingNeuronsToday.toLocaleString()} free neurons left, ${formatWorkersAiReset(credits.resetAt)}`
+			: credits.status === "unconfigured"
+				? "Cloudflare token not configured"
+				: "Cloudflare usage unavailable";
+
+	return (
+		<Panel stamp className="space-y-5">
+			<div className="flex items-start justify-between gap-4">
+				<div>
+					<p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+						Cloudflare AI
+					</p>
+					<h3 className="mt-2 font-stamp text-2xl font-semibold text-stone-950">
+						Free credit usage
+					</h3>
+				</div>
+				<span className="border border-stone-900 px-2 py-1 text-xs font-semibold text-stone-900">
+					{credits.status === "ok" ? `${percentUsed}% used` : credits.status}
+				</span>
+			</div>
+			{credits.status === "ok" ? (
+				<>
+					<div>
+						<div className="mb-2 flex items-baseline justify-between gap-4">
+							<p className="text-sm font-medium text-stone-700">
+								{credits.usedNeuronsToday.toLocaleString()} /{" "}
+								{credits.dailyFreeNeurons.toLocaleString()} neurons
+							</p>
+							<p className="text-xs text-stone-500">
+								{credits.requestsToday.toLocaleString()} requests
+							</p>
+						</div>
+						<ProgressBar
+							value={credits.usedNeuronsToday}
+							total={credits.dailyFreeNeurons}
+						/>
+					</div>
+					<p className="text-sm leading-6 text-stone-600">{statusDetail}</p>
+				</>
+			) : (
+				<p className="text-sm leading-6 text-stone-600">{statusDetail}</p>
+			)}
+		</Panel>
+	);
+}
+
+function CreditUsagePanel({ overview }: { overview: CreditOverview }) {
+	return (
+		<Panel className="space-y-5">
+			<div>
+				<p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+					App credits
+				</p>
+				<h3 className="mt-2 font-stamp text-2xl font-semibold text-stone-950">
+					Daily pool
+				</h3>
+			</div>
+			<div>
+				<div className="mb-2 flex items-baseline justify-between gap-4">
+					<p className="text-sm font-medium text-stone-700">
+						{overview.totalDailyUsed.toLocaleString()} used
+					</p>
+					<p className="text-xs text-stone-500">
+						{overview.totalDailyLimit.toLocaleString()} total
+					</p>
+				</div>
+				<ProgressBar
+					value={overview.totalDailyUsed}
+					total={overview.totalDailyLimit}
+					className="bg-emerald-800"
+				/>
+			</div>
+			<div className="grid grid-cols-2 gap-4 border-t border-stone-200 pt-4">
+				<MetricBlock label="Remaining" value={overview.totalDailyRemaining} />
+				<MetricBlock label="Purchased" value={overview.purchasedCredits} />
+			</div>
+		</Panel>
+	);
+}
+
+function MiniDistribution({
+	title,
+	items,
+}: {
+	title: string;
+	items: Array<{ label: string; value: number; color: string }>;
+}) {
+	const total = items.reduce((sum, item) => sum + item.value, 0);
+	return (
+		<Panel className="space-y-4">
+			<h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+				{title}
+			</h3>
+			<div className="flex h-4 overflow-hidden border border-stone-300 bg-stone-100">
+				{items.map((item) => (
+					<div
+						key={item.label}
+						className={item.color}
+						style={{ width: `${clampPercent(item.value, total)}%` }}
+						title={`${item.label}: ${item.value.toLocaleString()}`}
+					/>
+				))}
+			</div>
+			<div className="space-y-2">
+				{items.map((item) => (
+					<div
+						key={item.label}
+						className="flex items-center justify-between gap-3 text-sm"
+					>
+						<span className="flex min-w-0 items-center gap-2 text-stone-600">
+							<span className={`h-2.5 w-2.5 shrink-0 ${item.color}`} />
+							<span className="truncate">{item.label}</span>
+						</span>
+						<span className="font-medium tabular-nums text-stone-900">
+							{item.value.toLocaleString()}
+						</span>
+					</div>
+				))}
+			</div>
+		</Panel>
+	);
+}
+
 function DashboardContent() {
 	const [data, setData] = useState<Analytics | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [loadedAt, setLoadedAt] = useState<Date | null>(null);
 	const [styleStamps, setStyleStamps] = useState<
 		Array<{
 			style: string;
@@ -150,6 +377,7 @@ function DashboardContent() {
 				}
 				const d = (await r.json()) as Analytics;
 				setData(d);
+				setLoadedAt(new Date());
 
 				// Fetch one featured stamp per style for the showcase
 				if (d.popularStyles.length > 0) {
@@ -198,23 +426,21 @@ function DashboardContent() {
 
 	if (!data) {
 		return (
-			<div className="space-y-8">
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+			<div className="space-y-6">
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+					<div className="h-56 animate-pulse bg-stone-100" />
+					<div className="h-56 animate-pulse bg-stone-100" />
+					<div className="h-56 animate-pulse bg-stone-100" />
+				</div>
+				<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
 					{Array.from(
 						{ length: DASHBOARD.STATS_PER_ROW },
 						(_, i) => `sk-${i}`,
 					).map((id) => (
-						<div
-							key={id}
-							className="h-24 rounded-xl bg-stone-100 animate-pulse"
-						/>
+						<div key={id} className="h-24 animate-pulse bg-stone-100" />
 					))}
 				</div>
-				<div className="h-64 rounded-xl bg-stone-100 animate-pulse" />
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div className="h-48 rounded-xl bg-stone-100 animate-pulse" />
-					<div className="h-48 rounded-xl bg-stone-100 animate-pulse" />
-				</div>
+				<div className="h-72 animate-pulse bg-stone-100" />
 			</div>
 		);
 	}
@@ -223,121 +449,269 @@ function DashboardContent() {
 		data.creditOverview.totalDailyUsed,
 		data.creditOverview.totalDailyLimit,
 	);
-	const workersAiDetail =
-		data.workersAiCredits.status === "ok"
-			? `${data.workersAiCredits.usedNeuronsToday.toLocaleString()} used of ${data.workersAiCredits.dailyFreeNeurons.toLocaleString()} today`
-			: data.workersAiCredits.status === "unconfigured"
-				? "Cloudflare token not configured"
-				: "Cloudflare usage unavailable";
-	const workersAiValue =
-		data.workersAiCredits.status === "ok"
-			? data.workersAiCredits.remainingNeuronsToday
-			: "Unavailable";
+	const generationCount = data.generationPerformance.generations;
 
 	return (
-		<div className="space-y-12">
+		<div className="space-y-14">
 			<section>
-				<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-					Growth
-				</h2>
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-					<StatCard label="Total stamps" value={data.totalStamps} />
-					<StatCard label="Today" value={data.stampsToday} />
-					<StatCard label="This week" value={data.stampsThisWeek} />
-					<StatCard label="This month" value={data.stampsThisMonth} />
+				<div className="mb-5 flex items-center justify-between gap-4">
+					<p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+						Live summary
+					</p>
+					<p className="text-xs text-stone-500">
+						{loadedAt
+							? `Updated ${loadedAt.toLocaleTimeString([], {
+									hour: "2-digit",
+									minute: "2-digit",
+								})}`
+							: "Loaded"}
+					</p>
+				</div>
+				<div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+					<Panel stamp className="lg:col-span-2">
+						<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+							<MetricBlock
+								label="Total stamps"
+								value={data.totalStamps}
+								detail={`${data.stampsToday.toLocaleString()} today`}
+								accent="border-stone-900"
+							/>
+							<MetricBlock
+								label="This week"
+								value={data.stampsThisWeek}
+								detail={`${data.stampsThisMonth.toLocaleString()} this month`}
+								accent="border-emerald-800"
+							/>
+							<MetricBlock
+								label="Page views"
+								value={data.totalPageViews}
+								detail={`${data.uniqueVisitors.toLocaleString()} visitors`}
+								accent="border-sky-800"
+							/>
+							<MetricBlock
+								label="Shares"
+								value={data.totalShares}
+								detail={`${data.totalDownloads.toLocaleString()} downloads`}
+								accent="border-amber-800"
+							/>
+						</div>
+					</Panel>
+					<Panel stamp>
+						<div className="space-y-6">
+							<MetricBlock
+								label="Avg generation"
+								value={formatDuration(data.generationPerformance.averageMs)}
+								detail={`Max ${formatDuration(data.generationPerformance.maxMs)}`}
+								accent="border-stone-900"
+							/>
+							<div className="grid grid-cols-2 gap-4 border-t border-stone-300 pt-5">
+								<MetricBlock
+									label="HD"
+									value={data.generationPerformance.hdGenerations}
+									detail={formatPercent(
+										data.generationPerformance.hdGenerations,
+										generationCount,
+									)}
+								/>
+								<MetricBlock
+									label="Reference"
+									value={data.generationPerformance.referenceGenerations}
+									detail={formatPercent(
+										data.generationPerformance.referenceGenerations,
+										generationCount,
+									)}
+								/>
+							</div>
+						</div>
+					</Panel>
 				</div>
 			</section>
 
 			<section>
-				<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-					Traffic & engagement
-				</h2>
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-					<StatCard label="Page views" value={data.totalPageViews} />
-					<StatCard label="Unique visitors" value={data.uniqueVisitors} />
-					<StatCard label="Downloads" value={data.totalDownloads} />
-					<StatCard label="Shares & copies" value={data.totalShares} />
+				<SectionHeader
+					label="Limits"
+					title="Credits and capacity"
+					description="Cloudflare free-neuron usage sits beside the app credit pool and rate-limit pressure."
+				/>
+				<div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
+					<CloudflareUsagePanel credits={data.workersAiCredits} />
+					<CreditUsagePanel overview={data.creditOverview} />
+					<Panel className="space-y-5">
+						<div>
+							<p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+								Pressure
+							</p>
+							<h3 className="mt-2 font-stamp text-2xl font-semibold text-stone-950">
+								Rate buckets
+							</h3>
+						</div>
+						<div className="grid grid-cols-2 gap-4">
+							<MetricBlock
+								label="Active"
+								value={data.rateLimitOverview.totalRows}
+								detail="tracked buckets"
+							/>
+							<MetricBlock
+								label="Track max"
+								value={data.rateLimitOverview.maxTrackEventCount}
+								detail="events in one bucket"
+							/>
+						</div>
+						<p className="border-t border-stone-200 pt-4 text-xs leading-5 text-stone-500">
+							Daily app credits used: {creditUsagePercent} of{" "}
+							{data.creditOverview.totalDailyLimit.toLocaleString()}.
+						</p>
+					</Panel>
 				</div>
 			</section>
 
 			<section>
-				<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-					Generation quality
-				</h2>
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-					<StatCard
-						label="Avg generation"
-						value={formatDuration(data.generationPerformance.averageMs)}
-						detail={`Max ${formatDuration(data.generationPerformance.maxMs)}`}
-					/>
-					<StatCard
-						label="Avg prompt length"
-						value={data.generationPerformance.averagePromptLength}
-					/>
-					<StatCard
-						label="HD generations"
-						value={data.generationPerformance.hdGenerations}
-						detail={formatPercent(
-							data.generationPerformance.hdGenerations,
-							data.generationPerformance.generations,
-						)}
-					/>
-					<StatCard
-						label="Reference images"
-						value={data.generationPerformance.referenceGenerations}
-						detail={formatPercent(
-							data.generationPerformance.referenceGenerations,
-							data.generationPerformance.generations,
-						)}
-					/>
+				<SectionHeader
+					label="Trends"
+					title="Growth and activity"
+					description="Daily generation, engagement, and credit activity over the recent reporting window."
+				/>
+				<div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+					<div className="xl:col-span-1">
+						<MetricTrendChart
+							title={`Generations per day (last ${DASHBOARD.DAILY_TREND_DAYS} days)`}
+							data={data.dailyTrend}
+							metrics={[
+								{ key: "count", label: "Stamps", className: "bg-stone-800" },
+							]}
+							valueFor={(item, key) => (key === "count" ? item.count : 0)}
+						/>
+					</div>
+					<div className="xl:col-span-2">
+						<MetricTrendChart
+							title="Events per day"
+							data={data.eventTrend}
+							metrics={[
+								{
+									key: "pageViews",
+									label: "Views",
+									className: "bg-stone-800",
+								},
+								{
+									key: "generations",
+									label: "Generations",
+									className: "bg-emerald-700",
+								},
+								{
+									key: "downloads",
+									label: "Downloads",
+									className: "bg-sky-700",
+								},
+								{ key: "shares", label: "Shares", className: "bg-amber-700" },
+							]}
+							valueFor={(item, key) =>
+								item[key as keyof EventTrendDay] as number
+							}
+						/>
+					</div>
+					<div className="xl:col-span-3">
+						<MetricTrendChart
+							title="Credit transactions per day"
+							data={data.creditTransactionTrend}
+							metrics={[
+								{
+									key: "count",
+									label: "Transactions",
+									className: "bg-stone-800",
+								},
+								{
+									key: "totalAmount",
+									label: "Credits",
+									className: "bg-emerald-700",
+								},
+							]}
+							valueFor={(item, key) =>
+								key === "totalAmount" ? Math.abs(item.totalAmount) : item.count
+							}
+						/>
+					</div>
 				</div>
 			</section>
 
 			<section>
-				<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-					Credits & limits
-				</h2>
-				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-					<StatCard
-						label="CF AI free left"
-						value={workersAiValue}
-						detail={
-							data.workersAiCredits.status === "ok"
-								? `${workersAiDetail}, ${formatWorkersAiReset(data.workersAiCredits.resetAt)}`
-								: workersAiDetail
-						}
+				<SectionHeader
+					label="Composition"
+					title="Generation mix"
+					description="How the collection is being produced, owned, and shared."
+				/>
+				<div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+					<MiniDistribution
+						title="Stamp visibility"
+						items={[
+							{
+								label: "Public",
+								value: data.stampVisibility.public,
+								color: "bg-stone-900",
+							},
+							{
+								label: "Private",
+								value: data.stampVisibility.private,
+								color: "bg-stone-400",
+							},
+						]}
 					/>
-					<StatCard
-						label="Credit users"
-						value={data.creditOverview.users}
-						detail={`${data.creditOverview.usersWithPurchasedCredits.toLocaleString()} with purchased credits`}
+					<MiniDistribution
+						title="Generation inputs"
+						items={[
+							{
+								label: "Reference image",
+								value: data.stampInputs.withReference,
+								color: "bg-sky-800",
+							},
+							{
+								label: "Text only",
+								value: data.stampInputs.withoutReference,
+								color: "bg-stone-500",
+							},
+							{
+								label: "With location",
+								value: data.stampInputs.withLocation,
+								color: "bg-emerald-800",
+							},
+						]}
 					/>
-					<StatCard
-						label="Daily credits used"
-						value={data.creditOverview.totalDailyUsed}
-						detail={`${creditUsagePercent} of ${data.creditOverview.totalDailyLimit.toLocaleString()}`}
-					/>
-					<StatCard
-						label="Active limit buckets"
-						value={data.rateLimitOverview.totalRows}
-						detail={`Track max ${data.rateLimitOverview.maxTrackEventCount.toLocaleString()}`}
+					<MiniDistribution
+						title="Ownership"
+						items={[
+							{
+								label: "Authenticated",
+								value: data.ownership.authenticated,
+								color: "bg-stone-900",
+							},
+							{
+								label: "Anonymous",
+								value: data.ownership.anonymous,
+								color: "bg-amber-700",
+							},
+							{
+								label: "Session owned",
+								value: data.ownership.sessionOwned,
+								color: "bg-stone-400",
+							},
+						]}
 					/>
 				</div>
 			</section>
 
-			{/* World Map */}
 			{data.mapData.length > 0 && (
 				<section>
+					<SectionHeader
+						label="Geography"
+						title="Where stamps are being made"
+						description="Country, city, and timezone activity from Cloudflare request metadata."
+					/>
 					<DashboardMap data={data.mapData} />
 				</section>
 			)}
 
-			{/* Location & Timezone side by side */}
-			<section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 				<div>
-					<h2 className="text-xs font-medium text-stone-600 mb-4 uppercase tracking-wide">
-						Top locations
-					</h2>
+					<SectionHeader label="Location" title="Top places" />
 					<DashboardLocations data={data.locations} />
 				</div>
 				<div>
@@ -345,131 +719,67 @@ function DashboardContent() {
 				</div>
 			</section>
 
-			{/* Style Showcase */}
 			{styleStamps.length > 0 && (
 				<section>
-					<h2 className="text-2xl font-semibold text-stamp-navy mb-6 font-stamp">
-						Style Showcase
-					</h2>
+					<SectionHeader
+						label="Styles"
+						title="Style showcase"
+						description="Top visual styles with one recent public stamp per style."
+					/>
 					<StyleShowcase styles={styleStamps} />
 				</section>
 			)}
 
-			<MetricTrendChart
-				title={`Generations per day (last ${DASHBOARD.DAILY_TREND_DAYS} days)`}
-				data={data.dailyTrend}
-				metrics={[{ key: "count", label: "Stamps", className: "bg-stone-800" }]}
-				valueFor={(item, key) => (key === "count" ? item.count : 0)}
-			/>
-
-			<MetricTrendChart
-				title="Events per day"
-				data={data.eventTrend}
-				metrics={[
-					{ key: "pageViews", label: "Views", className: "bg-stone-800" },
-					{
-						key: "generations",
-						label: "Generations",
-						className: "bg-emerald-700",
-					},
-					{ key: "downloads", label: "Downloads", className: "bg-sky-700" },
-					{ key: "shares", label: "Shares", className: "bg-amber-700" },
-				]}
-				valueFor={(item, key) => item[key as keyof EventTrendDay] as number}
-			/>
-
-			<MetricTrendChart
-				title="Credit transactions per day"
-				data={data.creditTransactionTrend}
-				metrics={[
-					{ key: "count", label: "Transactions", className: "bg-stone-800" },
-					{ key: "totalAmount", label: "Credits", className: "bg-emerald-700" },
-				]}
-				valueFor={(item, key) =>
-					key === "totalAmount" ? Math.abs(item.totalAmount) : item.count
-				}
-			/>
-
-			<section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<HorizontalBarChart
-					title="Visibility"
-					items={[
-						{ label: "Public", count: data.stampVisibility.public },
-						{ label: "Private", count: data.stampVisibility.private },
-					]}
+			<section>
+				<SectionHeader
+					label="Traffic"
+					title="Acquisition and behavior"
+					description="The lower console keeps operational lists dense but readable."
 				/>
-				<HorizontalBarChart
-					title="Ownership"
-					items={[
-						{ label: "Authenticated", count: data.ownership.authenticated },
-						{ label: "Anonymous", count: data.ownership.anonymous },
-						{ label: "Session owned", count: data.ownership.sessionOwned },
-						{ label: "Distinct users", count: data.ownership.distinctUsers },
-					]}
-					labelWidth="w-32"
-				/>
+				<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+					<HorizontalBarChart
+						title="Popular styles"
+						items={data.popularStyles.map((s) => ({
+							label: s.style,
+							count: s.count,
+						}))}
+					/>
+					<HorizontalBarChart
+						title="Event breakdown"
+						items={data.eventBreakdown.map((e) => ({
+							label: e.event,
+							count: e.count,
+						}))}
+						labelWidth="w-24"
+						formatLabel={(v) => v.replace(/_/g, " ")}
+					/>
+					<HorizontalBarChart
+						title="Top pages"
+						items={data.pageViewBreakdown.map((p) => ({
+							label: p.path,
+							count: p.count,
+						}))}
+						labelWidth="w-32"
+					/>
+					<HorizontalBarChart
+						title="Referrers"
+						items={data.referrerBreakdown}
+						labelWidth="w-32"
+					/>
+					<HorizontalBarChart
+						title="Browsers"
+						items={data.userAgentBreakdown}
+						labelWidth="w-28"
+					/>
+					<HorizontalBarChart
+						title="Rate-limit pressure"
+						items={data.rateLimitPressure}
+						labelWidth="w-40"
+					/>
+				</div>
 			</section>
 
-			<section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<HorizontalBarChart
-					title="Stamp inputs"
-					items={[
-						{ label: "Reference", count: data.stampInputs.withReference },
-						{ label: "No reference", count: data.stampInputs.withoutReference },
-						{ label: "Description", count: data.stampInputs.withDescription },
-						{ label: "Location", count: data.stampInputs.withLocation },
-					]}
-					labelWidth="w-32"
-				/>
-				<HorizontalBarChart
-					title="Browsers"
-					items={data.userAgentBreakdown}
-					labelWidth="w-28"
-				/>
-			</section>
-
-			{/* Detailed Charts Grid */}
-			<section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<HorizontalBarChart
-					title="Popular styles"
-					items={data.popularStyles.map((s) => ({
-						label: s.style,
-						count: s.count,
-					}))}
-				/>
-				<HorizontalBarChart
-					title="Event breakdown"
-					items={data.eventBreakdown.map((e) => ({
-						label: e.event,
-						count: e.count,
-					}))}
-					labelWidth="w-24"
-					formatLabel={(v) => v.replace(/_/g, " ")}
-				/>
-			</section>
-
-			<section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<HorizontalBarChart
-					title="Top pages"
-					items={data.pageViewBreakdown.map((p) => ({
-						label: p.path,
-						count: p.count,
-					}))}
-					labelWidth="w-32"
-				/>
-				<HorizontalBarChart
-					title="Referrers"
-					items={data.referrerBreakdown}
-					labelWidth="w-32"
-				/>
-			</section>
-
-			<section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<HorizontalBarChart
-					title="Rate-limit pressure"
-					items={data.rateLimitPressure}
-					labelWidth="w-40"
-				/>
+			<section>
 				<MetricTable
 					title="Credit transactions"
 					items={data.creditTransactionBreakdown}
@@ -499,17 +809,6 @@ function DashboardContent() {
 			{data.popularStyles.length === 0 && data.dailyTrend.length === 0 && (
 				<div className="text-center py-20">
 					<div className="max-w-md mx-auto">
-						{/* Empty state illustration */}
-						<div className="mb-6 relative inline-block">
-							<div className="w-20 h-20 mx-auto relative opacity-30">
-								<div className="absolute inset-0 border-4 border-dashed border-stone-300 rounded-lg transform rotate-3" />
-								<div className="absolute inset-2 bg-stone-100 rounded flex items-center justify-center">
-									<span className="text-3xl" role="img" aria-label="Empty">
-										📊
-									</span>
-								</div>
-							</div>
-						</div>
 						<p className="text-stone-700 mb-2 text-base font-medium">
 							No analytics yet
 						</p>
@@ -538,9 +837,9 @@ export const DashboardContentMemo = memo(function DashboardContentMemo() {
 
 export function RecentStampsSection() {
 	return (
-		<section className="py-12">
-			<div className="flex items-baseline justify-between mb-8">
-				<h2 className="text-2xl font-semibold text-stamp-navy font-stamp">
+		<section className="py-14">
+			<div className="mb-8 flex items-baseline justify-between border-t border-stone-300 pt-8">
+				<h2 className="font-stamp text-3xl font-semibold text-stamp-navy">
 					Recent Stamps
 				</h2>
 				<Link
