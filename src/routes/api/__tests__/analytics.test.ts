@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createGetRequest, createMockRateLimitPrepare } from "@/test-utils";
 
 vi.mock("@/lib/clerk", () => ({
-	getAuthUserId: vi.fn(),
+	getAuthUserIdentity: vi.fn(),
 }));
 
 vi.mock("@/db", () => ({
@@ -20,7 +20,7 @@ vi.mock("@/lib/rate-limit", () => ({
 }));
 
 import { getDb } from "@/db";
-import { getAuthUserId } from "@/lib/clerk";
+import { getAuthUserIdentity } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 
 let GET: typeof import("../analytics")["GET"];
@@ -41,7 +41,10 @@ describe("GET /api/analytics", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		vi.mocked(getAuthUserId).mockResolvedValue({ userId: "user_admin" });
+		vi.mocked(getAuthUserIdentity).mockResolvedValue({
+			email: "admin@example.com",
+			userId: "user_admin",
+		});
 		vi.mocked(getEnv).mockReturnValue({
 			ADMIN_USER_IDS: "user_admin,user_other",
 		} as never);
@@ -53,7 +56,10 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns 401 when not authenticated", async () => {
-		vi.mocked(getAuthUserId).mockResolvedValue({ userId: null });
+		vi.mocked(getAuthUserIdentity).mockResolvedValue({
+			email: null,
+			userId: null,
+		});
 
 		const res = await GET(request);
 		const data = (await res.json()) as AnalyticsResponse;
@@ -63,7 +69,10 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("returns 403 for non-admin users", async () => {
-		vi.mocked(getAuthUserId).mockResolvedValue({ userId: "user_regular" });
+		vi.mocked(getAuthUserIdentity).mockResolvedValue({
+			email: "regular@example.com",
+			userId: "user_regular",
+		});
 
 		const res = await GET(request);
 		const data = (await res.json()) as AnalyticsResponse;

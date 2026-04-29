@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createGetRequest } from "@/test-utils";
 
 vi.mock("@/lib/clerk", () => ({
-	getAuthUserId: vi.fn(),
+	getAuthUserIdentity: vi.fn(),
 }));
 
 vi.mock("@/db", () => ({
@@ -14,7 +14,7 @@ vi.mock("@/lib/env", () => ({
 }));
 
 import { getDb } from "@/db";
-import { getAuthUserId } from "@/lib/clerk";
+import { getAuthUserIdentity } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 
 let GET: typeof import("../analytics")["GET"];
@@ -24,7 +24,10 @@ describe("Analytics rate limiting (checkAnalyticsRateLimit)", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		vi.mocked(getAuthUserId).mockResolvedValue({ userId: "user_admin" });
+		vi.mocked(getAuthUserIdentity).mockResolvedValue({
+			email: "admin@example.com",
+			userId: "user_admin",
+		});
 		vi.mocked(getEnv).mockReturnValue({
 			ADMIN_USER_IDS: "user_admin",
 		} as never);

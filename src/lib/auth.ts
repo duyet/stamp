@@ -5,23 +5,32 @@
 import { getEnv } from "@/lib/env";
 
 /**
- * Check if a user is an admin. Fail-closed: if no admin list is configured,
- * no one is admin. Uses ADMIN_USER_IDS env var (comma-separated Clerk user IDs).
+ * Check if a user is an admin. Fail-closed: if no admin allowlist is configured,
+ * no one is admin. Uses ADMIN_USER_IDS and ADMIN_EMAILS env vars.
  */
-export function isAdmin(userId: string): boolean {
+export function isAdmin(userId: string, email?: string | null): boolean {
 	const env = getEnv();
-	const raw = (env.ADMIN_USER_IDS as string | undefined) ?? "";
-	const adminIds = raw
+	const rawUserIds = (env.ADMIN_USER_IDS as string | undefined) ?? "";
+	const rawEmails = (env.ADMIN_EMAILS as string | undefined) ?? "";
+	const adminIds = rawUserIds
 		.split(",")
 		.map((s) => s.trim())
 		.filter(Boolean);
+	const adminEmails = rawEmails
+		.split(",")
+		.map((s) => s.trim().toLowerCase())
+		.filter(Boolean);
 
-	// Fail-closed: no admin list configured = no admins
-	if (adminIds.length === 0) {
+	// Fail-closed: no admin allowlist configured = no admins
+	if (adminIds.length === 0 && adminEmails.length === 0) {
 		return false;
 	}
 
-	return adminIds.includes(userId);
+	const normalizedEmail = email?.trim().toLowerCase();
+	return (
+		(userId.length > 0 && adminIds.includes(userId)) ||
+		(!!normalizedEmail && adminEmails.includes(normalizedEmail))
+	);
 }
 
 /**

@@ -12,13 +12,16 @@ describe("isAdmin", () => {
 		vi.clearAllMocks();
 	});
 
-	it("returns false when ADMIN_USER_IDS is not configured (fail-closed)", () => {
+	it("returns false when admin allowlists are not configured (fail-closed)", () => {
 		vi.mocked(getEnv).mockReturnValue({} as never);
 		expect(isAdmin("user_123")).toBe(false);
 	});
 
-	it("returns false when ADMIN_USER_IDS is empty string (fail-closed)", () => {
-		vi.mocked(getEnv).mockReturnValue({ ADMIN_USER_IDS: "" } as never);
+	it("returns false when admin allowlists are empty strings (fail-closed)", () => {
+		vi.mocked(getEnv).mockReturnValue({
+			ADMIN_EMAILS: "",
+			ADMIN_USER_IDS: "",
+		} as never);
 		expect(isAdmin("user_123")).toBe(false);
 	});
 
@@ -59,6 +62,27 @@ describe("isAdmin", () => {
 		expect(isAdmin("user_abc")).toBe(true);
 		expect(isAdmin("user_xyz")).toBe(true);
 		expect(isAdmin(" user_abc ")).toBe(false);
+	});
+
+	it("returns true for a user email in the admin email list", () => {
+		vi.mocked(getEnv).mockReturnValue({
+			ADMIN_EMAILS: "admin@example.com, lvduit08@gmail.com",
+		} as never);
+		expect(isAdmin("user_regular", "lvduit08@gmail.com")).toBe(true);
+	});
+
+	it("matches admin emails case-insensitively", () => {
+		vi.mocked(getEnv).mockReturnValue({
+			ADMIN_EMAILS: "LVduIt08@GMAIL.com",
+		} as never);
+		expect(isAdmin("user_regular", " lvduit08@gmail.com ")).toBe(true);
+	});
+
+	it("returns false for a user email not in the admin email list", () => {
+		vi.mocked(getEnv).mockReturnValue({
+			ADMIN_EMAILS: "admin@example.com",
+		} as never);
+		expect(isAdmin("user_regular", "lvduit08@gmail.com")).toBe(false);
 	});
 });
 

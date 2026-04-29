@@ -4,7 +4,7 @@ import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { jsonResponse } from "@/lib/api-utils";
 import { isAdmin } from "@/lib/auth";
-import { getAuthUserId } from "@/lib/clerk";
+import { getAuthUserIdentity } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { describeStamp } from "@/lib/generate-stamp";
 import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
@@ -21,13 +21,13 @@ export async function POST(_request: Request): Promise<Response> {
 		const db = getDb();
 
 		// Require authentication
-		const { userId } = await getAuthUserId();
+		const { userId, email } = await getAuthUserIdentity();
 		if (!userId) {
 			return jsonResponse({ error: "Unauthorized" }, 401);
 		}
 
 		// Fail-closed admin check: no admin list configured = 403
-		if (!isAdmin(userId)) {
+		if (!isAdmin(userId, email)) {
 			return jsonResponse({ error: "Forbidden" }, 403);
 		}
 

@@ -8,7 +8,7 @@
 		"dev:cf": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		"deploy": "bash -lc 'set -a; for f in .env .env.local .env.production .env.production.local; do [ -f \"$f\" ] && source \"$f\"; done; set +a; vite build && wrangler deploy \"$@\"' --",
+		"deploy": "bash -lc 'set -a; for f in .env .env.local .env.production .env.production.local; do [ -f \"$f\" ] && source \"$f\"; done; set +a; ./scripts/sync-worker-secrets.sh && vite build && wrangler deploy \"$@\"' --",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"fmt": "biome format --write .",

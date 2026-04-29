@@ -5,7 +5,7 @@ import type { Database } from "@/db";
 import { getDb } from "@/db";
 import { jsonResponse } from "@/lib/api-utils";
 import { isAdmin } from "@/lib/auth";
-import { getAuthUserId } from "@/lib/clerk";
+import { getAuthUserIdentity } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
 import { hashIp } from "@/lib/hash-ip";
@@ -347,7 +347,7 @@ export async function GET(request: Request): Promise<Response> {
 	const env = getEnv();
 	const db = getDb();
 
-	const { userId } = await getAuthUserId();
+	const { userId, email } = await getAuthUserIdentity();
 	const rawIp = getClientIp(request.headers);
 	const userIp = rawIp ? await hashIp(rawIp) : "anonymous";
 
@@ -357,7 +357,7 @@ export async function GET(request: Request): Promise<Response> {
 	}
 
 	// Fail-closed admin check: no admin list configured = 403
-	if (!isAdmin(userId)) {
+	if (!isAdmin(userId, email)) {
 		return jsonResponse({ error: "Forbidden" }, 403);
 	}
 
