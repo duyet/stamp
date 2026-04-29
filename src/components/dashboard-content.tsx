@@ -20,6 +20,7 @@ import type {
 	MapData,
 	RateLimitOverview,
 	TimezoneStats,
+	WorkersAiCredits,
 } from "@/types/analytics";
 
 interface StyleCount {
@@ -99,6 +100,7 @@ interface Analytics {
 	creditTransactionTrend: CreditTransactionTrendDay[];
 	rateLimitOverview: RateLimitOverview;
 	rateLimitPressure: CountItem[];
+	workersAiCredits: WorkersAiCredits;
 }
 
 function formatDuration(ms: number): string {
@@ -110,6 +112,16 @@ function formatDuration(ms: number): string {
 function formatPercent(value: number, total: number): string {
 	if (total <= 0) return "0%";
 	return `${Math.round((value / total) * 100)}%`;
+}
+
+function formatWorkersAiReset(resetAt: string): string {
+	const date = new Date(resetAt);
+	if (Number.isNaN(date.getTime())) return "resets 00:00 UTC";
+	return `resets ${date.toLocaleTimeString([], {
+		hour: "2-digit",
+		minute: "2-digit",
+		timeZoneName: "short",
+	})}`;
 }
 
 function DashboardContent() {
@@ -211,6 +223,16 @@ function DashboardContent() {
 		data.creditOverview.totalDailyUsed,
 		data.creditOverview.totalDailyLimit,
 	);
+	const workersAiDetail =
+		data.workersAiCredits.status === "ok"
+			? `${data.workersAiCredits.usedNeuronsToday.toLocaleString()} used of ${data.workersAiCredits.dailyFreeNeurons.toLocaleString()} today`
+			: data.workersAiCredits.status === "unconfigured"
+				? "Cloudflare token not configured"
+				: "Cloudflare usage unavailable";
+	const workersAiValue =
+		data.workersAiCredits.status === "ok"
+			? data.workersAiCredits.remainingNeuronsToday
+			: "Unavailable";
 
 	return (
 		<div className="space-y-12">
@@ -277,6 +299,15 @@ function DashboardContent() {
 				</h2>
 				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 					<StatCard
+						label="CF AI free left"
+						value={workersAiValue}
+						detail={
+							data.workersAiCredits.status === "ok"
+								? `${workersAiDetail}, ${formatWorkersAiReset(data.workersAiCredits.resetAt)}`
+								: workersAiDetail
+						}
+					/>
+					<StatCard
 						label="Credit users"
 						value={data.creditOverview.users}
 						detail={`${data.creditOverview.usersWithPurchasedCredits.toLocaleString()} with purchased credits`}
@@ -285,10 +316,6 @@ function DashboardContent() {
 						label="Daily credits used"
 						value={data.creditOverview.totalDailyUsed}
 						detail={`${creditUsagePercent} of ${data.creditOverview.totalDailyLimit.toLocaleString()}`}
-					/>
-					<StatCard
-						label="Purchased credits"
-						value={data.creditOverview.purchasedCredits}
 					/>
 					<StatCard
 						label="Active limit buckets"

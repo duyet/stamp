@@ -21,6 +21,8 @@ type RawRow = Record<string, unknown>;
 const UNKNOWN_LABEL = "Unknown";
 const MAX_REFERRER_GROUPS = 50;
 const MAX_USER_AGENT_GROUPS = 100;
+const WORKERS_AI_FREE_NEURONS_PER_DAY = 10_000;
+const DEFAULT_CLOUDFLARE_ACCOUNT_ID = "23050adb6c92e313643a29e1ba64c88a";
 
 function toNumber(value: unknown): number {
 	if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -147,6 +149,131 @@ function buildCreditTrend(
 		totalAmount: toNumber(row.total_amount),
 	}));
 }
+
+function nextUtcMidnight(now = new Date()): string {
+	return new Date(
+		Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
+	).toISOString();
+}
+
+async function getWorkersAiCredits(env: CloudflareEnv): Promise<{
+	status: "ok" | "unconfigured" | "unavailable";
+	dailyFreeNeurons: number;
+	usedNeuronsToday: number;
+	remainingNeuronsToday: number;
+	requestsToday: number;
+	resetAt: string;
+}> {
+	const token = env.CLOUDFLARE_API_TOKEN?.trim();
+	const accountId =
+		env.CLOUDFLARE_ACCOUNT_ID?.trim() || DEFAULT_CLOUDFLARE_ACCOUNT_ID;
+	const resetAt = nextUtcMidnight();
+
+	if (!token || !accountId) {
+		return {
+			status: "unconfigured",
+			dailyFreeNeurons: WORKERS_AI_FREE_NEURONS_PER_DAY,
+			usedNeuronsToday: 0,
+			remainingNeuronsToday: WORKERS_AI_FREE_NEURONS_PER_DAY,
+			requestsToday: 0,
+			resetAt,
+		};
+	}
+
+	const now = new Date();
+	const start = new Date(
+		Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+	).toISOString();
+
+	const query = `
+		query WorkersAiUsage($accountTag: string!, $start: Time!) {
+			viewer {
+				accounts(filter: { accountTag: $accountTag }) {
+					aiInferenceAdaptiveGroups(limit: 1, filter: { datetime_geq: $start }) {
+						count
+						sum {
+							totalNeurons
+						}
+					}
+				}
+			}
+		}
+	`;
+
+	try {
+		const response = await fetch(
+			"https://api.cloudflare.com/client/v4/graphql",
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					query,
+					variables: { accountTag: accountId, start },
+				}),
+			},
+		);
+
+		if (!response.ok) {
+			console.warn(
+				"[Analytics] Workers AI usage query failed:",
+				response.status,
+			);
+			throw new Error("Cloudflare GraphQL request failed");
+		}
+
+		const body = (await response.json()) as {
+			data?: {
+				viewer?: {
+					accounts?: Array<{
+						aiInferenceAdaptiveGroups?: Array<{
+							count?: number;
+							sum?: { totalNeurons?: number };
+						}>;
+					}>;
+				};
+			};
+			errors?: unknown[];
+		};
+
+		if (body.errors?.length) {
+			console.warn("[Analytics] Workers AI usage query errors:", body.errors);
+			throw new Error("Cloudflare GraphQL returned errors");
+		}
+
+		const group =
+			body.data?.viewer?.accounts?.[0]?.aiInferenceAdaptiveGroups?.[0];
+		const usedNeuronsToday = Math.max(
+			0,
+			Math.round(toNumber(group?.sum?.totalNeurons)),
+		);
+		const requestsToday = Math.max(0, Math.round(toNumber(group?.count)));
+
+		return {
+			status: "ok",
+			dailyFreeNeurons: WORKERS_AI_FREE_NEURONS_PER_DAY,
+			usedNeuronsToday,
+			remainingNeuronsToday: Math.max(
+				0,
+				WORKERS_AI_FREE_NEURONS_PER_DAY - usedNeuronsToday,
+			),
+			requestsToday,
+			resetAt,
+		};
+	} catch (error) {
+		console.warn("[Analytics] Failed to load Workers AI usage:", error);
+		return {
+			status: "unavailable",
+			dailyFreeNeurons: WORKERS_AI_FREE_NEURONS_PER_DAY,
+			usedNeuronsToday: 0,
+			remainingNeuronsToday: WORKERS_AI_FREE_NEURONS_PER_DAY,
+			requestsToday: 0,
+			resetAt,
+		};
+	}
+}
 /**
  * Fetch pre-aggregated daily stats for performance optimization.
  * Returns data from daily_stats table if available, falling back to raw queries.
@@ -217,7 +344,7 @@ const WEEK_DAYS = 7;
 const MONTH_DAYS = 30;
 
 export async function GET(request: Request): Promise<Response> {
-	const _env = getEnv();
+	const env = getEnv();
 	const db = getDb();
 
 	const { userId } = await getAuthUserId();
@@ -257,6 +384,7 @@ export async function GET(request: Request): Promise<Response> {
 		const thirtyDaysAgo = nowSec - MONTH_DAYS * SECONDS_PER_DAY;
 		const todayStartMs = todayStart * 1000;
 		const thirtyDaysAgoMs = thirtyDaysAgo * 1000;
+		const workersAiCreditsPromise = getWorkersAiCredits(env);
 
 		// Try pre-aggregated daily_stats first (performance optimization: 8 queries → 1 query)
 		const dailyStatsData = await getDailyStats(db, 30);
@@ -375,6 +503,7 @@ export async function GET(request: Request): Promise<Response> {
 			creditTransactionBreakdownResult,
 			creditTransactionTrendRows,
 			rateLimitOverviewRows,
+			workersAiCredits,
 		] = await Promise.all([
 			db.all(sql`
 				SELECT style, count(*) as count
@@ -550,6 +679,7 @@ export async function GET(request: Request): Promise<Response> {
 				FROM track_rate_limits
 				WHERE window_start >= ${nowMs - 60 * 1000}
 			`),
+			workersAiCreditsPromise,
 		]);
 
 		const totalWithLocation = locationCountryResult.reduce<number>(
@@ -735,6 +865,7 @@ export async function GET(request: Request): Promise<Response> {
 					totalTrackEventCount: toNumber(trackingLimits.total_count),
 				},
 				rateLimitPressure,
+				workersAiCredits,
 			},
 			200,
 			{

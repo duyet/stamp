@@ -71,3 +71,12 @@ export interface RateLimitOverview {
 	totalAnalyticsCount: number;
 	totalTrackEventCount: number;
 }
+
+export interface WorkersAiCredits {
+	status: "ok" | "unconfigured" | "unavailable";
+	dailyFreeNeurons: number;
+	usedNeuronsToday: number;
+	remainingNeuronsToday: number;
+	requestsToday: number;
+	resetAt: string;
+}

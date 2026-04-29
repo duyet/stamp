@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createGetRequest, createMockRateLimitPrepare } from "@/test-utils";
 
 vi.mock("@/lib/clerk", () => ({
@@ -46,6 +46,10 @@ describe("GET /api/analytics", () => {
 			ADMIN_USER_IDS: "user_admin,user_other",
 		} as never);
 		GET = (await import("../analytics")).GET;
+	});
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
 	});
 
 	it("returns 401 when not authenticated", async () => {
@@ -248,9 +252,69 @@ describe("GET /api/analytics", () => {
 			totalRows: 8,
 			maxTrackEventCount: 60,
 		});
+		expect(data.workersAiCredits).toMatchObject({
+			status: "unconfigured",
+			dailyFreeNeurons: 10_000,
+			remainingNeuronsToday: 10_000,
+		});
 		expect(JSON.stringify(data)).not.toContain("user_admin");
 		expect(JSON.stringify(data)).not.toContain("1.2.3.4");
 		expect(JSON.stringify(data)).not.toContain("search?q=stamp");
+	});
+
+	it("includes remaining Cloudflare Workers AI free neurons when configured", async () => {
+		vi.mocked(getEnv).mockReturnValue({
+			ADMIN_USER_IDS: "user_admin",
+			CLOUDFLARE_ACCOUNT_ID: "account_123",
+			CLOUDFLARE_API_TOKEN: "cf_token_secret",
+		} as never);
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: vi.fn().mockResolvedValue({
+				data: {
+					viewer: {
+						accounts: [
+							{
+								aiInferenceAdaptiveGroups: [
+									{
+										count: 12,
+										sum: { totalNeurons: 7523.6 },
+									},
+								],
+							},
+						],
+					},
+				},
+			}),
+		});
+		vi.stubGlobal("fetch", fetchMock);
+
+		vi.mocked(getDb).mockReturnValue({
+			$client: { prepare: createMockRateLimitPrepare() },
+			all: vi.fn().mockResolvedValue([]),
+		} as never);
+
+		const res = await GET(request);
+		const data = (await res.json()) as AnalyticsResponse;
+
+		expect(res.status).toBe(200);
+		expect(fetchMock).toHaveBeenCalledWith(
+			"https://api.cloudflare.com/client/v4/graphql",
+			expect.objectContaining({
+				method: "POST",
+				headers: expect.objectContaining({
+					Authorization: "Bearer cf_token_secret",
+				}),
+			}),
+		);
+		expect(data.workersAiCredits).toMatchObject({
+			status: "ok",
+			dailyFreeNeurons: 10_000,
+			usedNeuronsToday: 7524,
+			remainingNeuronsToday: 2476,
+			requestsToday: 12,
+		});
+		expect(JSON.stringify(data)).not.toContain("cf_token_secret");
 	});
 
 	it("uses daily_stats for overview and trend data when available", async () => {
@@ -339,6 +403,10 @@ describe("GET /api/analytics", () => {
 		expect(data.rateLimitOverview).toMatchObject({
 			totalRows: 0,
 			maxTrackEventCount: 0,
+		});
+		expect(data.workersAiCredits).toMatchObject({
+			status: "unconfigured",
+			remainingNeuronsToday: 10_000,
 		});
 	});
 
