@@ -1,6 +1,7 @@
 import { useAuth } from "@clerk/tanstack-react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { CREDITS_CHANGED_EVENT } from "@/components/credit-balance";
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
 import { CREDITS_CHANGED_EVENT } from "@/lib/credit-events";

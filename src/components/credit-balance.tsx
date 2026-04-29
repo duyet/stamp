@@ -30,14 +30,9 @@ export function CreditBalance() {
 			return;
 		}
 
-		let activeController: AbortController | null = null;
-		let disposed = false;
+		const controller = new AbortController();
 
 		async function loadCredits() {
-			activeController?.abort();
-			const controller = new AbortController();
-			activeController = controller;
-
 			try {
 				const response = await fetch("/api/credits", {
 					cache: "no-store",
@@ -50,26 +45,19 @@ export function CreditBalance() {
 				if (!isCreditInfo(data)) {
 					throw new Error("Invalid credit response");
 				}
-				if (disposed || activeController !== controller) return;
 				setCredits(data);
 				setError(false);
 			} catch (err) {
 				if (err instanceof DOMException && err.name === "AbortError") return;
-				if (disposed || activeController !== controller) return;
 				setError(true);
-			} finally {
-				if (activeController === controller) {
-					activeController = null;
-				}
 			}
 		}
 
-		window.addEventListener(CREDITS_CHANGED_EVENT, loadCredits);
 		loadCredits();
+		window.addEventListener(CREDITS_CHANGED_EVENT, loadCredits);
 
 		return () => {
-			disposed = true;
-			activeController?.abort();
+			controller.abort();
 			window.removeEventListener(CREDITS_CHANGED_EVENT, loadCredits);
 		};
 	}, [isSignedIn]);
