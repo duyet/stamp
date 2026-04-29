@@ -8,18 +8,22 @@ interface StatCardProps {
 	/** Label describing the statistic */
 	label: string;
 	/** Numeric value to display */
-	value: number;
+	value: number | string;
+	/** Optional smaller context line below the value */
+	detail?: string;
 }
 
-export function StatCard({ label, value }: StatCardProps) {
+export function StatCard({ label, value, detail }: StatCardProps) {
+	const displayValue =
+		typeof value === "number" ? value.toLocaleString() : value;
+
 	return (
 		<div className="bg-white rounded-xl p-5 border border-stone-200">
 			<p className="text-xs text-stone-600 uppercase tracking-wide mb-2">
 				{label}
 			</p>
-			<p className="text-3xl font-bold text-stone-900">
-				{value.toLocaleString()}
-			</p>
+			<p className="text-3xl font-bold text-stone-900">{displayValue}</p>
+			{detail ? <p className="mt-2 text-xs text-stone-500">{detail}</p> : null}
 		</div>
 	);
 }

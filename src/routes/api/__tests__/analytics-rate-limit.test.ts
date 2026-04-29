@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createGetRequest, createSelectChain } from "@/test-utils";
+import { createGetRequest } from "@/test-utils";
 
 vi.mock("@/lib/clerk", () => ({
 	getAuthUserId: vi.fn(),
@@ -102,9 +102,9 @@ describe("Analytics rate limiting (checkAnalyticsRateLimit)", () => {
 	 * Helper: minimal mock for successful analytics response.
 	 */
 	function mockSuccessfulAnalytics(mockPrepare: ReturnType<typeof vi.fn>) {
-		const mockSelect = vi.fn().mockReturnValue(createSelectChain([]));
 		const mockAll = vi
 			.fn()
+			.mockResolvedValueOnce([])
 			.mockResolvedValueOnce([
 				{
 					total_stamps: 10,
@@ -119,11 +119,12 @@ describe("Analytics rate limiting (checkAnalyticsRateLimit)", () => {
 					total_downloads: 0,
 					total_shares: 0,
 				},
-			]);
+			])
+			.mockResolvedValueOnce([])
+			.mockResolvedValue([]);
 
 		vi.mocked(getDb).mockReturnValue({
 			$client: { prepare: mockPrepare },
-			select: mockSelect,
 			all: mockAll,
 		} as never);
 	}
