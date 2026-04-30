@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ImageUpload } from "@/components/image-upload";
 import { useCopy } from "@/hooks/use-copy";
+import { CREDITS_CHANGED_EVENT } from "@/lib/credit-events";
 import type { StampStyle } from "@/lib/stamp-prompts";
 import { GenerateError } from "./generate/generate-error";
 import { GenerateLoading } from "./generate/generate-loading";
@@ -194,6 +195,7 @@ export function GenerateForm({
 			setReference(null);
 			setReferenceResetToken((value) => value + 1);
 			setResetAt(null); // Clear countdown on success
+			window.dispatchEvent(new Event(CREDITS_CHANGED_EVENT));
 		} catch (err) {
 			setError(
 				err instanceof Error

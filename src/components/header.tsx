@@ -5,6 +5,7 @@ import {
 	UserButton,
 } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
+import { CreditBalance } from "@/components/credit-balance";
 import { getClerkPublishableKey } from "@/lib/clerk-config";
 
 export function Header() {
@@ -52,6 +53,7 @@ export function Header() {
 								</SignInButton>
 							</Show>
 							<Show when="signed-in">
+								<CreditBalance />
 								<UserButton
 									appearance={{
 										elements: {
