@@ -1,13 +1,12 @@
 import { useAuth } from "@clerk/tanstack-react-start";
 import { useEffect, useState } from "react";
+import { CREDITS_CHANGED_EVENT } from "@/lib/credit-events";
 
 interface CreditInfo {
 	dailyRemaining: number;
 	purchasedCredits: number;
 	totalRemaining: number;
 }
-
-export const CREDITS_CHANGED_EVENT = "credits:changed";
 
 function isCreditInfo(value: unknown): value is CreditInfo {
 	if (!value || typeof value !== "object") return false;

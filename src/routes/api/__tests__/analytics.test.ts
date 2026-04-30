@@ -26,6 +26,7 @@ import { getEnv } from "@/lib/env";
 let GET: typeof import("../analytics")["GET"];
 
 type AnalyticsResponse = Record<string, unknown>;
+const FIXED_NOW = new Date("2026-04-29T12:00:00Z");
 
 function mockDbAll(results: unknown[][]) {
 	let call = 0;
@@ -40,6 +41,8 @@ describe("GET /api/analytics", () => {
 	const request = createGetRequest("http://localhost/api/analytics");
 
 	beforeEach(async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(FIXED_NOW);
 		vi.clearAllMocks();
 		vi.mocked(getAuthUserIdentity).mockResolvedValue({
 			email: "admin@example.com",
@@ -52,6 +55,7 @@ describe("GET /api/analytics", () => {
 	});
 
 	afterEach(() => {
+		vi.useRealTimers();
 		vi.unstubAllGlobals();
 	});
 
