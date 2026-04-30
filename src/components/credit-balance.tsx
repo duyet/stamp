@@ -64,8 +64,8 @@ export function CreditBalance() {
 			}
 		}
 
-		loadCredits();
 		window.addEventListener(CREDITS_CHANGED_EVENT, loadCredits);
+		loadCredits();
 
 		return () => {
 			disposed = true;
