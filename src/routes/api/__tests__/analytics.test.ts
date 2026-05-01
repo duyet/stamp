@@ -331,6 +331,9 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("uses daily_stats for overview and trend data when available", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2026-04-29T12:00:00Z"));
+
 		const mockAll = mockDbAll([
 			[
 				{
