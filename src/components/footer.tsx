@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 export function Footer() {
 	return (
 		<footer className="mt-auto px-4 pb-6 pt-2 sm:px-6">
-			<div className="mx-auto max-w-6xl border-t border-stone-200/70 px-2 py-10 text-sm text-stone-600">
+			<div className="mx-auto max-w-7xl border-t border-stone-200/70 px-2 py-10 text-sm text-stone-600">
 				<div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
 					<div className="max-w-md">
 						<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-stone-500">
