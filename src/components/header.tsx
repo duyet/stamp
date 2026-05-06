@@ -6,10 +6,12 @@ import {
 } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
 import { CreditBalance } from "@/components/credit-balance";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { getClerkPublishableKey } from "@/lib/clerk-config";
 
 export function Header() {
 	const clerkPublishableKey = getClerkPublishableKey();
+	const _isAdmin = useIsAdmin();
 
 	return (
 		<header>
