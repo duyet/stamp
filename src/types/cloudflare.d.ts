@@ -14,3 +14,7 @@ interface CloudflareEnv {
 declare namespace Cloudflare {
 	interface Env extends CloudflareEnv {}
 }
+
+interface AiModels {
+	"@cf/qwen/qwen3-4b-fp8": AiModels["@cf/qwen/qwen3-30b-a3b-fp8"];
+}

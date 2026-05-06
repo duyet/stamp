@@ -8,7 +8,7 @@ import type { PublicStamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
 import { useRegenerateStamp } from "@/hooks/use-regenerate-stamp";
 import { formatDateShort } from "@/lib/date-utils";
-import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
+import { normalizeStyle, STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 
 interface StampDetailClientProps {
 	stamp: PublicStamp;
@@ -236,7 +236,7 @@ export function StampDetailClient({
 							to="/generate"
 							search={{
 								prompt: displayStamp.prompt,
-								style: displayStamp.style,
+								style: normalizeStyle(displayStamp.style),
 							}}
 							className="text-sm font-medium text-stone-600 transition-colors hover:text-stone-950"
 						>

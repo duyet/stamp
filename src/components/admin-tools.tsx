@@ -6,6 +6,13 @@ interface ActionState {
 	result: string | null;
 }
 
+type ActionResponse = {
+	updated?: number;
+	total?: number;
+	status?: "ok" | "degraded";
+	error?: string;
+};
+
 export function AdminTools() {
 	const { isSignedIn } = useAuth();
 	const [actions, setActions] = useState<Record<string, ActionState>>({});
@@ -23,19 +30,35 @@ export function AdminTools() {
 		setAction(key, { loading: true, result: null });
 		try {
 			const res = await fetch(url, { method });
-			const data = await res.json();
+			const data = (await res.json()) as ActionResponse;
 			if (res.ok) {
+				if (
+					typeof data.updated === "number" &&
+					typeof data.total === "number"
+				) {
+					setAction(key, {
+						loading: false,
+						result: `Updated ${data.updated}/${data.total} stamps`,
+					});
+					return;
+				}
+
+				if (data.status) {
+					setAction(key, {
+						loading: false,
+						result: `Health: ${data.status}`,
+					});
+					return;
+				}
+
 				setAction(key, {
 					loading: false,
-					result:
-						data.message || data.updated
-							? `Updated ${data.updated}/${data.total} stamps`
-							: "Done",
+					result: "Done",
 				});
 			} else {
 				setAction(key, {
 					loading: false,
-					result: `Error: ${data.error}`,
+					result: `Error: ${data.error ?? "Request failed"}`,
 				});
 			}
 		} catch {
