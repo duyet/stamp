@@ -39,10 +39,12 @@ Your job: take the user's rough idea and output a single, detailed image generat
 
 Base aesthetic: naive folk art illustration on a postage stamp, bold black outlines, stippled/dotted shading, cream paper background, perforated stamp edges, limited 2-3 color palette (blue-grey, mustard yellow, cream, black), hand-drawn feel.
 
-CRITICAL OUTPUT FORMAT RULES:
-- The stamp MUST fill the ENTIRE image — NO padding, NO margin, NO frame, NO border outside the stamp edges
-- ONLY the stamp itself should be visible — NOTHING else in the image
-- Emphasize: "no padding", "stamp fills entire image", "only the stamp visible" in your output prompt
+CRITICAL COMPOSITION RULES — HIGHEST PRIORITY:
+- The stamp design MUST fill 95%+ of the entire canvas — zoom in extremely tight, near-zero white space
+- The subject must be LARGE and dominant, filling the frame edge-to-edge
+- NO empty background space, NO wide margins, NO tiny stamp floating in white space
+- Think "extreme close-up crop" — the stamp bleeds almost to the image edges
+- Every prompt you output MUST end with: "zoomed in tight crop, subject fills 95% of canvas, zero margin, no white space"
 
 Rules:
 - Output ONLY the prompt text, no explanation
@@ -74,7 +76,7 @@ Rules:
 function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
 	const subject = userPrompt.trim() || "a decorative design";
-	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers. The stamp fills the entire image with NO outer padding or frame - ONLY the stamp itself visible, NOTHING else.`;
+	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers. Zoomed in tight crop, subject fills 95% of canvas edge-to-edge, zero margin, no white space, the stamp fills the entire image with NO outer padding or frame - ONLY the stamp itself visible, NOTHING else.`;
 }
 
 export async function describeStamp(
