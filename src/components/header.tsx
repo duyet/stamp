@@ -19,7 +19,7 @@ export function Header() {
 						stamp.builders
 					</span>
 				</Link>
-				<div className="flex items-center gap-2 text-xs sm:gap-4 sm:text-sm">
+				<div className="flex min-w-0 flex-wrap items-center justify-end gap-2 text-xs sm:gap-4 sm:text-sm">
 					<Link
 						to="/collections"
 						className="inline-flex text-stone-600 transition-colors hover:text-stone-950"
