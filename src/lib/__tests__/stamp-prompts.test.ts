@@ -117,7 +117,7 @@ describe("buildStampPrompt", () => {
 
 	it("includes no-padding constraint", () => {
 		const result = buildStampPrompt("test");
-		expect(result).toMatch(/NO outer padding or frame/i);
+		expect(result).toMatch(/NO padding outside stamp edges/i);
 	});
 
 	it("works for all styles", () => {

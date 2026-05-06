@@ -6,7 +6,11 @@
  * cross-hatched textures, perforated edges, cream paper texture.
  */
 
-export const STAMP_BASE_STYLE = `naive folk art illustration on a postage stamp, bold black outlines, stippled dotted shading technique, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, small decorative elements, square format. CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, NO border outside the stamp, ONLY the stamp itself visible, zero margin`;
+const FILL_INSTRUCTION = `CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, ONLY the stamp visible, zero margin`;
+
+const STAMP_COMMON = `cream paper background, perforated serrated stamp edges, square format. ${FILL_INSTRUCTION}`;
+
+export const STAMP_BASE_STYLE = `naive folk art illustration on a postage stamp, bold black outlines, stippled dotted shading technique, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, small decorative elements, square format. ${FILL_INSTRUCTION}`;
 
 export const STAMP_STYLE_PRESETS = {
 	vintage: {
@@ -36,32 +40,41 @@ export const STAMP_STYLE_PRESETS = {
 	},
 	watercolor: {
 		name: "Watercolor",
-		prompt: `watercolor postage stamp illustration, soft pastel color washes, bleeding watercolor edges, wet-on-wet technique, delicate brushwork, muted translucent tones, cream paper background, perforated serrated stamp edges, slightly aged paper texture, loose organic shapes, limited 2-3 color palette, square format. CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, ONLY the stamp visible, zero margin`,
+		prompt: `watercolor postage stamp illustration, soft pastel color washes, bleeding watercolor edges, wet-on-wet technique, delicate brushwork, muted translucent tones, slightly aged paper texture, loose organic shapes, limited 2-3 color palette, ${STAMP_COMMON}`,
 		thumbnail: "/styles/watercolor.jpg",
 	},
 	woodcut: {
 		name: "Woodcut",
-		prompt: `woodcut print postage stamp, bold black and white, carved wood texture, strong parallel hatching lines, medieval woodblock print feel, high contrast, cream paper background, perforated serrated stamp edges, hand-carved feel, dramatic shadows, limited to black ink on cream, square format. CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, ONLY the stamp visible, zero margin`,
+		prompt: `woodcut print postage stamp, bold black and white, carved wood texture, strong parallel hatching lines, medieval woodblock print feel, high contrast, hand-carved feel, dramatic shadows, limited to black ink on cream, ${STAMP_COMMON}`,
 		thumbnail: "/styles/woodcut.jpg",
 	},
 	engraved: {
 		name: "Engraved",
-		prompt: `engraved postage stamp illustration, fine parallel line hatching, classic currency engraving style, detailed stippling and cross-hatching, monochrome steel blue ink on cream paper, perforated serrated stamp edges, formal composition, intricate fine lines, banknote illustration quality, square format. CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, ONLY the stamp visible, zero margin`,
+		prompt: `engraved postage stamp illustration, fine parallel line hatching, classic currency engraving style, detailed stippling and cross-hatching, monochrome steel blue ink on cream paper, formal composition, intricate fine lines, banknote illustration quality, ${STAMP_COMMON}`,
 		thumbnail: "/styles/engraved.jpg",
 	},
 	pixel: {
 		name: "Pixel",
-		prompt: `pixel art postage stamp, 8-bit retro game style, blocky pixel shapes, limited 4-color palette, nostalgic video game aesthetic, crisp pixel edges, cream background, perforated serrated stamp edges, dithering patterns, square format. CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, ONLY the stamp visible, zero margin`,
+		prompt: `pixel art postage stamp, 8-bit retro game style, blocky pixel shapes, limited 4-color palette, nostalgic video game aesthetic, crisp pixel edges, dithering patterns, ${STAMP_COMMON}`,
 		thumbnail: "/styles/pixel.jpg",
 	},
 	risograph: {
 		name: "Risograph",
-		prompt: `risograph print postage stamp, overlapping semi-transparent neon colors, grainy ink texture, slight misregistration between color layers, bold flat graphic shapes, cream paper background, perforated serrated stamp edges, modern print aesthetic, fluorescent pink and blue ink, square format. CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, ONLY the stamp visible, zero margin`,
+		prompt: `risograph print postage stamp, overlapping semi-transparent neon colors, grainy ink texture, slight misregistration between color layers, bold flat graphic shapes, modern print aesthetic, fluorescent pink and blue ink, ${STAMP_COMMON}`,
 		thumbnail: "/styles/risograph.jpg",
 	},
 } as const;
 
 export type StampStyle = keyof typeof STAMP_STYLE_PRESETS;
+
+export function normalizeStyle(
+	style: string | null | undefined,
+	fallback: StampStyle = "vintage",
+): StampStyle {
+	return style && style in STAMP_STYLE_PRESETS
+		? (style as StampStyle)
+		: fallback;
+}
 
 /**
  * Example prompts for the landing page / inspiration.
@@ -85,7 +98,8 @@ export function buildStampPrompt(
 	style: StampStyle = "vintage",
 ): string {
 	const preset = STAMP_STYLE_PRESETS[style];
-	return `${preset.prompt}. Subject: ${userPrompt}. No text, no words, no letters, no numbers on the stamp. The stamp fills the entire image with NO outer padding or frame - ONLY the stamp itself is visible, NOTHING else. Zoom in tight, zero margin, crop to edges.`;
+	const subject = userPrompt.trim() || "a decorative design";
+	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers.`;
 }
 
 export interface PromptGroup {
@@ -297,12 +311,12 @@ function shuffle<T>(arr: T[]): T[] {
  * Get a random subset of prompts for display.
  * Shuffles on each call to provide variety on page reload.
  */
-export function getRandomPrompts(count: number = 12): string[] {
-	return shuffle(ALL_PROMPTS).slice(0, Math.min(count, ALL_PROMPTS.length));
-}
-
 function randomFrom<T>(arr: T[], count: number): T[] {
 	return shuffle(arr).slice(0, Math.min(count, arr.length));
+}
+
+export function getRandomPrompts(count: number = 12): string[] {
+	return randomFrom(ALL_PROMPTS, count);
 }
 
 /**

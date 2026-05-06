@@ -76,7 +76,7 @@ Rules:
 function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
 	const subject = userPrompt.trim() || "a decorative design";
-	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers. Zoomed in tight crop, subject fills 95% of canvas edge-to-edge, zero margin, no white space, the stamp fills the entire image with NO outer padding or frame - ONLY the stamp itself visible, NOTHING else.`;
+	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers.`;
 }
 
 export async function describeStamp(
@@ -102,7 +102,7 @@ Never start with "A stamp of" or mention the style name. Output only the caption
 				},
 				{
 					role: "user",
-					content: `Subject: ${userPrompt || "a reference image"}\nStyle: ${preset.name}`,
+					content: `Subject: ${userPrompt || "a reference image"}\nStyle: ${preset.name}\nGenerated with: ${enhancedPrompt.slice(0, 200)}`,
 				},
 			],
 			max_tokens: 60,

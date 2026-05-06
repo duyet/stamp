@@ -7,13 +7,7 @@ import { isAdmin } from "@/lib/auth";
 import { getAuthUserIdentity } from "@/lib/clerk";
 import { getEnv } from "@/lib/env";
 import { describeStamp } from "@/lib/generate-stamp";
-import { STAMP_STYLE_PRESETS, type StampStyle } from "@/lib/stamp-prompts";
-
-function normalizeStyle(style: string | null): StampStyle {
-	return style && style in STAMP_STYLE_PRESETS
-		? (style as StampStyle)
-		: "vintage";
-}
+import { normalizeStyle } from "@/lib/stamp-prompts";
 
 export async function POST(_request: Request): Promise<Response> {
 	try {
