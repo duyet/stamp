@@ -132,16 +132,36 @@ describe("PATCH /api/stamps/$id/visibility", () => {
 		expect(data.error).toContain("Not authorized");
 	});
 
-	it("allows toggle when IP matches creator (anonymous user)", async () => {
+	it("allows keeping visibility public for anonymous owner", async () => {
+		mockUpdate.mockReturnValue({
+			set: vi.fn().mockReturnValue({
+				where: vi.fn().mockReturnValue({
+					returning: vi
+						.fn()
+						.mockResolvedValue([{ id: "abc123def456", isPublic: true }]),
+				}),
+			}),
+		});
 		const res = await PATCH(
-			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
+			req({ isPublic: true }, { "cf-connecting-ip": "1.2.3.4" }),
 			"abc123def456",
 		);
 		const data = (await res.json()) as Record<string, unknown>;
 
 		expect(res.status).toBe(200);
 		expect(data.ok).toBe(true);
-		expect(data.stamp).toEqual({ id: "abc123def456", isPublic: false });
+		expect(data.stamp).toEqual({ id: "abc123def456", isPublic: true });
+	});
+
+	it("rejects making anonymous stamp private", async () => {
+		const res = await PATCH(
+			req({ isPublic: false }, { "cf-connecting-ip": "1.2.3.4" }),
+			"abc123def456",
+		);
+		const data = (await res.json()) as Record<string, unknown>;
+
+		expect(res.status).toBe(403);
+		expect(data.error).toContain("stay public");
 	});
 
 	it("allows toggle when userId matches creator (authenticated user)", async () => {

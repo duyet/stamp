@@ -327,10 +327,18 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("uses daily_stats for overview and trend data when available", async () => {
+		const today = new Date();
+		const yesterday = new Date(today);
+		yesterday.setDate(today.getDate() - 1);
+		const todayDate = today.toISOString().split("T")[0];
+		const yesterdayDate = yesterday.toISOString().split("T")[0];
+		const todayTs = Math.floor(new Date(todayDate).getTime() / 1000);
+		const yesterdayTs = Math.floor(new Date(yesterdayDate).getTime() / 1000);
+
 		const mockAll = mockDbAll([
 			[
 				{
-					date: "2026-04-29",
+					date: todayDate,
 					total_stamps: 30,
 					new_stamps: 6,
 					page_views: 90,
@@ -339,7 +347,7 @@ describe("GET /api/analytics", () => {
 					shares: 4,
 				},
 				{
-					date: "2026-04-28",
+					date: yesterdayDate,
 					total_stamps: 24,
 					new_stamps: 5,
 					page_views: 80,
@@ -381,8 +389,8 @@ describe("GET /api/analytics", () => {
 		expect(data.totalPageViews).toBe(170);
 		expect(data.uniqueVisitors).toBe(38);
 		expect(data.dailyTrend).toEqual([
-			{ day: 1_777_334_400, count: 5 },
-			{ day: 1_777_420_800, count: 6 },
+			{ day: yesterdayTs, count: 5 },
+			{ day: todayTs, count: 6 },
 		]);
 	});
 

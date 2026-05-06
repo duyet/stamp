@@ -22,6 +22,7 @@ interface GenerationResultsProps {
 	onCopy: (url: string) => void;
 	onVisibilityChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	isPublic: boolean;
+	canEditVisibility?: boolean;
 }
 
 export function GenerationResults({
@@ -32,6 +33,7 @@ export function GenerationResults({
 	onCopy,
 	onVisibilityChange,
 	isPublic,
+	canEditVisibility = true,
 }: GenerationResultsProps) {
 	const { isFavorite, toggleFavorite } = useFavorites();
 	const [featuredResult, ...archiveResults] = results;
@@ -156,10 +158,13 @@ export function GenerationResults({
 									} as React.ChangeEvent<HTMLInputElement>)
 								}
 								label="Public collection"
+								disabled={!canEditVisibility}
 							/>
 						</div>
 						<p className="text-xs leading-6 text-stone-500">
-							{remaining} remaining today after this print.
+							{canEditVisibility
+								? `${remaining} remaining today after this print.`
+								: "Anonymous generations stay in the public collection."}
 						</p>
 					</div>
 				</div>

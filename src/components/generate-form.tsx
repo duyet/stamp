@@ -51,6 +51,7 @@ export function GenerateForm({
 	const [resetAt, setResetAt] = useState<number | null>(null);
 	const [countdown, setCountdown] = useState<number>(0);
 	const { isSignedIn } = useAuth();
+	const isAnonymous = isSignedIn !== true;
 	const [hd, setHd] = useState(false);
 	const [reference, setReference] = useState<string | null>(null);
 	const [referenceResetToken, setReferenceResetToken] = useState(0);
@@ -95,6 +96,12 @@ export function GenerateForm({
 
 	const handleVisibilityChange = useCallback(
 		async (e: React.ChangeEvent<HTMLInputElement>) => {
+			if (isAnonymous) {
+				setError(
+					"Anonymous generations stay public. Sign in to create private editions.",
+				);
+				return;
+			}
 			if (!results[0]) return;
 			const newValue = e.target.checked;
 			setIsPublic(newValue);
@@ -112,7 +119,7 @@ export function GenerateForm({
 				setError("Failed to update visibility. Please try again.");
 			}
 		},
-		[results],
+		[results, isAnonymous],
 	);
 
 	const handleSubmit = useCallback(async () => {
@@ -133,8 +140,8 @@ export function GenerateForm({
 				body: JSON.stringify({
 					prompt: prompt.trim(),
 					style,
-					isPublic,
-					hd,
+					isPublic: isAnonymous ? true : isPublic,
+					hd: isAnonymous ? false : hd,
 					timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 					...(reference && {
 						referenceImageData: reference,
@@ -205,7 +212,16 @@ export function GenerateForm({
 		} finally {
 			setLoading(false);
 		}
-	}, [prompt, style, isPublic, hd, reference, results, onGenerated]);
+	}, [
+		prompt,
+		style,
+		isPublic,
+		hd,
+		reference,
+		results,
+		onGenerated,
+		isAnonymous,
+	]);
 
 	return (
 		<div className="w-full">
@@ -252,6 +268,7 @@ export function GenerateForm({
 						loading={loading}
 						disabled={!prompt.trim() && !reference}
 						referenceImage={!!reference}
+						isSignedIn={isSignedIn === true}
 					/>
 				</div>
 			</form>
@@ -281,6 +298,7 @@ export function GenerateForm({
 					onCopy={copy}
 					onVisibilityChange={handleVisibilityChange}
 					isPublic={isPublic}
+					canEditVisibility={!isAnonymous}
 				/>
 			)}
 		</div>
