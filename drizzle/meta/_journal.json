@@ -15,6 +15,13 @@
       "when": 1775153424693,
       "tag": "0001_slippery_korvac",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778068628242,
+      "tag": "0002_rainy_felicia_hardy",
+      "breakpoints": true
     }
   ]
 }
