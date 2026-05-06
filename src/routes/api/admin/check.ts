@@ -13,6 +13,6 @@ export async function GET(): Promise<Response> {
 
 export const Route = createFileRoute("/api/admin/check")({
 	server: {
-		handlers: { GET: ({ request }) => GET(request) },
+		handlers: { GET: () => GET() },
 	},
 });
