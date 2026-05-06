@@ -1,4 +1,4 @@
-import { useAuth, useClerk } from "@clerk/tanstack-react-start";
+import { useClerk } from "@clerk/tanstack-react-start";
 
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { Toggle } from "@/components/toggle";
@@ -11,6 +11,41 @@ interface GenerationOptionsProps {
 	loading: boolean;
 	disabled: boolean;
 	referenceImage?: boolean;
+	isSignedIn: boolean;
+}
+
+interface GenerationOptionsState {
+	effectiveIsPublic: boolean;
+	effectiveHd: boolean;
+	publicDisabled: boolean;
+	hdDisabled: boolean;
+	description: string;
+}
+
+export function getGenerationOptionsState(
+	isSignedIn: boolean,
+	isPublic: boolean,
+	hd: boolean,
+): GenerationOptionsState {
+	if (!isSignedIn) {
+		return {
+			effectiveIsPublic: true,
+			effectiveHd: false,
+			publicDisabled: true,
+			hdDisabled: true,
+			description:
+				"Anonymous mode is public and standard quality only. Sign in to unlock HD and private editions.",
+		};
+	}
+
+	return {
+		effectiveIsPublic: isPublic,
+		effectiveHd: hd,
+		publicDisabled: false,
+		hdDisabled: false,
+		description:
+			"Public editions can appear on the homepage wall. HD spends signed-in credits for a richer print.",
+	};
 }
 
 export function GenerationOptions({
@@ -21,11 +56,11 @@ export function GenerationOptions({
 	loading,
 	disabled,
 	referenceImage = false,
+	isSignedIn,
 }: GenerationOptionsProps) {
-	const { isSignedIn } = useAuth();
 	const clerk = useClerk();
-	const canUseHd = isSignedIn === true;
-	const hdChecked = canUseHd ? hd : false;
+	const state = getGenerationOptionsState(isSignedIn, isPublic, hd);
+	const hdChecked = state.effectiveHd;
 
 	return (
 		<div className="rounded-[1rem] border border-stone-200 bg-white p-4">
@@ -36,14 +71,15 @@ export function GenerationOptions({
 					</p>
 					<div className="mt-3 flex flex-wrap items-center gap-3">
 						<Toggle
-							checked={isPublic}
+							checked={state.effectiveIsPublic}
 							onChange={onPublicChange}
 							label="Public"
+							disabled={state.publicDisabled}
 						/>
 						<Toggle
 							checked={hdChecked}
 							onChange={(checked) => {
-								if (!canUseHd) {
+								if (!isSignedIn) {
 									onHdChange(false);
 									clerk.openSignIn();
 									return;
@@ -51,11 +87,11 @@ export function GenerationOptions({
 								onHdChange(checked);
 							}}
 							label="HD"
+							disabled={state.hdDisabled}
 						/>
 					</div>
 					<p className="mt-3 text-sm leading-6 text-stone-600">
-						Public editions can appear on the homepage wall. HD spends signed-in
-						credits for a richer print.
+						{state.description}
 					</p>
 				</div>
 				<button

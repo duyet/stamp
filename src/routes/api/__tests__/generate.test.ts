@@ -103,6 +103,14 @@ describe("POST /api/generate", () => {
 	});
 
 	describe("anonymous user (IP-based rate limit)", () => {
+		it("returns 400 when anonymous request is private", async () => {
+			const res = await POST(req({ prompt: "a cat", isPublic: false }));
+			const data = (await res.json()) as Record<string, unknown>;
+
+			expect(res.status).toBe(400);
+			expect(data.error).toContain("Public visibility is required");
+		});
+
 		it("returns 429 when rate limited", async () => {
 			vi.mocked(checkRateLimit).mockResolvedValue({
 				allowed: false,
@@ -295,6 +303,9 @@ describe("POST /api/generate", () => {
 		});
 
 		it("inserts stamp record into database", async () => {
+			vi.mocked(getAuthUserId).mockResolvedValue({
+				userId: "user_abc123",
+			} as never);
 			await POST(
 				req(
 					{ prompt: "a cat", style: "folk", isPublic: false },
@@ -345,16 +356,16 @@ describe("POST /api/generate", () => {
 	});
 
 	describe("reference-based generation", () => {
-		it("requires HD mode when reference image is provided", async () => {
+		it("requires sign-in when reference image is provided anonymously", async () => {
 			const res = await POST(
 				req({
 					prompt: "a cat",
 					referenceImageData: VALID_PNG_BASE64,
 				}),
 			);
-			expect(res.status).toBe(400);
+			expect(res.status).toBe(401);
 			const data = (await res.json()) as Record<string, unknown>;
-			expect(data.error).toContain("Reference images require HD");
+			expect(data.error).toContain("requires HD and sign-in");
 		});
 
 		it("accepts request with reference image and empty prompt when HD is true", async () => {

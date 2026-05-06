@@ -43,6 +43,16 @@ export async function PATCH(request: Request, id: string): Promise<Response> {
 			return jsonResponse({ error: "Not authorized" }, 403);
 		}
 
+		if (!userId && body.isPublic === false) {
+			return jsonResponse(
+				{
+					error:
+						"Anonymous generations stay public. Sign in to create private editions.",
+				},
+				403,
+			);
+		}
+
 		// Use RETURNING clause to get updated stamp in single query
 		const [updatedStamp] = await db
 			.update(stamps)

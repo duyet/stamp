@@ -135,6 +135,24 @@ function validateGenerateRequest(
 		typeof referenceImageData === "string" &&
 		referenceImageData.trim().length > 0;
 
+	if (!userId && isPublic === false) {
+		return {
+			error: jsonResponse(
+				{ error: "Public visibility is required when generating anonymously." },
+				400,
+			),
+		};
+	}
+
+	if (!userId && hasReference) {
+		return {
+			error: jsonResponse(
+				{ error: "Reference image generation requires HD and sign-in." },
+				401,
+			),
+		};
+	}
+
 	if (hasReference && !hd) {
 		return {
 			error: jsonResponse(
