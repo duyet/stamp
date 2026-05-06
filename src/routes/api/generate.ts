@@ -177,12 +177,6 @@ function validateGenerateRequest(
 		};
 	}
 
-	if (hd && !userId) {
-		return {
-			error: jsonResponse({ error: "HD generation requires sign-in." }, 401),
-		};
-	}
-
 	let referenceImageBytes: Uint8Array | undefined;
 	if (referenceImageData) {
 		try {
@@ -484,6 +478,26 @@ export async function POST(request: Request): Promise<Response> {
 		// 2. Check AI binding before deducting credits
 		const ai = env.AI;
 		if (!ai) return jsonResponse({ error: "AI binding not configured." }, 503);
+
+		// 2b. Anonymous HD limit: 1 per day
+		if (hd && !userId) {
+			const hdCount = await db.$client
+				.prepare(
+					"SELECT COUNT(*) as cnt FROM stamps WHERE user_ip = ? AND hd = 1 AND created_at > ?",
+				)
+				.bind(userIp, Date.now() - 24 * 60 * 60 * 1000)
+				.first<{ cnt: number }>();
+			if (hdCount && hdCount.cnt >= 1) {
+				return jsonResponse(
+					{
+						error:
+							"Sign in for unlimited HD stamps. Anonymous users get 1 HD per day.",
+						code: "ANON_HD_LIMIT",
+					},
+					403,
+				);
+			}
+		}
 
 		// 3. Deduct credits
 		credits = await resolveCredits(db, userId, userIp, hd);

@@ -141,7 +141,7 @@ export function GenerateForm({
 					prompt: prompt.trim(),
 					style,
 					isPublic: isAnonymous ? true : isPublic,
-					hd: isAnonymous ? false : hd,
+					hd,
 					timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 					...(reference && {
 						referenceImageData: reference,
