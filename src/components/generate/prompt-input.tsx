@@ -160,13 +160,13 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 						</div>
 					</div>
 					{PROMPT_GROUPS.length > 1 && (
-						<div className="mb-3 flex items-center gap-2">
+						<div className="mb-3 flex items-center gap-2 overflow-x-auto scrollbar-hide">
 							{PROMPT_GROUPS.map((group, groupIndex) => (
 								<button
 									key={group.label ?? "default"}
 									type="button"
 									onClick={() => setActiveGroupIndex(groupIndex)}
-									className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+									className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition ${
 										activeGroupIndex === groupIndex
 											? "bg-stone-900 text-white"
 											: "border border-stone-200 bg-white text-stone-600 hover:border-stone-400 hover:text-stone-900"
@@ -197,7 +197,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 									}
 								}}
 								disabled={loading}
-								className="shrink-0 rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-400 hover:text-stone-950 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
+								className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-sm text-stone-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-stone-400 hover:text-stone-950 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900/20"
 							>
 								{example}
 							</button>
