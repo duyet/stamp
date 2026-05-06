@@ -11,7 +11,7 @@ import { getClerkPublishableKey } from "@/lib/clerk-config";
 
 export function Header() {
 	const clerkPublishableKey = getClerkPublishableKey();
-	const _isAdmin = useIsAdmin();
+	const isAdmin = useIsAdmin();
 
 	return (
 		<header>
@@ -34,6 +34,14 @@ export function Header() {
 					>
 						Create
 					</Link>
+					{isAdmin && (
+						<Link
+							to="/dashboard"
+							className="inline-flex text-stone-600 transition-colors hover:text-stone-950"
+						>
+							Dashboard
+						</Link>
+					)}
 					{clerkPublishableKey ? (
 						<>
 							<Show when="signed-out">
