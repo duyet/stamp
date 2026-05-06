@@ -7,7 +7,7 @@ import { StampImage } from "@/components/stamp-image";
 import type { PublicStamp } from "@/db/schema";
 import { useCopy } from "@/hooks/use-copy";
 import { useRegenerateStamp } from "@/hooks/use-regenerate-stamp";
-import { formatDateLong } from "@/lib/date-utils";
+import { formatDateShort } from "@/lib/date-utils";
 import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
 
 interface StampDetailClientProps {
@@ -33,11 +33,8 @@ export function StampDetailClient({
 	async function handleRegenerate() {
 		try {
 			const newStamp = await regenerate(displayStamp);
-
-			const newUrl = `/stamps/${newStamp.id}`;
-			window.location.assign(newUrl);
+			window.location.assign(`/stamps/${newStamp.id}`);
 		} catch (err) {
-			// Error displayed by useRegenerateStamp hook
 			console.debug(
 				"[StampDetail] Regenerate failed:",
 				err instanceof Error ? err.message : String(err),
@@ -93,168 +90,158 @@ export function StampDetailClient({
 	const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
 	return (
-		<div className="min-h-screen bg-stone-50">
-			<div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 sm:py-16">
-				{/* Back link */}
-				<Link
-					to="/collections"
-					className="inline-flex items-center gap-2 text-sm text-stone-600 hover:text-stamp-blue transition-colors mb-8"
-				>
-					← Back to collections
-				</Link>
+		<div className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+			<Link
+				to="/collections"
+				className="inline-flex items-center gap-1.5 pt-6 text-xs font-medium uppercase tracking-[0.18em] text-stone-500 transition-colors hover:text-stone-950"
+			>
+				← Collections
+			</Link>
 
-				<div className="grid md:grid-cols-2 gap-8 md:gap-12">
-					{/* Stamp image */}
-					<div className="relative">
-						<div className="stamp-border stamp-modal-shadow">
-							<div className="relative aspect-square">
-								<StampImage
-									src={displayStamp.imageUrl}
-									width={500}
-									height={500}
-									alt={displayStamp.prompt}
-									className="object-cover w-full h-full absolute inset-0"
-								/>
-							</div>
+			<div className="mt-5 grid gap-8 lg:grid-cols-[minmax(300px,1fr)_minmax(0,1fr)] lg:items-start">
+				{/* Stamp image */}
+				<div>
+					<div className="stamp-border stamp-modal-shadow">
+						<div className="relative aspect-square">
+							<StampImage
+								src={displayStamp.imageUrl}
+								width={600}
+								height={600}
+								alt={displayStamp.prompt}
+								className="absolute inset-0 h-full w-full object-cover"
+							/>
 						</div>
+					</div>
 
-						{/* Regenerate button */}
+					{/* Action bar under image */}
+					<div className="mt-4 flex items-center gap-2">
+						<a
+							href={displayStamp.imageUrl}
+							download={`stamp-${displayStamp.id}.png`}
+							className="flex-1 rounded-full bg-stone-950 px-4 py-2.5 text-center text-sm font-medium text-white transition-all hover:bg-stone-800"
+						>
+							Download
+						</a>
+						<button
+							type="button"
+							onClick={() => copy(shareUrl)}
+							className="rounded-full border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition-all hover:border-stone-400 hover:text-stone-950"
+						>
+							{copied ? "Copied" : "Share"}
+						</button>
 						<button
 							type="button"
 							onClick={handleRegenerate}
 							disabled={regenerating}
-							className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-stone-100 text-stone-700 border border-stone-200/80 rounded-lg text-sm hover:bg-stone-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+							className="rounded-full border border-stone-200 bg-white px-3 py-2.5 text-stone-600 transition-all hover:border-stone-400 hover:text-stone-950 disabled:opacity-50"
+							title="Regenerate stamp"
 						>
-							{regenerating ? (
-								<>
-									<LoadingSpinner size="sm" />
-									Regenerating...
-								</>
-							) : (
-								<>
-									<RefreshIcon />
-									Regenerate
-								</>
-							)}
+							{regenerating ? <LoadingSpinner size="sm" /> : <RefreshIcon />}
 						</button>
 					</div>
+				</div>
 
-					{/* Details */}
-					<div className="flex flex-col">
-						<div className="mb-4">
-							{isEditingDescription ? (
-								<div className="space-y-3">
-									<textarea
-										value={descriptionDraft}
-										onChange={(e) => setDescriptionDraft(e.target.value)}
-										maxLength={200}
-										rows={3}
-										className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-base leading-6 text-stone-900 outline-none transition focus:border-stone-400"
-										aria-label="Stamp description"
-									/>
-									{descriptionError ? (
-										<p className="text-sm text-red-600">{descriptionError}</p>
-									) : null}
-									<div className="flex flex-wrap gap-2">
-										<button
-											type="button"
-											onClick={handleSaveDescription}
-											disabled={savingDescription}
-											className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800 disabled:opacity-50"
-										>
-											{savingDescription ? "Saving..." : "Save"}
-										</button>
-										<button
-											type="button"
-											onClick={() => {
-												setDescriptionDraft(
-													displayStamp.description || displayStamp.prompt,
-												);
-												setDescriptionError(null);
-												setIsEditingDescription(false);
-											}}
-											disabled={savingDescription}
-											className="rounded-full bg-stone-100 px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-200 disabled:opacity-50"
-										>
-											Cancel
-										</button>
-									</div>
-								</div>
-							) : (
-								<div className="space-y-3">
-									<h1 className="text-2xl sm:text-3xl font-bold text-stone-900 font-stamp">
-										{displayStamp.description || displayStamp.prompt}
-									</h1>
-									{canEditDescription ? (
-										<button
-											type="button"
-											onClick={() => setIsEditingDescription(true)}
-											className="text-sm font-medium text-stone-600 transition-colors hover:text-stone-950"
-										>
-											Edit description
-										</button>
-									) : null}
-								</div>
+				{/* Details */}
+				<div className="space-y-5">
+					{/* Style + date row */}
+					<div className="flex items-center gap-3 text-xs text-stone-500">
+						<span className="rounded-full bg-stone-100/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]">
+							{styleName}
+						</span>
+						<span>{formatDateShort(displayStamp.createdAt)}</span>
+					</div>
+
+					{/* Title / description */}
+					{isEditingDescription ? (
+						<div className="space-y-3">
+							<textarea
+								value={descriptionDraft}
+								onChange={(e) => setDescriptionDraft(e.target.value)}
+								maxLength={200}
+								rows={3}
+								className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-base leading-7 text-stone-900 outline-none transition focus:border-stone-400"
+								aria-label="Stamp description"
+							/>
+							{descriptionError ? (
+								<p className="text-sm text-red-600">{descriptionError}</p>
+							) : null}
+							<div className="flex gap-2">
+								<button
+									type="button"
+									onClick={handleSaveDescription}
+									disabled={savingDescription}
+									className="rounded-full bg-stone-900 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-stone-800 disabled:opacity-50"
+								>
+									{savingDescription ? "Saving..." : "Save"}
+								</button>
+								<button
+									type="button"
+									onClick={() => {
+										setDescriptionDraft(
+											displayStamp.description || displayStamp.prompt,
+										);
+										setDescriptionError(null);
+										setIsEditingDescription(false);
+									}}
+									disabled={savingDescription}
+									className="rounded-full bg-stone-100 px-4 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-200 disabled:opacity-50"
+								>
+									Cancel
+								</button>
+							</div>
+						</div>
+					) : (
+						<div>
+							<h1 className="font-stamp text-2xl leading-snug text-stone-950 sm:text-3xl">
+								{displayStamp.description || displayStamp.prompt}
+							</h1>
+							{canEditDescription && (
+								<button
+									type="button"
+									onClick={() => setIsEditingDescription(true)}
+									className="mt-2 text-xs font-medium text-stone-400 transition-colors hover:text-stone-700"
+								>
+									Edit
+								</button>
 							)}
 						</div>
+					)}
 
-						{displayStamp.description &&
-							displayStamp.description !== displayStamp.prompt && (
-								<p className="text-sm text-stone-500 mb-6">
-									Prompt: {displayStamp.prompt}
-								</p>
-							)}
-
-						{/* Style badge */}
-						<div className="mb-6">
-							<span className="inline-block text-xs tracking-wider uppercase text-stone-500 bg-stone-100/80 rounded-full px-3 py-1">
-								{styleName}
-							</span>
-						</div>
-
-						{/* Enhanced prompt */}
-						{displayStamp.enhancedPrompt && (
-							<details className="mb-6 group">
-								<summary className="flex items-center gap-2 cursor-pointer text-sm font-medium text-stone-700 hover:text-stone-900 transition select-none list-none">
-									<span className="transform transition-transform duration-200 group-open:rotate-90">
-										▶
-									</span>
-									Enhanced prompt
-								</summary>
-								<p className="mt-3 text-sm text-stone-600 leading-relaxed bg-stone-50 rounded-lg p-4">
-									{displayStamp.enhancedPrompt}
-								</p>
-							</details>
+					{/* Original prompt (if different from description) */}
+					{displayStamp.description &&
+						displayStamp.description !== displayStamp.prompt && (
+							<p className="text-sm leading-6 text-stone-500">
+								{displayStamp.prompt}
+							</p>
 						)}
 
-						{/* Metadata */}
-						<div className="mb-8 text-sm text-stone-500">
-							<p>Created: {formatDateLong(displayStamp.createdAt)}</p>
-						</div>
+					{/* Enhanced prompt */}
+					{displayStamp.enhancedPrompt && (
+						<details className="group">
+							<summary className="flex cursor-pointer items-center gap-2 text-xs font-medium uppercase tracking-[0.15em] text-stone-400 transition hover:text-stone-700 select-none list-none">
+								<span className="transition-transform duration-200 group-open:rotate-90">
+									▶
+								</span>
+								Full prompt
+							</summary>
+							<p className="mt-2 rounded-lg bg-stone-50 p-3 text-xs leading-5 text-stone-500">
+								{displayStamp.enhancedPrompt}
+							</p>
+						</details>
+					)}
 
-						{/* Actions */}
-						<div className="space-y-3 mt-auto">
-							<a
-								href={displayStamp.imageUrl}
-								download={`stamp-${displayStamp.id}.png`}
-								className="block w-full text-center px-6 py-3 bg-stone-900 text-white rounded-full font-medium hover:bg-stone-800 transition-all duration-200"
-							>
-								Download Stamp
-							</a>
-							<button
-								type="button"
-								onClick={() => copy(shareUrl)}
-								className="w-full px-6 py-3 text-stone-700 bg-stone-50 border border-stone-200/80 rounded-full font-medium hover:bg-stone-100 transition-all duration-200"
-							>
-								{copied ? "✓ Link copied!" : "Copy link"}
-							</button>
-							<a
-								href={`/generate?prompt=${encodeURIComponent(displayStamp.prompt)}&style=${displayStamp.style}`}
-								className="block w-full text-center px-6 py-3 text-stamp-blue hover:text-stamp-blue/80 font-medium transition"
-							>
-								Create similar →
-							</a>
-						</div>
+					{/* Create similar */}
+					<div className="pt-2">
+						<Link
+							to="/generate"
+							search={{
+								prompt: displayStamp.prompt,
+								style: displayStamp.style,
+							}}
+							className="text-sm font-medium text-stone-600 transition-colors hover:text-stone-950"
+						>
+							Create similar →
+						</Link>
 					</div>
 				</div>
 			</div>
