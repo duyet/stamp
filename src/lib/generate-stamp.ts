@@ -90,7 +90,7 @@ export async function describeStamp(
 	const fallback = `${preset.name} stamp of ${sourcePrompt || "a reference image"}`;
 
 	try {
-		const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
+		const response = (await ai.run("@cf/qwen/qwen3-4b-fp8", {
 			messages: [
 				{
 					role: "system",
