@@ -55,7 +55,7 @@ Rules:
 - Only include "dot eyes", "facial features", "pose", "expression", or "clothing" if the subject is a person or character
 - For non-figure subjects (flags, objects, landscapes, buildings, animals, symbols), describe shapes, patterns, colors, and composition instead
 - Do NOT add background elements the user did not ask for — follow the style preset faithfully
-- NEVER include any text, words, letters, numbers, or calligraphy
+- NEVER include any text, words, letters, numbers, calligraphy, writing, or typography — the image generator cannot spell correctly, so include ZERO readable characters in your prompt. Use phrases like "purely illustrative", "no text", "no labels", "no writing" to reinforce this
 - Keep the composition centered`;
 
 	const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
@@ -76,7 +76,7 @@ Rules:
 function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
 	const preset = STAMP_STYLE_PRESETS[style];
 	const subject = userPrompt.trim() || "a decorative design";
-	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers.`;
+	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers, no writing, no typography, no labels — purely illustrative.`;
 }
 
 export async function describeStamp(

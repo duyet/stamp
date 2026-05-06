@@ -6,7 +6,7 @@
  * cross-hatched textures, perforated edges, cream paper texture.
  */
 
-const FILL_INSTRUCTION = `CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, ONLY the stamp visible, zero margin`;
+const FILL_INSTRUCTION = `CRITICAL: zoom in close, the stamp subject fills 95% of the canvas edge-to-edge, extremely tight crop with near-zero white space, stamp fills the entire image, NO padding outside stamp edges, NO background frame, ONLY the stamp visible, zero margin. ABSOLUTELY NO text, NO words, NO letters, NO numbers, NO writing, NO typography, NO labels, NO captions — the image must be purely illustrative with zero readable characters`;
 
 const STAMP_COMMON = `cream paper background, perforated serrated stamp edges, square format. ${FILL_INSTRUCTION}`;
 
@@ -99,7 +99,7 @@ export function buildStampPrompt(
 ): string {
 	const preset = STAMP_STYLE_PRESETS[style];
 	const subject = userPrompt.trim() || "a decorative design";
-	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers.`;
+	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers, no writing, no typography, no labels — purely illustrative.`;
 }
 
 export interface PromptGroup {
