@@ -87,23 +87,26 @@ export async function describeStamp(
 ): Promise<string> {
 	const preset = STAMP_STYLE_PRESETS[style];
 	const sourcePrompt = userPrompt.trim() || enhancedPrompt.trim();
-	const fallback = `${preset.name} stamp from ${sourcePrompt || "a reference image"}`;
+	const fallback = `${preset.name} stamp of ${sourcePrompt || "a reference image"}`;
 
 	try {
 		const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
 			messages: [
 				{
 					role: "system",
-					content:
-						"Write a short, elegant art caption for the finished postage stamp. Describe what it looks and feels like, not the prompt mechanics. Use plain English, no markdown, no quotes, no labels. Use one polished sentence, or two only if needed. Keep it under 18 words.",
+					content: `You are an art critic writing a caption for a postage stamp illustration in the ${preset.name} style. Write one evocative sentence (max 20 words) that captures what the stamp depicts and its artistic feel. Describe the subject and mood — NOT the prompt or technique. Be poetic but concrete. Examples:
+- "A watchful cat rendered in muted blue-grey stipple, gazing serenely from a cream-colored stamp."
+- "A solitary lighthouse stands against a stippled sky, its beam cutting through soft blue-grey haze."
+- "Bold black outlines frame a sunflower in golden mustard, its petals radiating against a cream ground."
+Never start with "A stamp of" or mention the style name. Output only the caption text.`,
 				},
 				{
 					role: "user",
-					content: `Style: ${preset.name}\nUser prompt: ${userPrompt || "(reference image only)"}\nGeneration prompt: ${enhancedPrompt}`,
+					content: `Subject: ${userPrompt || "a reference image"}\nStyle: ${preset.name}`,
 				},
 			],
-			max_tokens: 45,
-			temperature: 0.4,
+			max_tokens: 60,
+			temperature: 0.5,
 		})) as { response?: string };
 
 		const description = response.response?.trim().replace(/^["']|["']$/g, "");

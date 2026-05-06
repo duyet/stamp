@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { eq, isNull } from "drizzle-orm";
+import { eq, isNull, like, or } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
 import { jsonResponse } from "@/lib/api-utils";
@@ -44,7 +44,14 @@ export async function POST(_request: Request): Promise<Response> {
 				style: stamps.style,
 			})
 			.from(stamps)
-			.where(isNull(stamps.description));
+			.where(
+				or(
+					isNull(stamps.description),
+					like(stamps.description, "%stamp from %"),
+					like(stamps.description, "%stamp of %"),
+				),
+			)
+			.limit(50);
 
 		const total = stampsWithoutDescription.length;
 		let updated = 0;
