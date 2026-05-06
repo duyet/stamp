@@ -246,43 +246,104 @@ const FOOD = [
 	"A bowl of cereal",
 ];
 
-// All prompts combined (100+ pool)
-const ALL_PROMPTS = [...ANIMALS, ...PEOPLE, ...NATURE, ...OBJECTS, ...FOOD];
+const VIETNAM = [
+	"A woman in ao dai walking across a bridge",
+	"Ha Long Bay with limestone karsts at sunrise",
+	"A street vendor selling pho in old Hanoi",
+	"The Hoi An lantern street at night",
+	"A rice paddy terrace in Sapa with morning fog",
+	"A fisherman in a coracle boat on the central coast",
+	"The Hue Imperial City gate with ornate roof",
+	"A water puppet show on a village stage",
+	"Ban Gioc waterfall on the northern border",
+	"A Saigon alley with scooters and hanging lanterns",
+	"A woman picking lotus flowers in a pond",
+	"The Golden Bridge held by giant stone hands",
+	"A cyclo driver resting under a banyan tree",
+	"A floating market on the Mekong Delta at dawn",
+	"A incense stick village with bundles of red and yellow",
+	"The Dragon Bridge in Da Nang breathing fire",
+	"A coconut candy workshop in Ben Tre",
+	"A highland coffee plantation with red cherries",
+	"Temple of Literature in Hanoi with courtyards",
+	"A traditional Tet celebration with peach blossoms",
+	"A basket boat among water coconut palms",
+	"The marble mountains near Da Nang",
+	"A night train winding through the Hai Van Pass",
+	"A stilt house village on the Perfume River",
+	"A conical hat maker in a Hue workshop",
+];
+
+// All prompts combined (160+ pool)
+const ALL_PROMPTS = [
+	...ANIMALS,
+	...PEOPLE,
+	...NATURE,
+	...OBJECTS,
+	...FOOD,
+	...VIETNAM,
+];
+
+function shuffle<T>(arr: T[]): T[] {
+	const copy = [...arr];
+	for (let i = copy.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[copy[i], copy[j]] = [copy[j], copy[i]];
+	}
+	return copy;
+}
 
 /**
  * Get a random subset of prompts for display.
  * Shuffles on each call to provide variety on page reload.
  */
 export function getRandomPrompts(count: number = 12): string[] {
-	const shuffled = [...ALL_PROMPTS];
-	for (let i = shuffled.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-	}
-	return shuffled.slice(0, Math.min(count, shuffled.length));
+	return shuffle(ALL_PROMPTS).slice(0, Math.min(count, ALL_PROMPTS.length));
+}
+
+function randomFrom<T>(arr: T[], count: number): T[] {
+	return shuffle(arr).slice(0, Math.min(count, arr.length));
 }
 
 /**
  * Prompt groups for quick-pick inspiration on the generate form.
- * Shows a random subset from the full prompt pool on each page load.
+ * Randomized on each module load so every page gets fresh suggestions.
  */
 export const PROMPT_GROUPS: readonly PromptGroup[] = [
 	{
 		label: "Ideas",
 		className: "text-stone-600",
 		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
-		prompts: ALL_PROMPTS.slice(0, 12),
+		prompts: getRandomPrompts(10),
 	},
 	{
 		label: "Animals",
 		className: "text-stone-600",
 		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
-		prompts: ANIMALS.slice(0, 8),
+		prompts: randomFrom(ANIMALS, 10),
 	},
 	{
 		label: "Nature",
 		className: "text-stone-600",
 		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
-		prompts: NATURE.slice(0, 8),
+		prompts: randomFrom(NATURE, 10),
+	},
+	{
+		label: "People",
+		className: "text-stone-600",
+		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
+		prompts: randomFrom(PEOPLE, 10),
+	},
+	{
+		label: "Objects",
+		className: "text-stone-600",
+		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
+		prompts: randomFrom(OBJECTS, 10),
+	},
+	{
+		label: "Food",
+		className: "text-stone-600",
+		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
+		prompts: randomFrom(FOOD, 10),
 	},
 ] as const;
