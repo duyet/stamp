@@ -1,13 +1,12 @@
 import { useAuth } from "@clerk/tanstack-react-start";
 import { useEffect, useState } from "react";
+import { CREDITS_CHANGED_EVENT } from "@/lib/credit-events";
 
 interface CreditInfo {
 	dailyRemaining: number;
 	purchasedCredits: number;
 	totalRemaining: number;
 }
-
-export const CREDITS_CHANGED_EVENT = "credits:changed";
 
 function isCreditInfo(value: unknown): value is CreditInfo {
 	if (!value || typeof value !== "object") return false;
@@ -31,9 +30,14 @@ export function CreditBalance() {
 			return;
 		}
 
-		const controller = new AbortController();
+		let activeController: AbortController | null = null;
+		let disposed = false;
 
 		async function loadCredits() {
+			activeController?.abort();
+			const controller = new AbortController();
+			activeController = controller;
+
 			try {
 				const response = await fetch("/api/credits", {
 					cache: "no-store",
@@ -46,19 +50,26 @@ export function CreditBalance() {
 				if (!isCreditInfo(data)) {
 					throw new Error("Invalid credit response");
 				}
+				if (disposed || activeController !== controller) return;
 				setCredits(data);
 				setError(false);
 			} catch (err) {
 				if (err instanceof DOMException && err.name === "AbortError") return;
+				if (disposed || activeController !== controller) return;
 				setError(true);
+			} finally {
+				if (activeController === controller) {
+					activeController = null;
+				}
 			}
 		}
 
-		loadCredits();
 		window.addEventListener(CREDITS_CHANGED_EVENT, loadCredits);
+		loadCredits();
 
 		return () => {
-			controller.abort();
+			disposed = true;
+			activeController?.abort();
 			window.removeEventListener(CREDITS_CHANGED_EVENT, loadCredits);
 		};
 	}, [isSignedIn]);

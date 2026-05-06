@@ -26,6 +26,7 @@ import { getEnv } from "@/lib/env";
 let GET: typeof import("../analytics")["GET"];
 
 type AnalyticsResponse = Record<string, unknown>;
+const FIXED_NOW = new Date("2026-04-29T12:00:00Z");
 
 function mockDbAll(results: unknown[][]) {
 	let call = 0;
@@ -40,6 +41,8 @@ describe("GET /api/analytics", () => {
 	const request = createGetRequest("http://localhost/api/analytics");
 
 	beforeEach(async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(FIXED_NOW);
 		vi.clearAllMocks();
 		vi.mocked(getAuthUserIdentity).mockResolvedValue({
 			email: "admin@example.com",
@@ -52,6 +55,7 @@ describe("GET /api/analytics", () => {
 	});
 
 	afterEach(() => {
+		vi.useRealTimers();
 		vi.unstubAllGlobals();
 	});
 
@@ -327,18 +331,13 @@ describe("GET /api/analytics", () => {
 	});
 
 	it("uses daily_stats for overview and trend data when available", async () => {
-		const today = new Date();
-		const yesterday = new Date(today);
-		yesterday.setDate(today.getDate() - 1);
-		const todayDate = today.toISOString().split("T")[0];
-		const yesterdayDate = yesterday.toISOString().split("T")[0];
-		const todayTs = Math.floor(new Date(todayDate).getTime() / 1000);
-		const yesterdayTs = Math.floor(new Date(yesterdayDate).getTime() / 1000);
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2026-04-29T12:00:00Z"));
 
 		const mockAll = mockDbAll([
 			[
 				{
-					date: todayDate,
+					date: "2026-04-29",
 					total_stamps: 30,
 					new_stamps: 6,
 					page_views: 90,
@@ -347,7 +346,7 @@ describe("GET /api/analytics", () => {
 					shares: 4,
 				},
 				{
-					date: yesterdayDate,
+					date: "2026-04-28",
 					total_stamps: 24,
 					new_stamps: 5,
 					page_views: 80,
@@ -389,8 +388,8 @@ describe("GET /api/analytics", () => {
 		expect(data.totalPageViews).toBe(170);
 		expect(data.uniqueVisitors).toBe(38);
 		expect(data.dailyTrend).toEqual([
-			{ day: yesterdayTs, count: 5 },
-			{ day: todayTs, count: 6 },
+			{ day: 1_777_334_400, count: 5 },
+			{ day: 1_777_420_800, count: 6 },
 		]);
 	});
 

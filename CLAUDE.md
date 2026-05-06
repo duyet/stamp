@@ -12,23 +12,22 @@
   Co-Authored-By: Duyet Le <me@duyet.net>
   Co-Authored-By: duyetbot <bot@duyet.net>
   ```
-- Run `biome check .` + `tsc --noEmit` + `vitest run` before committing
-- No external API keys — all AI via CF Workers AI bindings
-- Cloudflare bindings via `getEnv()` from `@/lib/env`
+- Run `bun run lint` + `bunx tsc --noEmit` + `bun run test` before committing
+- No external API keys; use Cloudflare bindings from `getEnv()`
 - Per-request DB via `getDb()` from `@/db` (never global)
-- No `export const runtime = "edge"` — OpenNext uses nodejs_compat
-- After spawning agents, always `git status --porcelain` to catch unstaged work
-- Images use `next/image` with `unoptimized: true` (CF Workers has no optimizer)
+- After spawning agents, run `git status --porcelain` before committing
 
 ## Commands
 
-```
-bun dev                    # Dev server (turbopack)
+```bash
+bun run dev                # Local dev server (loads .env*.development)
 bun run dev:cf             # Dev with local CF bindings (D1, R2, AI)
-bun run build              # Next.js build
-bun run deploy             # OpenNext build + wrangler deploy
+bun run build              # Production build
+bun run preview            # Preview production build locally
+bun run deploy             # Sync worker secrets + build + wrangler deploy
 bun run lint               # Biome check
 bun run lint:fix           # Biome auto-fix
+bun run fmt                # Biome format
 bun run test               # Vitest run
 bun run test:watch         # Vitest watch mode
 bun run setup              # Create D1 + R2 + local migration
@@ -40,6 +39,6 @@ bun run db:migrate:remote  # Apply migrations to production
 
 ## Autonomous Maintenance
 
-Follow @PLAN.md — benchmark → assess → act → verify → ship.
-Track progress in memory/benchmark.md and memory/maintenance-log.md.
-After shipping: brainstorm, update memory/roadmap.md, plan next iteration.
+Follow `PLAN.md`: benchmark -> assess -> act -> verify -> ship.
+Track progress in `memory/benchmark.md` and `memory/maintenance-log.md`.
+After shipping: update `memory/roadmap.md` with next iteration.
