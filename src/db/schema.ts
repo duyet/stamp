@@ -52,18 +52,14 @@ export const stamps = sqliteTable(
 	],
 );
 
-export const rateLimits = sqliteTable(
-	"rate_limits",
-	{
-		id: text("id").primaryKey(),
-		userIp: text("user_ip").notNull(),
-		generationsCount: integer("generations_count").default(0).notNull(),
-		windowStart: integer("window_start", { mode: "timestamp" })
-			.$defaultFn(() => new Date())
-			.notNull(),
-	},
-	(table) => [index("idx_rate_limits_ip").on(table.userIp)],
-);
+export const rateLimits = sqliteTable("rate_limits", {
+	id: text("id").primaryKey(),
+	userIp: text("user_ip").notNull().unique(),
+	generationsCount: integer("generations_count").default(0).notNull(),
+	windowStart: integer("window_start", { mode: "timestamp" })
+		.$defaultFn(() => new Date())
+		.notNull(),
+});
 
 export type Stamp = typeof stamps.$inferSelect;
 export type NewStamp = typeof stamps.$inferInsert;
