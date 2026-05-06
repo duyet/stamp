@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AdminTools } from "@/components/admin-tools";
 import {
 	DashboardContentMemo,
 	RecentStampsSection,
@@ -30,6 +31,7 @@ function DashboardPage() {
 			</div>
 			<DashboardContentMemo />
 			<RecentStampsSection />
+			<AdminTools />
 		</div>
 	);
 }

@@ -16,6 +16,7 @@
 - No external API keys; use Cloudflare bindings from `getEnv()`
 - Per-request DB via `getDb()` from `@/db` (never global)
 - After spawning agents, run `git status --porcelain` before committing
+- For code-smell/dead-code automation runs, save findings to `docs/reviews/code-smell-dead-code-YYYY-MM-DD.md`
 
 ## Commands
 
