@@ -360,4 +360,11 @@ export const PROMPT_GROUPS: readonly PromptGroup[] = [
 		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: randomFrom(FOOD, 10),
 	},
+	{
+		label: "Vietnam",
+		style: "vintage",
+		className: "text-stone-600",
+		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
+		prompts: randomFrom(VIETNAM, 10),
+	},
 ] as const;
