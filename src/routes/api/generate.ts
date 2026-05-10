@@ -619,7 +619,6 @@ export async function POST(request: Request): Promise<Response> {
 		return jsonResponse(
 			{
 				error: "Failed to generate stamp. Please try again.",
-				_debug: sanitizeErrorForLogging(error),
 			},
 			500,
 		);

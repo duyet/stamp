@@ -31,11 +31,14 @@ bun run lint:fix           # Biome auto-fix
 bun run fmt                # Biome format
 bun run test               # Vitest run
 bun run test:watch         # Vitest watch mode
+bun run format             # Biome format (alias of fmt)
 bun run setup              # Create D1 + R2 + local migration
 bun run setup:remote       # Same for production
+bun run setup:ci           # Sync CI secrets
 bun run db:generate        # Generate Drizzle migrations
 bun run db:migrate:local   # Apply migrations locally
 bun run db:migrate:remote  # Apply migrations to production
+bun run db:studio          # Open Drizzle studio
 ```
 
 ## Autonomous Maintenance
