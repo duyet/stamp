@@ -1,5 +1,6 @@
 import { useAuth } from "@clerk/tanstack-react-start";
 import { useState } from "react";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 interface ActionState {
 	loading: boolean;
@@ -15,9 +16,10 @@ type ActionResponse = {
 
 export function AdminTools() {
 	const { isSignedIn } = useAuth();
+	const isAdmin = useIsAdmin();
 	const [actions, setActions] = useState<Record<string, ActionState>>({});
 
-	if (!isSignedIn) return null;
+	if (!isSignedIn || !isAdmin) return null;
 
 	function setAction(key: string, update: Partial<ActionState>) {
 		setActions((prev) => ({
@@ -56,9 +58,15 @@ export function AdminTools() {
 					result: "Done",
 				});
 			} else {
+				const fallback =
+					res.statusText?.trim() || `HTTP ${res.status}` || "Request failed";
+				const errorMessage =
+					typeof data.error === "string" && data.error.trim().length > 0
+						? data.error
+						: fallback;
 				setAction(key, {
 					loading: false,
-					result: `Error: ${data.error ?? "Request failed"}`,
+					result: `Error: ${errorMessage}`,
 				});
 			}
 		} catch {
