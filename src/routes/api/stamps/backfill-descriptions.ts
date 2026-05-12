@@ -9,7 +9,7 @@ import { getEnv } from "@/lib/env";
 import { describeStamp } from "@/lib/generate-stamp";
 import { normalizeStyle } from "@/lib/stamp-prompts";
 
-export async function POST(_request: Request): Promise<Response> {
+export async function POST(): Promise<Response> {
 	try {
 		const env = getEnv();
 		const db = getDb();
@@ -91,7 +91,7 @@ export async function POST(_request: Request): Promise<Response> {
 export const Route = createFileRoute("/api/stamps/backfill-descriptions")({
 	server: {
 		handlers: {
-			POST: ({ request }) => POST(request),
+			POST: () => POST(),
 		},
 	},
 });
