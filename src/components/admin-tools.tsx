@@ -58,9 +58,15 @@ export function AdminTools() {
 					result: "Done",
 				});
 			} else {
+				const fallback =
+					res.statusText?.trim() || `HTTP ${res.status}` || "Request failed";
+				const errorMessage =
+					typeof data.error === "string" && data.error.trim().length > 0
+						? data.error
+						: fallback;
 				setAction(key, {
 					loading: false,
-					result: `Error: ${data.error ?? "Request failed"}`,
+					result: `Error: ${errorMessage}`,
 				});
 			}
 		} catch {

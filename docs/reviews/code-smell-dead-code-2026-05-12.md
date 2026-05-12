@@ -1,15 +1,18 @@
 # Code Smell + Dead Code Review (2026-05-12)
 
 ## Scope
+
 - Window used: last 7 days (`git log --since='7 days ago'`) because there were no commits after `2026-05-11T21:00:27Z` in this repo.
 - Files examined: recently modified files from that window, with focus on `src/components/*`, `src/routes/*`, and `src/lib/*` touched by those commits.
 
 ## Findings
 
 ### Critical
+
 - None with strong repo evidence in this window.
 
 ### Warning
+
 1. Temporary debug detail leaked in 500 responses (production exposure risk)
 - Evidence: commit `9977ce7` added `_debug` to user-visible 500 payload in [`src/routes/api/generate.ts`](../../src/routes/api/generate.ts).
 - Fix: `_debug` now only included in development mode.
@@ -34,6 +37,7 @@
 - Updated lines: [`src/routes/api/admin/check.ts:16`](../../src/routes/api/admin/check.ts#L16)
 
 ### Info
+
 - Lint output includes Biome schema info (`2.4.7` schema with `2.4.6` CLI), but checks pass.
 
 ## Dead Code Candidates (recently modified files)
@@ -51,8 +55,7 @@
   - only definition found in `src/lib/stamp-prompts.ts`
 
 ## Verification
+
 - `bun run lint` ✅ (passes; one Biome schema-version info message)
-- `bunx tsc --noEmit` ❌ still failing, but only on pre-existing unrelated files:
-  - `src/components/stamp-detail-client.tsx:239` (`string | null` style type mismatch)
-  - `src/lib/generate-stamp.ts:93` (model key not in `AiModels`)
+- `bunx tsc --noEmit` ✅
 - `bun run test` ✅ (25 files, 270 tests passed)
