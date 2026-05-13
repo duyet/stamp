@@ -23,14 +23,13 @@ Use this flow for code-smell/dead-code sweeps:
    - `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
    - `git log --since='<last-run-iso>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 2. Prove dead code in non-test files before removal:
-   - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*'`
+   - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 3. Keep only durable lessons in this file.
 4. If a linked worktree cannot write git metadata (for example `FETCH_HEAD` permission errors), run commit/PR steps from the canonical checkout at `/Users/duet/project/stamp`.
 
 ## Current Candidates (Needs Review)
 
-- `buildStampPrompt` in `src/lib/stamp-prompts.ts` has no non-test references.
-- `EXAMPLE_PROMPTS` in `src/lib/stamp-prompts.ts` has no non-test references.
+- None (last reviewed 2026-05-13).
 
 ## Documentation Policy
 

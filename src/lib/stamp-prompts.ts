@@ -76,32 +76,6 @@ export function normalizeStyle(
 		: fallback;
 }
 
-/**
- * Example prompts for the landing page / inspiration.
- */
-export const EXAMPLE_PROMPTS = [
-	"A girl with glasses and black hair",
-	"A cat sitting on a windowsill",
-	"A lighthouse on a rocky coast",
-	"A wise owl with big round eyes",
-	"A cozy coffee cup with steam",
-	"An astronaut in a spacesuit",
-	"A fox in an autumn forest",
-	"A sunflower in a garden",
-];
-
-/**
- * Build the full prompt for stamp generation.
- */
-export function buildStampPrompt(
-	userPrompt: string,
-	style: StampStyle = "vintage",
-): string {
-	const preset = STAMP_STYLE_PRESETS[style];
-	const subject = userPrompt.trim() || "a decorative design";
-	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers, no writing, no typography, no labels — purely illustrative.`;
-}
-
 export interface PromptGroup {
 	label?: string;
 	style?: StampStyle;
