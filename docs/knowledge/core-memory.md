@@ -22,10 +22,12 @@ Use this flow for code-smell/dead-code sweeps:
 1. Scan recent touched files:
    - `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
    - `git log --since='<last-run-iso>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+   - If `<last-run-iso>` returns no commits, fallback to `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 2. Prove dead code in non-test files before removal:
    - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 3. Keep only durable lessons in this file.
 4. If a linked worktree cannot write git metadata (for example `FETCH_HEAD` permission errors), run commit/PR steps from the canonical checkout at `/Users/duet/project/stamp`.
+5. After merge, confirm main-branch CI with `gh run list --branch main --limit 5`.
 
 ## Current Candidates (Needs Review)
 

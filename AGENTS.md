@@ -41,8 +41,10 @@ bun run db:migrate:local   # Apply migrations locally
 bun run db:migrate:remote  # Apply migrations to production
 bun run db:studio          # Open Drizzle studio
 git log --since='<last-run-iso>' --name-only --pretty=format: | sed '/^$/d' | sort -u
+git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u
 git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u
 rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'   # dead-code evidence in non-test files
+gh run list --branch main --limit 5
 ```
 
 ## Autonomous Maintenance
