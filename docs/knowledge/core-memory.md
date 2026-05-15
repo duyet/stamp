@@ -22,6 +22,7 @@ Use this flow for code-smell/dead-code sweeps:
 1. Scan recent touched files:
    - `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
    - `git log --since='<last-run-iso>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+   - `git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso` for repo-wide commit-SHA evidence (including docs-only windows).
    - `git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso -- src` for commit-SHA evidence tied to source changes.
    - If `<last-run-iso>` returns no commits, fallback to `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 2. Prove dead code in non-test files before removal:
@@ -29,10 +30,11 @@ Use this flow for code-smell/dead-code sweeps:
 3. Keep only durable lessons in this file.
 4. If a linked worktree cannot write git metadata (for example `FETCH_HEAD` permission errors), run commit/PR steps from the canonical checkout at `/Users/duet/project/stamp`.
 5. After merge, confirm main-branch CI with `gh run list --branch main --limit 5`.
+6. In sandboxed runs where `bun install` fails with tempdir permission errors, run with external temp/cache paths (for example `TMPDIR=/private/tmp/stamp-tmp BUN_INSTALL_CACHE_DIR=/private/tmp/stamp-bun-cache bun install`) to avoid permission failures and accidental test discovery under repo-local cache folders.
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-05-15).
+- None (last reviewed 2026-05-16).
 
 ## Documentation Policy
 
