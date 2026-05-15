@@ -22,6 +22,7 @@ Use this flow for code-smell/dead-code sweeps:
 1. Scan recent touched files:
    - `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
    - `git log --since='<last-run-iso>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+   - `git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso -- src` for commit-SHA evidence tied to source changes.
    - If `<last-run-iso>` returns no commits, fallback to `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 2. Prove dead code in non-test files before removal:
    - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
@@ -31,7 +32,7 @@ Use this flow for code-smell/dead-code sweeps:
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-05-13).
+- None (last reviewed 2026-05-15).
 
 ## Documentation Policy
 
