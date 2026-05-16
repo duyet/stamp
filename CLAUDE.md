@@ -41,7 +41,9 @@ bun run db:migrate:local   # Apply migrations locally
 bun run db:migrate:remote  # Apply migrations to production
 bun run db:studio          # Open Drizzle studio
 TMPDIR=/private/tmp/stamp-tmp BUN_INSTALL_CACHE_DIR=/private/tmp/stamp-bun-cache bun install
+git switch -c chore/<topic> origin/main
 git log --since='<last-run-iso>' --name-only --pretty=format: | sed '/^$/d' | sort -u
+git log --since='<last-run-iso>' --name-only --pretty=format: -- src | sed '/^$/d' | sort -u
 git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso
 git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso -- src
 git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u
