@@ -22,6 +22,7 @@ Use this flow for code-smell/dead-code sweeps:
 1. Scan recent touched files:
    - `git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
    - `git log --since='<last-run-iso>' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+   - `git log --since='<last-run-iso>' --name-only --pretty=format: -- src | sed '/^$/d' | sort -u` for source-only evidence windows.
    - `git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso` for repo-wide commit-SHA evidence (including docs-only windows).
    - `git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso -- src` for commit-SHA evidence tied to source changes.
    - If `<last-run-iso>` returns no commits, fallback to `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
@@ -34,7 +35,7 @@ Use this flow for code-smell/dead-code sweeps:
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-05-16).
+- None (last reviewed 2026-05-17; source files unchanged since 2026-05-13 in the 7-day window).
 
 ## Documentation Policy
 
