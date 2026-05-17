@@ -10,7 +10,7 @@ const FILL_INSTRUCTION = `CRITICAL: zoom in close, the stamp subject fills 95% o
 
 const STAMP_COMMON = `cream paper background, perforated serrated stamp edges, square format. ${FILL_INSTRUCTION}`;
 
-export const STAMP_BASE_STYLE = `naive folk art illustration on a postage stamp, bold black outlines, stippled dotted shading technique, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, small decorative elements, square format. ${FILL_INSTRUCTION}`;
+const STAMP_BASE_STYLE = `naive folk art illustration on a postage stamp, bold black outlines, stippled dotted shading technique, cream off-white paper background, perforated serrated stamp edges, slightly aged paper texture, hand-drawn feel, limited 2-3 color palette, small decorative elements, square format. ${FILL_INSTRUCTION}`;
 
 export const STAMP_STYLE_PRESETS = {
 	vintage: {

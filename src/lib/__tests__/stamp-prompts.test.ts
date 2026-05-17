@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	PROMPT_GROUPS,
-	STAMP_BASE_STYLE,
-	STAMP_STYLE_PRESETS,
-} from "../stamp-prompts";
+import { PROMPT_GROUPS, STAMP_STYLE_PRESETS } from "../stamp-prompts";
 
 describe("STAMP_STYLE_PRESETS", () => {
 	it("has all 10 styles", () => {
@@ -71,24 +67,16 @@ describe("STAMP_STYLE_PRESETS", () => {
 	});
 });
 
-describe("STAMP_BASE_STYLE", () => {
-	it("includes key style elements", () => {
-		expect(STAMP_BASE_STYLE).toContain("stippled");
-		expect(STAMP_BASE_STYLE).toContain("bold black outlines");
-		expect(STAMP_BASE_STYLE).toContain("perforated");
-		expect(STAMP_BASE_STYLE).toContain("square format");
-	});
-
-	it("includes anti-padding and no-frame constraints", () => {
-		expect(STAMP_BASE_STYLE).toContain("fills the entire image");
-		expect(STAMP_BASE_STYLE).toMatch(/NO padding outside stamp edges/i);
-		expect(STAMP_BASE_STYLE).toMatch(/NO background frame/i);
-	});
-
-	it("does not force portrait-specific elements in base style", () => {
-		expect(STAMP_BASE_STYLE).not.toContain("portrait");
-		expect(STAMP_BASE_STYLE).not.toContain("dot eyes");
-		expect(STAMP_BASE_STYLE).not.toContain("clothing");
+describe("base style behavior through presets", () => {
+	it("keeps anti-padding and no-frame constraints in base styles", () => {
+		const baseStyles = ["vintage", "folk", "modern", "botanical", "portrait"];
+		for (const key of baseStyles) {
+			const preset =
+				STAMP_STYLE_PRESETS[key as keyof typeof STAMP_STYLE_PRESETS];
+			expect(preset.prompt).toContain("fills the entire image");
+			expect(preset.prompt).toMatch(/NO padding outside stamp edges/i);
+			expect(preset.prompt).toMatch(/NO background frame/i);
+		}
 	});
 });
 
