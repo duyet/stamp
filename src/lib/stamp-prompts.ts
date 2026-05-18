@@ -65,7 +65,7 @@ export const STAMP_STYLE_PRESETS = {
 	},
 	logo: {
 		name: "Logo",
-		prompt: `logo-inspired postage stamp illustration, preserve the uploaded logo's main silhouette, geometry, icon proportions, negative space, and recognizable mark structure, simplified vector-like symbol, clean flat color blocks, crisp bold black outlines, limited 2-3 color palette, no readable brand text, no typography, ${STAMP_COMMON}`,
+		prompt: `logo-inspired postage stamp illustration, preserve the provided or requested logo mark's main silhouette, geometry, icon proportions, negative space, and recognizable mark structure, simplified vector-like symbol, clean flat color blocks, crisp bold black outlines, limited 2-3 color palette, no readable brand text, no typography, ${STAMP_COMMON}`,
 		thumbnail: "/styles/logo.jpg",
 	},
 } as const;
