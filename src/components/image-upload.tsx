@@ -36,6 +36,8 @@ export function ImageUpload({
 	async function resizeImage(file: File): Promise<Blob> {
 		return new Promise((resolve, reject) => {
 			const img = document.createElement("img");
+			const objectUrl = URL.createObjectURL(file);
+			const releaseObjectUrl = () => URL.revokeObjectURL(objectUrl);
 			img.onload = () => {
 				// Calculate scale to fit within max dimension
 				const scale = Math.min(
@@ -69,9 +71,13 @@ export function ImageUpload({
 					"image/jpeg",
 					0.82,
 				);
+				releaseObjectUrl();
 			};
-			img.onerror = () => reject(new Error("Failed to load image"));
-			img.src = URL.createObjectURL(file);
+			img.onerror = () => {
+				releaseObjectUrl();
+				reject(new Error("Failed to load image"));
+			};
+			img.src = objectUrl;
 		});
 	}
 

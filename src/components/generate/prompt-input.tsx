@@ -66,7 +66,9 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 			[],
 		);
 
-		const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
+		const [shuffledPrompts, setShuffledPrompts] = useState<string[]>(() =>
+			getRandomPrompts(8),
+		);
 
 		useEffect(() => {
 			setShuffledPrompts(

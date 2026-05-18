@@ -47,6 +47,7 @@ git log --since='<last-run-iso>' --name-only --pretty=format: -- src | sed '/^$/
 git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso
 git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso -- src
 git log --since='<last-run-iso>' --no-merges --pretty=format:'%H %ad %s' --date=iso -- src
+git log --since='<last-run-iso>' --no-merges --name-only --pretty=format: -- src | sed '/^$/d' | sort -u
 git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u
 git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u
 rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'   # dead-code evidence in non-test files
