@@ -20,6 +20,7 @@ interface PromptInputProps {
 	disabled?: boolean;
 	loading?: boolean;
 	referenceImage?: boolean;
+	style?: StampStyle;
 }
 
 export interface PromptInputRef {
@@ -40,12 +41,14 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 			disabled,
 			loading,
 			referenceImage = false,
+			style = "vintage",
 		},
 		ref,
 	) => {
 		const textareaRef = useRef<HTMLTextAreaElement>(null);
 		const [activeGroupIndex, setActiveGroupIndex] = useState(0);
 		const [isShaking, setIsShaking] = useState(false);
+		const isLogoStyle = style === "logo";
 
 		// Expose triggerError method to parent
 		useImperativeHandle(
@@ -63,9 +66,7 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 			[],
 		);
 
-		const [shuffledPrompts, setShuffledPrompts] = useState<string[]>(() => {
-			return [...PROMPT_GROUPS[0].prompts];
-		});
+		const [shuffledPrompts, setShuffledPrompts] = useState<string[]>([]);
 
 		useEffect(() => {
 			setShuffledPrompts(
@@ -84,9 +85,13 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 								Prompt
 							</p>
 							<p className="mt-1 text-sm leading-6 text-stone-600">
-								{referenceImage
-									? "Add extra direction for the uploaded image."
-									: "Describe the scene, subject, or mood you want on the stamp."}
+								{isLogoStyle && referenceImage
+									? "Add optional art direction for the uploaded logo."
+									: isLogoStyle
+										? "Describe the logo mark, badge, or symbol you want on the stamp."
+										: referenceImage
+											? "Add extra direction for the uploaded image."
+											: "Describe the scene, subject, or mood you want on the stamp."}
 							</p>
 						</div>
 						<div className="shrink-0">
@@ -119,9 +124,13 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 								autoResize(e.target);
 							}}
 							placeholder={
-								referenceImage
-									? "Example: turn this photo into a commemorative engraved stamp with a quiet coastal mood"
-									: "Example: rainy Saigon alley with scooters, glowing windows, and a vintage blue engraving feel"
+								isLogoStyle && referenceImage
+									? "Example: keep the circular badge shape, use blue engraving lines, no readable letters"
+									: isLogoStyle
+										? "Example: a circular coffee badge with a mountain silhouette and bold black outlines"
+										: referenceImage
+											? "Example: turn this photo into a commemorative engraved stamp with a quiet coastal mood"
+											: "Example: rainy Saigon alley with scooters, glowing windows, and a vintage blue engraving feel"
 							}
 							maxLength={500}
 							rows={1}
@@ -137,10 +146,14 @@ export const PromptInput = forwardRef<PromptInputRef, PromptInputProps>(
 					<div className="mt-3 flex items-center justify-between gap-3 text-sm text-stone-600">
 						<span id="prompt-hint">
 							{value.length > 0 && referenceImage
-								? "Nice. This will be combined with your reference photo."
+								? isLogoStyle
+									? "Nice. This will be combined with your uploaded logo."
+									: "Nice. This will be combined with your reference photo."
 								: value.length > 0
 									? "Ready to generate whenever you are."
-									: "Start simple, then layer in place, texture, and mood."}
+									: isLogoStyle
+										? "Start with the mark shape, then add palette and print texture."
+										: "Start simple, then layer in place, texture, and mood."}
 						</span>
 						<span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 tabular-nums text-stone-600">
 							{value.length}/500

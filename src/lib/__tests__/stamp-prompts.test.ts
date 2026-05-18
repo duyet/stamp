@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { PROMPT_GROUPS, STAMP_STYLE_PRESETS } from "../stamp-prompts";
 
 describe("STAMP_STYLE_PRESETS", () => {
-	it("has all 10 styles", () => {
+	it("has all 11 styles", () => {
 		const keys = Object.keys(STAMP_STYLE_PRESETS);
 		expect(keys).toEqual([
 			"vintage",
@@ -15,6 +15,7 @@ describe("STAMP_STYLE_PRESETS", () => {
 			"engraved",
 			"pixel",
 			"risograph",
+			"logo",
 		]);
 	});
 
@@ -51,12 +52,23 @@ describe("STAMP_STYLE_PRESETS", () => {
 			"engraved",
 			"pixel",
 			"risograph",
+			"logo",
 		];
 		for (const key of customStyles) {
 			const preset =
 				STAMP_STYLE_PRESETS[key as keyof typeof STAMP_STYLE_PRESETS];
 			expect(preset.prompt).toContain("perforated");
 		}
+	});
+
+	it("logo style preserves mark geometry without readable text", () => {
+		const logo = STAMP_STYLE_PRESETS.logo;
+		expect(logo.prompt).toContain("silhouette");
+		expect(logo.prompt).toContain("geometry");
+		expect(logo.prompt).toContain("negative space");
+		expect(logo.prompt).toContain("recognizable mark structure");
+		expect(logo.prompt).toContain("no readable brand text");
+		expect(logo.prompt).toContain("perforated");
 	});
 
 	it("all styles include no-padding constraint", () => {

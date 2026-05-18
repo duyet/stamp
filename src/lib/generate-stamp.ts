@@ -31,8 +31,24 @@ async function enhancePrompt(
 	ai: Ai,
 	userPrompt: string,
 	style: StampStyle,
+	hasReferenceImage = false,
 ): Promise<string> {
 	const preset = STAMP_STYLE_PRESETS[style];
+	const referenceRules = hasReferenceImage
+		? `
+Reference image rules:
+- Use input_image_0 as the structural reference for composition, silhouette, proportions, and major shapes
+- Preserve the uploaded image's recognizable subject shape while translating it into the selected stamp style
+- Do NOT invent a different subject or mark when a reference image is provided`
+		: "";
+	const logoRules =
+		style === "logo"
+			? `
+Logo style rules:
+- Treat the subject as a graphic logo mark or icon
+- Preserve the main silhouette, geometry, icon proportions, negative space, and recognizable mark structure
+- Convert any lettering into non-readable decorative shapes; do not reproduce brand text, exact typography, words, or letters`
+			: "";
 
 	const systemPrompt = `You are a prompt engineer for an AI image generator that creates postage stamp illustrations.
 Your job: take the user's rough idea and output a single, detailed image generation prompt that faithfully represents what the user asked for.
@@ -56,7 +72,7 @@ Rules:
 - For non-figure subjects (flags, objects, landscapes, buildings, animals, symbols), describe shapes, patterns, colors, and composition instead
 - Do NOT add background elements the user did not ask for — follow the style preset faithfully
 - NEVER include any text, words, letters, numbers, calligraphy, writing, or typography — the image generator cannot spell correctly, so include ZERO readable characters in your prompt. Use phrases like "purely illustrative", "no text", "no labels", "no writing" to reinforce this
-- Keep the composition centered`;
+- Keep the composition centered${referenceRules}${logoRules}`;
 
 	const response = (await ai.run("@cf/qwen/qwen3-30b-a3b-fp8", {
 		messages: [
@@ -67,16 +83,30 @@ Rules:
 		temperature: 0.7,
 	})) as { response?: string };
 
-	return response.response?.trim() || buildFallbackPrompt(userPrompt, style);
+	return (
+		response.response?.trim() ||
+		buildFallbackPrompt(userPrompt, style, hasReferenceImage)
+	);
 }
 
 /**
  * Fallback prompt builder if LLM enhancement fails.
  */
-function buildFallbackPrompt(userPrompt: string, style: StampStyle): string {
+function buildFallbackPrompt(
+	userPrompt: string,
+	style: StampStyle,
+	hasReferenceImage = false,
+): string {
 	const preset = STAMP_STYLE_PRESETS[style];
 	const subject = userPrompt.trim() || "a decorative design";
-	return `${preset.prompt}. Subject: ${subject}. No text, no words, no letters, no numbers, no writing, no typography, no labels — purely illustrative.`;
+	const referenceInstruction = hasReferenceImage
+		? " Use input_image_0 as the structural reference; preserve the recognizable silhouette, proportions, geometry, negative space, and major shapes while converting it into a stamp illustration."
+		: "";
+	const logoInstruction =
+		style === "logo"
+			? " Preserve the logo-like mark structure and convert any lettering into non-readable decorative shapes."
+			: "";
+	return `${preset.prompt}. Subject: ${subject}.${referenceInstruction}${logoInstruction} No text, no words, no letters, no numbers, no writing, no typography, no labels — purely illustrative.`;
 }
 
 export async function describeStamp(
@@ -179,13 +209,22 @@ export async function generateStamp(
 	// Stage 1: Auto-enhance prompt with LLM
 	let enhancedPrompt: string;
 	try {
-		enhancedPrompt = await enhancePrompt(ai, userPrompt, style);
+		enhancedPrompt = await enhancePrompt(
+			ai,
+			userPrompt,
+			style,
+			!!referenceImageData,
+		);
 	} catch (err) {
 		console.warn(
 			"[Generate] Prompt enhancement failed, using fallback:",
 			err instanceof Error ? err.message : String(err),
 		);
-		enhancedPrompt = buildFallbackPrompt(userPrompt, style);
+		enhancedPrompt = buildFallbackPrompt(
+			userPrompt,
+			style,
+			!!referenceImageData,
+		);
 	}
 
 	// Stage 2: Generate image

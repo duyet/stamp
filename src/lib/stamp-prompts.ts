@@ -63,6 +63,11 @@ export const STAMP_STYLE_PRESETS = {
 		prompt: `risograph print postage stamp, overlapping semi-transparent neon colors, grainy ink texture, slight misregistration between color layers, bold flat graphic shapes, modern print aesthetic, fluorescent pink and blue ink, ${STAMP_COMMON}`,
 		thumbnail: "/styles/risograph.jpg",
 	},
+	logo: {
+		name: "Logo",
+		prompt: `logo-inspired postage stamp illustration, preserve the provided or requested logo mark's main silhouette, geometry, icon proportions, negative space, and recognizable mark structure, simplified vector-like symbol, clean flat color blocks, crisp bold black outlines, limited 2-3 color palette, no readable brand text, no typography, ${STAMP_COMMON}`,
+		thumbnail: "/styles/logo.jpg",
+	},
 } as const;
 
 export type StampStyle = keyof typeof STAMP_STYLE_PRESETS;

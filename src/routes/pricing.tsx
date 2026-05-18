@@ -26,7 +26,7 @@ export const Route = createFileRoute("/pricing")({
 
 const freeFeatures = [
 	"100 credits per day",
-	"All 10 styles available",
+	"All 11 styles available",
 	"Public collection sharing",
 	"Download stamps",
 	"Free account required",

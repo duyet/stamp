@@ -9,16 +9,22 @@ export interface ReferenceData {
 interface ImageUploadProps {
 	onSelected: (data: ReferenceData | null) => void;
 	disabled?: boolean;
+	referenceKind?: "image" | "logo";
 }
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
-export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
+export function ImageUpload({
+	onSelected,
+	disabled,
+	referenceKind = "image",
+}: ImageUploadProps) {
 	const [preview, setPreview] = useState<string | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const [processing, setProcessing] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const isLogo = referenceKind === "logo";
 
 	// Cleanup blob URL on unmount or when preview changes
 	useEffect(() => {
@@ -178,14 +184,21 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 						<UploadIcon />
 					</div>
 					<p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-						Reference image
+						{isLogo ? "Reference logo" : "Reference image"}
 					</p>
 					<span className="text-base font-semibold text-stone-950">
-						{isDragging ? "Drop image here" : "Click to upload image"}
+						{isDragging
+							? isLogo
+								? "Drop logo here"
+								: "Drop image here"
+							: isLogo
+								? "Click to upload logo"
+								: "Click to upload image"}
 					</span>
 					<span className="max-w-xs text-sm leading-6 text-stone-600">
-						JPG, PNG, or WebP up to 5MB. We resize it for the model and use it
-						to steer the stamp composition.
+						{isLogo
+							? "JPG, PNG, or WebP up to 5MB. A simple mark or icon works best for preserving the stamp silhouette."
+							: "JPG, PNG, or WebP up to 5MB. We resize it for the model and use it to steer the stamp composition."}
 					</span>
 				</button>
 			) : (
@@ -204,16 +217,19 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 					</div>
 					<div className="min-w-0 flex-1">
 						<p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-							Image attached
+							{isLogo ? "Logo attached" : "Image attached"}
 						</p>
 						<p className="mt-1 text-sm font-semibold text-stone-950">
 							{processing
 								? "Processing your reference..."
-								: "Reference photo ready for generation"}
+								: isLogo
+									? "Logo reference ready for generation"
+									: "Reference photo ready for generation"}
 						</p>
 						<p className="mt-1 text-xs leading-5 text-stone-600">
-							HD mode stays on so the generated stamp can track the uploaded
-							composition more closely.
+							{isLogo
+								? "HD mode stays on so the generated stamp can follow the logo shape more closely."
+								: "HD mode stays on so the generated stamp can track the uploaded composition more closely."}
 						</p>
 					</div>
 					<button
@@ -221,7 +237,9 @@ export function ImageUpload({ onSelected, disabled }: ImageUploadProps) {
 						onClick={handleClear}
 						className="shrink-0 rounded-full border border-stone-200 bg-white p-2 text-stone-500 transition-colors hover:border-stone-400 hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={disabled || processing}
-						aria-label="Remove reference image"
+						aria-label={
+							isLogo ? "Remove reference logo" : "Remove reference image"
+						}
 					>
 						<CloseIcon />
 					</button>
