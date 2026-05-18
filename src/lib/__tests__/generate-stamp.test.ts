@@ -145,20 +145,23 @@ describe("reference-based generation", () => {
 		const referenceImage = new Uint8Array([1, 2, 3, 4, 5]);
 		const appendSpy = vi.spyOn(FormData.prototype, "append");
 
-		await generateStamp(mockAi, "prompt", "vintage", true, referenceImage);
+		try {
+			await generateStamp(mockAi, "prompt", "vintage", true, referenceImage);
 
-		const calls = vi.mocked(mockAi.run).mock.calls;
-		const fluxCall = calls.find(
-			(c) => typeof c[0] === "string" && c[0].includes("flux"),
-		);
-		expect(fluxCall).toBeDefined();
+			const calls = vi.mocked(mockAi.run).mock.calls;
+			const fluxCall = calls.find(
+				(c) => typeof c[0] === "string" && c[0].includes("flux"),
+			);
+			expect(fluxCall).toBeDefined();
 
-		// Verify multipart body with FormData is used
-		const multipartData = (fluxCall?.[1] as Record<string, unknown>)
-			?.multipart as { body?: unknown };
-		expect(multipartData?.body).toBeDefined();
-		expect(appendSpy).toHaveBeenCalledWith("input_image_0", expect.any(File));
-		appendSpy.mockRestore();
+			// Verify multipart body with FormData is used
+			const multipartData = (fluxCall?.[1] as Record<string, unknown>)
+				?.multipart as { body?: unknown };
+			expect(multipartData?.body).toBeDefined();
+			expect(appendSpy).toHaveBeenCalledWith("input_image_0", expect.any(File));
+		} finally {
+			appendSpy.mockRestore();
+		}
 	});
 
 	it("generates successfully with reference image and HD mode", async () => {

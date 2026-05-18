@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { GenerateForm } from "@/components/generate-form";
 import { useTrack } from "@/hooks/use-track";
 import type { StampStyle } from "@/lib/stamp-prompts";
@@ -13,11 +13,18 @@ export function GeneratePageClient({
 	initialStyle,
 }: GeneratePageClientProps) {
 	const { track } = useTrack();
-	const isLogoStyle = initialStyle === "logo";
+	const [selectedStyle, setSelectedStyle] = useState<StampStyle>(
+		initialStyle ?? "vintage",
+	);
+	const isLogoStyle = selectedStyle === "logo";
 
 	useEffect(() => {
 		track("page_view", { context: "generate" });
 	}, [track]);
+
+	useEffect(() => {
+		setSelectedStyle(initialStyle ?? "vintage");
+	}, [initialStyle]);
 
 	return (
 		<div className="mx-auto max-w-6xl animate-page-fade-in px-4 py-8 sm:px-6 sm:py-12">
@@ -31,7 +38,11 @@ export function GeneratePageClient({
 						: "Upload a reference image, choose a print style, then add a short prompt for the final stamp."}
 				</p>
 			</div>
-			<GenerateForm initialPrompt={initialPrompt} initialStyle={initialStyle} />
+			<GenerateForm
+				initialPrompt={initialPrompt}
+				initialStyle={initialStyle}
+				onStyleChange={setSelectedStyle}
+			/>
 		</div>
 	);
 }

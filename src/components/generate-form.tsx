@@ -34,12 +34,14 @@ interface GenerateFormProps {
 	}) => void;
 	initialPrompt?: string;
 	initialStyle?: StampStyle;
+	onStyleChange?: (style: StampStyle) => void;
 }
 
 export function GenerateForm({
 	onGenerated,
 	initialPrompt = "",
 	initialStyle = "vintage",
+	onStyleChange,
 }: GenerateFormProps) {
 	const [prompt, setPrompt] = useState(initialPrompt);
 	const [style, setStyle] = useState<StampStyle>(initialStyle);
@@ -70,6 +72,14 @@ export function GenerateForm({
 	useEffect(() => {
 		setStyle(initialStyle);
 	}, [initialStyle]);
+
+	const handleStyleChange = useCallback(
+		(nextStyle: StampStyle) => {
+			setStyle(nextStyle);
+			onStyleChange?.(nextStyle);
+		},
+		[onStyleChange],
+	);
 
 	// Countdown timer for rate limit
 	useEffect(() => {
@@ -247,7 +257,10 @@ export function GenerateForm({
 						disabled={loading}
 					/>
 
-					<StyleSelector currentStyle={style} onStyleChange={setStyle} />
+					<StyleSelector
+						currentStyle={style}
+						onStyleChange={handleStyleChange}
+					/>
 				</div>
 
 				<div className="space-y-5">
@@ -255,7 +268,7 @@ export function GenerateForm({
 						ref={promptInputRef}
 						value={prompt}
 						onChange={setPrompt}
-						onStyleChange={setStyle}
+						onStyleChange={handleStyleChange}
 						disabled={loading}
 						loading={loading}
 						referenceImage={!!reference}

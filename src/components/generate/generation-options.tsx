@@ -108,8 +108,6 @@ export function GenerationOptions({
 							<LoadingSpinner size="sm" />
 							Creating stamp...
 						</>
-					) : isLogoStyle && referenceImage ? (
-						"Generate logo stamp"
 					) : isLogoStyle && hdChecked ? (
 						"Generate logo HD (5 credits)"
 					) : isLogoStyle ? (

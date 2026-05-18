@@ -237,7 +237,9 @@ export function ImageUpload({
 						onClick={handleClear}
 						className="shrink-0 rounded-full border border-stone-200 bg-white p-2 text-stone-500 transition-colors hover:border-stone-400 hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={disabled || processing}
-						aria-label="Remove reference image"
+						aria-label={
+							isLogo ? "Remove reference logo" : "Remove reference image"
+						}
 					>
 						<CloseIcon />
 					</button>
