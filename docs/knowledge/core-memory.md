@@ -26,6 +26,7 @@ Use this flow for code-smell/dead-code sweeps:
    - `git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso` for repo-wide commit-SHA evidence (including docs-only windows).
    - `git log --since='<last-run-iso>' --pretty=format:'%H %ad %s' --date=iso -- src` for commit-SHA evidence tied to source changes.
    - `git log --since='<last-run-iso>' --no-merges --pretty=format:'%H %ad %s' --date=iso -- src` to isolate direct source commits when merge commits dominate the window.
+   - `git log --since='<last-run-iso>' --no-merges --name-only --pretty=format: -- src | sed '/^$/d' | sort -u` to isolate direct source file paths when merge commits dominate the window.
    - If `<last-run-iso>` returns no commits, fallback to `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
 2. Prove dead code in non-test files before removal:
    - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
@@ -36,7 +37,7 @@ Use this flow for code-smell/dead-code sweeps:
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-05-18; direct source commits in window were already covered by merged fixes and no new non-test dead code was found).
+- None (last reviewed 2026-05-19; no new zero-reference non-test symbols found, and a temporary blob URL cleanup was already applied in `src/components/image-upload.tsx`).
 
 ## Documentation Policy
 
