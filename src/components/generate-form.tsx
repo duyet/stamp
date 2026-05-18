@@ -235,6 +235,7 @@ export function GenerateForm({
 				<div className="space-y-5">
 					<ImageUpload
 						key={referenceResetToken}
+						referenceKind={style === "logo" ? "logo" : "image"}
 						onSelected={(data) => {
 							setReference(data ? data.referenceImageData : null);
 							if (data && isSignedIn) {
@@ -258,6 +259,7 @@ export function GenerateForm({
 						disabled={loading}
 						loading={loading}
 						referenceImage={!!reference}
+						style={style}
 					/>
 
 					<GenerationOptions
@@ -269,6 +271,7 @@ export function GenerateForm({
 						disabled={!prompt.trim() && !reference}
 						referenceImage={!!reference}
 						isSignedIn={isSignedIn === true}
+						style={style}
 					/>
 				</div>
 			</form>

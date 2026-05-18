@@ -100,6 +100,33 @@ describe("generateStamp", () => {
 			expect(result.imageData).toBeInstanceOf(Uint8Array);
 		}
 	});
+
+	it("adds logo reference guidance to prompt enhancement", async () => {
+		const mockAi = createMockAi("enhanced logo prompt", btoa("logo-stamp"));
+		const referenceImage = new Uint8Array([0xff, 0xd8, 0xff, 0x00]);
+
+		await generateStamp(
+			mockAi,
+			"make this logo a stamp",
+			"logo",
+			true,
+			referenceImage,
+		);
+
+		const calls = vi.mocked(mockAi.run).mock.calls;
+		const qwenCall = calls.find(
+			(c) => typeof c[0] === "string" && c[0].includes("qwen3-30b"),
+		);
+		const messages = (
+			qwenCall?.[1] as { messages?: Array<{ content: string }> }
+		)?.messages;
+		const systemPrompt = messages?.[0]?.content ?? "";
+		expect(systemPrompt).toContain("Use input_image_0");
+		expect(systemPrompt).toContain("silhouette");
+		expect(systemPrompt).toContain("icon proportions");
+		expect(systemPrompt).toContain("negative space");
+		expect(systemPrompt).toContain("do not reproduce brand text");
+	});
 });
 
 describe("reference-based generation", () => {
@@ -116,6 +143,7 @@ describe("reference-based generation", () => {
 	it("passes reference image data to Flux 2 in HD mode", async () => {
 		const mockAi = createMockAi("enhanced", btoa("fake-image-data"));
 		const referenceImage = new Uint8Array([1, 2, 3, 4, 5]);
+		const appendSpy = vi.spyOn(FormData.prototype, "append");
 
 		await generateStamp(mockAi, "prompt", "vintage", true, referenceImage);
 
@@ -129,6 +157,8 @@ describe("reference-based generation", () => {
 		const multipartData = (fluxCall?.[1] as Record<string, unknown>)
 			?.multipart as { body?: unknown };
 		expect(multipartData?.body).toBeDefined();
+		expect(appendSpy).toHaveBeenCalledWith("input_image_0", expect.any(File));
+		appendSpy.mockRestore();
 	});
 
 	it("generates successfully with reference image and HD mode", async () => {
@@ -145,5 +175,33 @@ describe("reference-based generation", () => {
 
 		expect(result.imageData).toBeInstanceOf(Uint8Array);
 		expect(result.imageData.length).toBeGreaterThan(0);
+	});
+
+	it("includes logo shape preservation in fallback prompt", async () => {
+		const mockAi = {
+			run: vi.fn().mockImplementation((model: string) => {
+				if (model.includes("qwen")) {
+					return Promise.reject(new Error("LLM unavailable"));
+				}
+				if (model.includes("flux")) {
+					return Promise.resolve({ image: btoa("logo-image") });
+				}
+			}),
+		} as unknown as Ai;
+		const referenceImage = new Uint8Array([0xff, 0xd8, 0xff, 0x00]);
+
+		const result = await generateStamp(
+			mockAi,
+			"round coffee logo",
+			"logo",
+			true,
+			referenceImage,
+		);
+
+		expect(result.enhancedPrompt).toContain("Use input_image_0");
+		expect(result.enhancedPrompt).toContain("silhouette");
+		expect(result.enhancedPrompt).toContain("negative space");
+		expect(result.enhancedPrompt).toContain("logo-like mark structure");
+		expect(result.enhancedPrompt).toContain("non-readable decorative shapes");
 	});
 });

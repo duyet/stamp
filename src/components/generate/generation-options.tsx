@@ -2,6 +2,7 @@ import { useClerk } from "@clerk/tanstack-react-start";
 
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { Toggle } from "@/components/toggle";
+import type { StampStyle } from "@/lib/stamp-prompts";
 
 interface GenerationOptionsProps {
 	isPublic: boolean;
@@ -12,6 +13,7 @@ interface GenerationOptionsProps {
 	disabled: boolean;
 	referenceImage?: boolean;
 	isSignedIn: boolean;
+	style?: StampStyle;
 }
 
 interface GenerationOptionsState {
@@ -57,10 +59,12 @@ export function GenerationOptions({
 	disabled,
 	referenceImage = false,
 	isSignedIn,
+	style = "vintage",
 }: GenerationOptionsProps) {
 	const clerk = useClerk();
 	const state = getGenerationOptionsState(isSignedIn, isPublic, hd);
 	const hdChecked = state.effectiveHd;
+	const isLogoStyle = style === "logo";
 
 	return (
 		<div className="rounded-[1rem] border border-stone-200 bg-white p-4">
@@ -104,6 +108,12 @@ export function GenerationOptions({
 							<LoadingSpinner size="sm" />
 							Creating stamp...
 						</>
+					) : isLogoStyle && referenceImage ? (
+						"Generate logo stamp"
+					) : isLogoStyle && hdChecked ? (
+						"Generate logo HD (5 credits)"
+					) : isLogoStyle ? (
+						"Generate logo stamp"
 					) : referenceImage ? (
 						"Generate from photo"
 					) : hdChecked ? (

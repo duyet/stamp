@@ -13,6 +13,7 @@ export function GeneratePageClient({
 	initialStyle,
 }: GeneratePageClientProps) {
 	const { track } = useTrack();
+	const isLogoStyle = initialStyle === "logo";
 
 	useEffect(() => {
 		track("page_view", { context: "generate" });
@@ -25,8 +26,9 @@ export function GeneratePageClient({
 					Create your stamp
 				</h1>
 				<p className="mt-3 max-w-xl text-sm leading-6 text-stone-600 sm:text-base">
-					Upload a reference image, choose a print style, then add a short
-					prompt for the final stamp.
+					{isLogoStyle
+						? "Upload a logo or mark, keep Logo selected, then add a short prompt for the final stamp."
+						: "Upload a reference image, choose a print style, then add a short prompt for the final stamp."}
 				</p>
 			</div>
 			<GenerateForm initialPrompt={initialPrompt} initialStyle={initialStyle} />
