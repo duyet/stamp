@@ -24,17 +24,17 @@
 		"test:watch": "vitest"
 	},
 	"dependencies": {
-		"@clerk/tanstack-react-start": "^1.0.7",
-		"@cloudflare/vite-plugin": "^1.30.1",
+		"@clerk/tanstack-react-start": "^1.2.7",
+		"@cloudflare/vite-plugin": "^1.37.2",
 		"@tailwindcss/vite": "^4.2.2",
-		"@tanstack/react-router": "^1.168.5",
-		"@tanstack/react-start": "^1.167.9",
-		"@vitejs/plugin-react": "^6.0.1",
-		"drizzle-orm": "^0.45.1",
+		"@tanstack/react-router": "^1.170.4",
+		"@tanstack/react-start": "^1.168.6",
+		"@vitejs/plugin-react": "^6.0.2",
+		"drizzle-orm": "^0.45.2",
 		"nanoid": "^5.1.7",
 		"react": "19.2.6",
 		"react-dom": "19.2.6",
-		"vite": "^8.0.3",
+		"vite": "^8.0.13",
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
@@ -43,11 +43,16 @@
 		"@types/node": "^25.0.0",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
-		"drizzle-kit": "^0.31.9",
+		"drizzle-kit": "^0.31.10",
 		"tailwindcss": "^4",
 		"typescript": "^6.0.0",
-		"vitest": "^4.1.0",
-		"wrangler": "^4.73.0"
+		"vitest": "^4.1.6",
+		"wrangler": "^4.93.0"
+	},
+	"overrides": {
+		"esbuild": "0.28.0",
+		"picomatch": "4.0.4",
+		"ws": "8.20.1"
 	},
 	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
