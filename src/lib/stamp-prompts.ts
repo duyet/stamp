@@ -84,8 +84,6 @@ export function normalizeStyle(
 export interface PromptGroup {
 	label?: string;
 	style?: StampStyle;
-	className: string;
-	hoverClassName: string;
 	prompts: readonly string[];
 }
 
@@ -310,45 +308,31 @@ export function getRandomPrompts(count: number = 12): string[] {
 export const PROMPT_GROUPS: readonly PromptGroup[] = [
 	{
 		label: "Ideas",
-		className: "text-stone-600",
-		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: getRandomPrompts(10),
 	},
 	{
 		label: "Animals",
-		className: "text-stone-600",
-		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: randomFrom(ANIMALS, 10),
 	},
 	{
 		label: "Nature",
-		className: "text-stone-600",
-		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: randomFrom(NATURE, 10),
 	},
 	{
 		label: "People",
-		className: "text-stone-600",
-		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: randomFrom(PEOPLE, 10),
 	},
 	{
 		label: "Objects",
-		className: "text-stone-600",
-		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: randomFrom(OBJECTS, 10),
 	},
 	{
 		label: "Food",
-		className: "text-stone-600",
-		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: randomFrom(FOOD, 10),
 	},
 	{
 		label: "Vietnam",
 		style: "vintage",
-		className: "text-stone-600",
-		hoverClassName: "hover:text-stone-800 hover:bg-stone-100",
 		prompts: randomFrom(VIETNAM, 10),
 	},
 ] as const;

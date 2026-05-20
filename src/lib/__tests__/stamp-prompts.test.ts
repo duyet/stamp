@@ -126,11 +126,4 @@ describe("PROMPT_GROUPS", () => {
 			}
 		}
 	});
-
-	it("each group has className and hoverClassName", () => {
-		for (const group of PROMPT_GROUPS) {
-			expect(group.className).toBeTruthy();
-			expect(group.hoverClassName).toBeTruthy();
-		}
-	});
 });

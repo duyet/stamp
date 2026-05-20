@@ -55,6 +55,7 @@ export function ImageUpload({
 				const ctx = canvas.getContext("2d");
 
 				if (!ctx) {
+					releaseObjectUrl();
 					reject(new Error("Could not get canvas context"));
 					return;
 				}
@@ -82,6 +83,8 @@ export function ImageUpload({
 	}
 
 	async function handleFile(file: File) {
+		if (disabled || processing) return;
+
 		if (
 			!ACCEPTED_TYPES.includes(file.type as (typeof ACCEPTED_TYPES)[number])
 		) {
@@ -102,18 +105,21 @@ export function ImageUpload({
 			const resizedBlob = await resizeImage(file);
 
 			// Convert to base64
-			const base64 = await new Promise<string>((resolve) => {
+			const base64 = await new Promise<string>((resolve, reject) => {
 				const reader = new FileReader();
 				reader.onload = () => {
 					const result = reader.result as string;
 					// Remove data URL prefix
 					resolve(result.split(",")[1]);
 				};
+				reader.onerror = () => reject(new Error("Failed to read image"));
 				reader.readAsDataURL(resizedBlob);
 			});
 
 			onSelected({ referenceImageData: base64 });
 		} catch (err) {
+			setPreview(null);
+			onSelected(null);
 			setErrorMsg("Failed to process image. Please try another.");
 			console.error("Image resize error:", err);
 		} finally {
@@ -131,6 +137,7 @@ export function ImageUpload({
 	function handleDrop(e: React.DragEvent) {
 		e.preventDefault();
 		setIsDragging(false);
+		if (disabled || processing) return;
 		const file = e.dataTransfer.files[0];
 		if (file) handleFile(file);
 	}
@@ -141,6 +148,7 @@ export function ImageUpload({
 
 	function handleDragEnter(e: React.DragEvent) {
 		e.preventDefault();
+		if (disabled || processing) return;
 		setIsDragging(true);
 	}
 
@@ -168,7 +176,7 @@ export function ImageUpload({
 				<button
 					type="button"
 					onClick={() => {
-						if (inputRef.current) {
+						if (!disabled && !processing && inputRef.current) {
 							inputRef.current.value = "";
 							inputRef.current.click();
 						}
@@ -178,6 +186,7 @@ export function ImageUpload({
 					onDragEnter={handleDragEnter}
 					onDragLeave={handleDragLeave}
 					aria-disabled={disabled}
+					disabled={disabled || processing}
 					className={`flex min-h-[260px] w-full flex-col items-center justify-center gap-3 rounded-[1rem] border-2 border-dashed px-5 py-8 text-center transition-all duration-200 ${
 						disabled
 							? "cursor-not-allowed border-stone-200 bg-stone-50/80 opacity-50"
