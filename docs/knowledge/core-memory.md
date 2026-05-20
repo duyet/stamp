@@ -31,13 +31,13 @@ Use this flow for code-smell/dead-code sweeps:
 2. Prove dead code in non-test files before removal:
    - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 3. Keep only durable lessons in this file.
-4. If a linked worktree cannot write git metadata (for example `FETCH_HEAD` permission errors), run commit/PR steps from the canonical checkout at `/Users/duet/project/stamp`.
+4. If a linked worktree cannot write git metadata (for example `FETCH_HEAD` permission errors), run commit/PR steps from the canonical checkout at `/Users/duet/project/stamp`; fast-forward `main` there with `git pull --ff-only origin main` before branching.
 5. After merge, confirm main-branch CI with `gh run list --branch main --limit 5`.
 6. In sandboxed runs where `bun install` fails with tempdir permission errors, run with external temp/cache paths (for example `TMPDIR=/private/tmp/stamp-tmp BUN_INSTALL_CACHE_DIR=/private/tmp/stamp-bun-cache bun install`) to avoid permission failures and accidental test discovery under repo-local cache folders.
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-05-19; no new zero-reference non-test symbols found, and a temporary blob URL cleanup was already applied in `src/components/image-upload.tsx`).
+- None (last reviewed 2026-05-21; unused prompt group style metadata was removed after zero non-test reads, and disabled image upload now blocks click/drop processing).
 
 ## Documentation Policy
 
