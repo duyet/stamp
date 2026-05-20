@@ -25,6 +25,7 @@ export function ImageUpload({
 	const [isDragging, setIsDragging] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const isLogo = referenceKind === "logo";
+	const canInteract = !disabled && !processing;
 
 	// Cleanup blob URL on unmount or when preview changes
 	useEffect(() => {
@@ -83,7 +84,7 @@ export function ImageUpload({
 	}
 
 	async function handleFile(file: File) {
-		if (disabled || processing) return;
+		if (!canInteract) return;
 
 		if (
 			!ACCEPTED_TYPES.includes(file.type as (typeof ACCEPTED_TYPES)[number])
@@ -137,7 +138,7 @@ export function ImageUpload({
 	function handleDrop(e: React.DragEvent) {
 		e.preventDefault();
 		setIsDragging(false);
-		if (disabled || processing) return;
+		if (!canInteract) return;
 		const file = e.dataTransfer.files[0];
 		if (file) handleFile(file);
 	}
@@ -148,7 +149,7 @@ export function ImageUpload({
 
 	function handleDragEnter(e: React.DragEvent) {
 		e.preventDefault();
-		if (disabled || processing) return;
+		if (!canInteract) return;
 		setIsDragging(true);
 	}
 
@@ -176,7 +177,7 @@ export function ImageUpload({
 				<button
 					type="button"
 					onClick={() => {
-						if (!disabled && !processing && inputRef.current) {
+						if (canInteract && inputRef.current) {
 							inputRef.current.value = "";
 							inputRef.current.click();
 						}
@@ -185,10 +186,10 @@ export function ImageUpload({
 					onDragOver={handleDragOver}
 					onDragEnter={handleDragEnter}
 					onDragLeave={handleDragLeave}
-					aria-disabled={disabled}
-					disabled={disabled || processing}
+					aria-disabled={!canInteract}
+					disabled={!canInteract}
 					className={`flex min-h-[260px] w-full flex-col items-center justify-center gap-3 rounded-[1rem] border-2 border-dashed px-5 py-8 text-center transition-all duration-200 ${
-						disabled
+						!canInteract
 							? "cursor-not-allowed border-stone-200 bg-stone-50/80 opacity-50"
 							: isDragging
 								? "scale-[1.01] cursor-copy border-stone-800 bg-stone-100"
