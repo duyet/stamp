@@ -37,7 +37,7 @@ Use this flow for code-smell/dead-code sweeps:
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-05-21; unused prompt group style metadata was removed after zero non-test reads, and disabled image upload now blocks click/drop processing).
+- None (last reviewed 2026-05-22; PR #78 `esbuild` override and PR #79 upload/prompt cleanup had clean lint, typecheck, test, and main CI evidence, with no new zero-reference non-test symbols found).
 
 ## Documentation Policy
 
