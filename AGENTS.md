@@ -18,6 +18,7 @@
 - After spawning agents, run `git status --porcelain` before committing
 - Project core memory: `docs/knowledge/core-memory.md` (listed in `docs/INDEX.md`)
 - Do not create dated AI review docs in `docs/reviews/`; update core memory instead
+- If a linked worktree cannot fetch due `FETCH_HEAD` permissions, use `/Users/duet/project/stamp` for commit/PR work after `git pull --ff-only origin main`
 
 ## Commands
 
