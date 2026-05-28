@@ -28,7 +28,7 @@ Use this flow for code-smell/dead-code sweeps:
    - `git log --since='<last-run-iso>' --no-merges --pretty=format:'%H %ad %s' --date=iso -- src` to isolate direct source commits when merge commits dominate the window.
    - `git log --since='<last-run-iso>' --no-merges --name-only --pretty=format: -- src | sed '/^$/d' | sort -u` to isolate direct source file paths when merge commits dominate the window.
    - If `<last-run-iso>` returns no commits, fallback to `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
-   - If a detached worktree or docs-only window makes the local history look stale, confirm recent merged PRs with `gh pr list --state merged --limit 10 --json number,title,mergedAt,mergeCommit,headRefName,baseRefName` before calling the scan complete.
+   - If a detached worktree or docs-only window makes the local history look stale, confirm recent merged PRs with `gh pr list --base main --state merged --limit 10 --json number,title,mergedAt,mergeCommit,headRefName,baseRefName` before considering the scan complete.
 2. Prove dead code in non-test files before removal:
    - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 3. Keep only durable lessons in this file.

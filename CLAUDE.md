@@ -55,7 +55,7 @@ git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort
 git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u
 rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'   # dead-code evidence in non-test files
 gh run list --branch main --limit 5
-gh pr list --state merged --limit 10 --json number,title,mergedAt,mergeCommit,headRefName,baseRefName
+gh pr list --base main --state merged --limit 10 --json number,title,mergedAt,mergeCommit,headRefName,baseRefName
 ```
 
 ## Autonomous Maintenance
