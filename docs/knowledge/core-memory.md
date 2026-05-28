@@ -28,6 +28,7 @@ Use this flow for code-smell/dead-code sweeps:
    - `git log --since='<last-run-iso>' --no-merges --pretty=format:'%H %ad %s' --date=iso -- src` to isolate direct source commits when merge commits dominate the window.
    - `git log --since='<last-run-iso>' --no-merges --name-only --pretty=format: -- src | sed '/^$/d' | sort -u` to isolate direct source file paths when merge commits dominate the window.
    - If `<last-run-iso>` returns no commits, fallback to `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
+   - If a detached worktree or docs-only window makes the local history look stale, confirm recent merged PRs with `gh pr list --base main --state merged --limit 10 --json number,title,mergedAt,mergeCommit,headRefName,baseRefName` before considering the scan complete.
 2. Prove dead code in non-test files before removal:
    - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 3. Keep only durable lessons in this file.
@@ -37,7 +38,7 @@ Use this flow for code-smell/dead-code sweeps:
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-05-22; PR #78 `esbuild` override and PR #79 upload/prompt cleanup had clean lint, typecheck, test, and main CI evidence, with no new zero-reference non-test symbols found).
+- None (last reviewed 2026-05-29; the only new merged change after that window was PR #81 / `1f90ce8` updating the `ws` override to `8.21.0`, main CI run `26316095030` succeeded, and no new zero-reference non-test symbols were found in the recently touched source files from PRs #73 and #79).
 
 ## Documentation Policy
 
