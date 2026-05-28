@@ -19,6 +19,7 @@
 - Project core memory: `docs/knowledge/core-memory.md` (listed in `docs/INDEX.md`)
 - Do not create dated AI review docs in `docs/reviews/`; update core memory instead
 - If a linked worktree cannot fetch due `FETCH_HEAD` permissions, use `/Users/duet/project/stamp` for commit/PR work after `git pull --ff-only origin main`
+- If a linked worktree is detached or the last-run window shows only docs churn, cross-check recent merged PRs on `main` before concluding there were no source changes
 
 ## Commands
 
@@ -54,6 +55,7 @@ git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort
 git log --since='7 days ago' --name-only --pretty=format: | sed '/^$/d' | sort -u
 rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'   # dead-code evidence in non-test files
 gh run list --branch main --limit 5
+gh pr list --state merged --limit 10 --json number,title,mergedAt,mergeCommit,headRefName,baseRefName
 ```
 
 ## Autonomous Maintenance
