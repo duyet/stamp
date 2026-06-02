@@ -35,10 +35,11 @@ Use this flow for code-smell/dead-code sweeps:
 4. If a linked worktree cannot write git metadata (for example `FETCH_HEAD` permission errors), run commit/PR steps from the canonical checkout at `/Users/duet/project/stamp`; fast-forward `main` there with `git pull --ff-only origin main` before branching.
 5. After merge, confirm main-branch CI with `gh run list --branch main --limit 5`.
 6. In sandboxed runs where `bun install` fails with tempdir permission errors, run with external temp/cache paths (for example `TMPDIR=/private/tmp/stamp-tmp BUN_INSTALL_CACHE_DIR=/private/tmp/stamp-bun-cache bun install`) to avoid permission failures and accidental test discovery under repo-local cache folders.
+7. In fresh worktrees, `bunx tsc --noEmit` can fail until TanStack Router regenerates ignored `src/routeTree.gen.ts`; run `bun run build` once, then rerun `bunx tsc --noEmit`.
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-05-29; the only new merged change after that window was PR #81 / `1f90ce8` updating the `ws` override to `8.21.0`, main CI run `26316095030` succeeded, and no new zero-reference non-test symbols were found in the recently touched source files from PRs #73 and #79).
+- None (last reviewed 2026-06-03; since the 2026-06-02T08:29:04Z automation run there were no new local commits and no touched `src/` files, the only merged PR in the 7-day window was PR #83 / `0591c90` changing `renovate.json` to add `:disableDependencyDashboard`, and main CI run `26760318061` succeeded.)
 
 ## Documentation Policy
 
