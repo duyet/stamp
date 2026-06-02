@@ -7,7 +7,11 @@ import { defineConfig } from "vite";
 export default defineConfig({
 	plugins: [
 		cloudflare({ viteEnvironment: { name: "ssr" } }),
-		tanstackStart(),
+		tanstackStart({
+			router: {
+				routeFileIgnorePattern: "(^|/)__tests__(/|$)|\\.(test|spec)\\.",
+			},
+		}),
 		react(),
 		tailwindcss(),
 	],

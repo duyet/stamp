@@ -14,6 +14,7 @@ Durable repo knowledge for future maintenance and automation runs.
 - Keep shared events/constants in `src/lib/*`, not UI component files.
 - Remove exports/components only after zero-reference proof in non-test code.
 - Keep contributor docs aligned with `package.json` scripts and the current runtime stack.
+- Keep TanStack Router test files under `src/routes/**/__tests__` excluded via `router.routeFileIgnorePattern` so route-tree generation stays quiet in build and typecheck flows.
 
 ## Automation Workflow
 
