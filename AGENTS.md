@@ -13,6 +13,7 @@
   Co-Authored-By: duyetbot <bot@duyet.net>
   ```
 - Run `bun run lint` + `bunx tsc --noEmit` + `bun run test` before committing
+- In a fresh worktree, run `bun run build` once before `bunx tsc --noEmit` if `src/routeTree.gen.ts` has not been generated yet
 - No external API keys; use Cloudflare bindings from `getEnv()`
 - Per-request DB via `getDb()` from `@/db` (never global)
 - After spawning agents, run `git status --porcelain` before committing
@@ -26,7 +27,7 @@
 ```bash
 bun run dev                # Local dev server (loads .env*.development)
 bun run dev:cf             # Dev with local CF bindings (D1, R2, AI)
-bun run build              # Production build
+bun run build              # Production build; also regenerates ignored src/routeTree.gen.ts when missing
 bun run preview            # Preview production build locally
 bun run deploy             # Sync worker secrets + build + wrangler deploy
 bun run lint               # Biome check
