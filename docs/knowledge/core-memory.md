@@ -30,6 +30,7 @@ Use this flow for code-smell/dead-code sweeps:
    - `git log --since='<last-run-iso>' --no-merges --name-only --pretty=format: -- src | sed '/^$/d' | sort -u` to isolate direct source file paths when merge commits dominate the window.
    - If `<last-run-iso>` returns no commits, fallback to `git log --since='24 hours ago' --name-only --pretty=format: | sed '/^$/d' | sort -u`
    - If a detached worktree or docs-only window makes the local history look stale, confirm recent merged PRs with `gh pr list --base main --state merged --limit 10 --json number,title,mergedAt,mergeCommit,headRefName,baseRefName` before considering the scan complete.
+   - When GitHub shows newer merges than local `git log`, inspect the merged PR directly with `gh pr view <number> --json number,title,files,mergeCommit,mergedAt` to recover the exact changed-file set before editing docs or code.
 2. Prove dead code in non-test files before removal:
    - `rg -n "<symbol>" src --glob '!**/__tests__/**' --glob '!**/*.test.*' --glob '!**/*.spec.*'`
 3. Keep only durable lessons in this file.
@@ -40,7 +41,7 @@ Use this flow for code-smell/dead-code sweeps:
 
 ## Current Candidates (Needs Review)
 
-- None (last reviewed 2026-06-03; since the 2026-06-02T08:29:04Z automation run there were no new local commits and no touched `src/` files, the only merged PR in the 7-day window was PR #83 / `0591c90` changing `renovate.json` to add `:disableDependencyDashboard`, and main CI run `26760318061` succeeded.)
+- None (last reviewed 2026-06-05; since the 2026-06-02T21:01:00Z automation run the only code-affecting merges were PR #86 / `fab2072` adding `router.routeFileIgnorePattern` to exclude route tests and PR #84 / `58c7ffc` bumping `react` and `react-dom` to `19.2.7`; `bun run lint`, `bunx tsc --noEmit`, and `bun run test` passed locally, and no zero-reference non-test symbols were found in the touched files.)
 
 ## Documentation Policy
 
