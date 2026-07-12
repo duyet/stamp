@@ -31,7 +31,7 @@
 		"@tanstack/react-start": "^1.168.6",
 		"@vitejs/plugin-react": "^6.0.2",
 		"drizzle-orm": "^0.45.2",
-		"nanoid": "^5.1.7",
+		"nanoid": "^6.0.0",
 		"react": "19.2.7",
 		"react-dom": "19.2.7",
 		"vite": "^8.0.13",
