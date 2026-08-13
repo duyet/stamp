@@ -2,7 +2,11 @@
 
 interface CloudflareEnv {
 	DB: D1Database;
-	STAMPS_BUCKET: R2Bucket;
+	/**
+	 * Optional: the R2 binding is omitted while R2 is disabled on the account.
+	 * Read it through getStampsBucket() so callers handle its absence.
+	 */
+	STAMPS_BUCKET?: R2Bucket;
 	AI: Ai;
 	AGENTSTATE_API_KEY?: string;
 	ADMIN_EMAILS?: string;

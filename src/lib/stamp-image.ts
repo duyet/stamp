@@ -30,7 +30,7 @@ export function getStampImageKeys(
 }
 
 export async function hasRenderableStampImage(
-	bucket: R2Bucket,
+	bucket: R2Bucket | null,
 	id: string,
 	imageExt: string | null | undefined,
 ): Promise<boolean> {
@@ -38,6 +38,12 @@ export async function hasRenderableStampImage(
 	// value already proves the object exists. Probing R2 again would cost one
 	// subrequest per stamp on every listing render for no new information.
 	if (isValidStampImageExtension(imageExt)) {
+		return true;
+	}
+
+	// Without storage there is nothing to probe. Fail open so the listing still
+	// renders; the client falls back on the broken image.
+	if (!bucket) {
 		return true;
 	}
 

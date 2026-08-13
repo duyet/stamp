@@ -20,13 +20,23 @@
 		}
 	],
 
-	// R2 Storage for generated stamp images
-	"r2_buckets": [
-		{
-			"binding": "STAMPS_BUCKET",
-			"bucket_name": "stamp-images"
-		}
-	],
+	// R2 Storage for generated stamp images.
+	//
+	// DISABLED: R2 is not enabled on the Cloudflare account, so keeping this
+	// binding fails every deploy with
+	//   "R2 binding error for bucket 'stamp-images': Please enable R2 through
+	//    the Cloudflare Dashboard. [code: 10136]"
+	// which had blocked all deploys since 2026-07-17. Image reads degrade to a
+	// broken-image fallback and generation returns 503 until this is restored.
+	//
+	// TO RESTORE: enable R2 in the Cloudflare dashboard, confirm the
+	// "stamp-images" bucket exists, then uncomment the block below.
+	// "r2_buckets": [
+	// 	{
+	// 		"binding": "STAMPS_BUCKET",
+	// 		"bucket_name": "stamp-images"
+	// 	}
+	// ],
 
 	// Workers AI (free image generation + prompt enhancement)
 	"ai": {
