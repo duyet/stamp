@@ -21,6 +21,8 @@ export interface PublicStampResult {
 	hasMore: boolean;
 }
 
+const MAX_REFILL_BATCHES = 5;
+
 interface PublicStampQuery {
 	limit?: number;
 	cursor?: string | null;
@@ -80,7 +82,14 @@ export async function fetchPublicStamps({
 		PublicStampResult["stamps"][number] & { imageExt: string | null }
 	> = [];
 
-	while (validStamps.length < limit + 1) {
+	// Each batch costs a D1 query plus an R2 probe per legacy row, so cap the
+	// refill attempts instead of scanning the whole table when most rows in a
+	// window turn out to be unrenderable.
+	let batchesRemaining = MAX_REFILL_BATCHES;
+
+	while (validStamps.length < limit + 1 && batchesRemaining > 0) {
+		batchesRemaining -= 1;
+
 		const queryResults = await db
 			.select({
 				id: stamps.id,

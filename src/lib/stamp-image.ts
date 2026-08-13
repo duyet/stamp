@@ -34,13 +34,27 @@ export async function hasRenderableStampImage(
 	id: string,
 	imageExt: string | null | undefined,
 ): Promise<boolean> {
+	// The extension is only persisted after the R2 upload succeeds, so a valid
+	// value already proves the object exists. Probing R2 again would cost one
+	// subrequest per stamp on every listing render for no new information.
+	if (isValidStampImageExtension(imageExt)) {
+		return true;
+	}
+
 	const keys = getStampImageKeys(id, imageExt);
 
-	for (const key of keys) {
-		const object = await bucket.head(key);
-		if (object) {
-			return true;
+	try {
+		for (const key of keys) {
+			const object = await bucket.head(key);
+			if (object) {
+				return true;
+			}
 		}
+	} catch (error) {
+		// R2 being unavailable must degrade images, not take down the listing.
+		// Fail open and let the client's broken-image fallback handle it.
+		console.error(`[stamp-image] R2 head failed for stamp ${id}:`, error);
+		return true;
 	}
 
 	return false;
