@@ -5,7 +5,6 @@ import { stamps } from "@/db/schema";
 import { withSecurityHeaders } from "@/lib/api-utils";
 import { canModifyStamp } from "@/lib/auth";
 import { getAuthUserId } from "@/lib/clerk";
-import { getEnv } from "@/lib/env";
 import { getClientIp } from "@/lib/get-client-ip";
 import { hashIp } from "@/lib/hash-ip";
 import { getSessionToken } from "@/lib/session-cookie";
@@ -13,6 +12,7 @@ import {
 	getStampImageKeys,
 	isValidStampImageExtension,
 } from "@/lib/stamp-image";
+import { getStampsBucket } from "@/lib/stamps-bucket";
 
 const CONTENT_TYPE_MAP: Record<string, string> = {
 	png: "image/png",
@@ -38,9 +38,14 @@ export async function GET(request: Request, id: string): Promise<Response> {
 			return jsonError("Invalid ID format", 400);
 		}
 
-		const env = getEnv();
 		const db = getDb();
-		const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
+		const bucket = getStampsBucket();
+
+		// Storage is not configured: the image genuinely is not there. Report it
+		// as missing so the client's fallback kicks in instead of a 500.
+		if (!bucket) {
+			return jsonError("Image not found", 404);
+		}
 
 		const isReference = id.startsWith("ref_");
 		const cleanId = isReference ? id.slice(4) : id;

@@ -62,6 +62,14 @@ describe("hasRenderableStampImage", () => {
 		);
 	});
 
+	// R2 is currently unbound (see wrangler.jsonc), so the listing must still
+	// render rather than filtering every legacy row out of existence.
+	it("fails open when no bucket is configured", async () => {
+		await expect(hasRenderableStampImage(null, "abc", null)).resolves.toBe(
+			true,
+		);
+	});
+
 	// A storage outage must degrade images, not 500 the whole listing.
 	it("fails open when R2 throws", async () => {
 		vi.spyOn(console, "error").mockImplementation(() => {});

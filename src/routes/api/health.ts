@@ -2,12 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getDb } from "@/db";
 import { withSecurityHeaders } from "@/lib/api-utils";
 import { getEnv } from "@/lib/env";
+import { getStampsBucket } from "@/lib/stamps-bucket";
 
 export const Route = createFileRoute("/api/health")({
 	server: {
 		handlers: {
 			GET: async () => {
-				const results = { d1: false, r2: false, ai: false };
+				// r2 is null when the binding is intentionally absent, which is a
+				// configured state rather than a failure.
+				const results: { d1: boolean; r2: boolean | null; ai: boolean } = {
+					d1: false,
+					r2: false,
+					ai: false,
+				};
 
 				try {
 					// D1: run a simple SELECT 1
@@ -20,10 +27,13 @@ export const Route = createFileRoute("/api/health")({
 
 				try {
 					// R2: list bucket (limit 1 to keep it cheap)
-					const env = getEnv();
-					const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
-					await bucket.list({ limit: 1 });
-					results.r2 = true;
+					const bucket = getStampsBucket();
+					if (bucket) {
+						await bucket.list({ limit: 1 });
+						results.r2 = true;
+					} else {
+						results.r2 = null;
+					}
 				} catch (err) {
 					console.error("[Health] R2 check failed:", err);
 				}
@@ -36,7 +46,8 @@ export const Route = createFileRoute("/api/health")({
 					console.error("[Health] AI check failed:", err);
 				}
 
-				const allOk = results.d1 && results.r2 && results.ai;
+				// A null r2 means "not configured", not "broken".
+				const allOk = results.d1 && results.r2 !== false && results.ai;
 
 				return withSecurityHeaders(
 					new Response(

@@ -26,6 +26,7 @@ import {
 	getSessionToken,
 } from "@/lib/session-cookie";
 import type { StampStyle } from "@/lib/stamp-prompts";
+import { getStampsBucket } from "@/lib/stamps-bucket";
 import { validateReferenceImage } from "@/lib/validate-image";
 
 // --- Types ---
@@ -287,7 +288,12 @@ async function persistStamp(
 	const ext = params.mimeType.includes("png") ? "png" : "jpg";
 	const key = `stamps/${params.stampId}.${ext}`;
 
-	await (env.STAMPS_BUCKET as unknown as R2Bucket).put(key, params.imageData, {
+	const bucket = getStampsBucket();
+	if (!bucket) {
+		throw new Error("Image storage is not configured.");
+	}
+
+	await bucket.put(key, params.imageData, {
 		httpMetadata: { contentType: params.mimeType },
 	});
 
@@ -316,7 +322,7 @@ async function persistStamp(
 		});
 	} catch (dbError) {
 		try {
-			await (env.STAMPS_BUCKET as unknown as R2Bucket).delete(key);
+			await bucket.delete(key);
 			console.error(
 				`[Generate] DB insert failed, cleaned up R2 object: ${key}`,
 				dbError,
@@ -478,6 +484,12 @@ export async function POST(request: Request): Promise<Response> {
 		// 2. Check AI binding before deducting credits
 		const ai = env.AI;
 		if (!ai) return jsonResponse({ error: "AI binding not configured." }, 503);
+
+		// Generated images have nowhere to go without storage. Refuse up front,
+		// before spending credits on an image we could not keep.
+		if (!getStampsBucket()) {
+			return jsonResponse({ error: "Image storage is not configured." }, 503);
+		}
 
 		// 2b. Anonymous HD limit: 1 per day
 		if (hd && !userId) {

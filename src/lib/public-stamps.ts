@@ -1,9 +1,9 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { stamps } from "@/db/schema";
-import { getEnv } from "@/lib/env";
 import { hasRenderableStampImage } from "@/lib/stamp-image";
 import { STAMP_STYLE_PRESETS } from "@/lib/stamp-prompts";
+import { getStampsBucket } from "@/lib/stamps-bucket";
 
 export interface PublicStampResult {
 	stamps: Array<{
@@ -68,8 +68,7 @@ export async function fetchPublicStamps({
 	style,
 }: PublicStampQuery = {}): Promise<PublicStampResult> {
 	const db = getDb();
-	const env = getEnv();
-	const bucket = env.STAMPS_BUCKET as unknown as R2Bucket;
+	const bucket = getStampsBucket();
 
 	const limit = Math.max(
 		1,
