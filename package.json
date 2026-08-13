@@ -50,7 +50,7 @@
 		"wrangler": "^4.93.0"
 	},
 	"overrides": {
-		"esbuild": "0.28.1",
+		"esbuild": "0.28.2",
 		"picomatch": "4.0.5",
 		"ws": "8.21.3"
 	},
